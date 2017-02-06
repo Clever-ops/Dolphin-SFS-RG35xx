@@ -84,7 +84,11 @@
 #else  // Everything besides OSX and Android
 #define ThreadLocalStorage thread_local
 #endif
-
+#ifdef __LIBRETRO__
+#include <libco.h>
+extern cothread_t mainthread;
+extern bool core_stop_request;
+#endif
 namespace Core
 {
 // TODO: ugly, remove
@@ -109,7 +113,13 @@ static bool s_is_started = false;
 static Common::Flag s_is_booting;
 static void* s_window_handle = nullptr;
 static std::string s_state_filename;
+#ifdef __LIBRETRO__
+void JobDispatchThread();
+static std::thread s_job_dispatch_thread;
+static std::thread::id s_emu_thread_id;
+#else
 static std::thread s_emu_thread;
+#endif
 static StoppedCallbackFunc s_on_stopped_callback = nullptr;
 
 static std::thread s_cpu_thread;
@@ -218,7 +228,11 @@ bool IsGPUThread()
   const SConfig& _CoreParameter = SConfig::GetInstance();
   if (_CoreParameter.bCPUThread)
   {
+#ifdef __LIBRETRO__
+    return ((s_emu_thread_id == std::this_thread::get_id()));
+#else
     return (s_emu_thread.joinable() && (s_emu_thread.get_id() == std::this_thread::get_id()));
+#endif
   }
   else
   {
@@ -231,7 +245,7 @@ bool IsGPUThread()
 bool Init()
 {
   const SConfig& _CoreParameter = SConfig::GetInstance();
-
+#ifndef __LIBRETRO__
   if (s_emu_thread.joinable())
   {
     if (IsRunning())
@@ -243,7 +257,7 @@ bool Init()
     // The Emu Thread was stopped, synchronize with it.
     s_emu_thread.join();
   }
-
+#endif
   // Drain any left over jobs
   HostDispatchJobs();
 
@@ -264,8 +278,13 @@ bool Init()
 
   s_window_handle = Host_GetRenderHandle();
 
+#ifdef __LIBRETRO__
+  s_emu_thread_id =  std::this_thread::get_id();
+  s_job_dispatch_thread = std::thread(JobDispatchThread);
+#else
   // Start the emu thread
   s_emu_thread = std::thread(EmuThread);
+#endif
 
   return true;
 }
@@ -684,6 +703,29 @@ void EmuThread()
 
   if (s_on_stopped_callback)
     s_on_stopped_callback();
+#ifdef __LIBRETRO__
+  if (s_job_dispatch_thread.joinable())
+     s_job_dispatch_thread.join();
+
+  co_switch(mainthread);
+}
+
+void JobDispatchThread()
+{
+   while (!Core::IsRunning())
+   {
+      Core::HostDispatchJobs();
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+   }
+
+   while (!core_stop_request)
+   {
+      Core::HostDispatchJobs();
+      std::this_thread::sleep_for(std::chrono::milliseconds(10));
+   }
+   Core::Stop();
+   Core::Shutdown();
+#endif
 }
 
 // Set or get the running state
@@ -960,9 +1002,10 @@ void Shutdown()
   // shut down.
   // For more info read "DirectX Graphics Infrastructure (DXGI): Best Practices"
   // on MSDN.
+#ifndef __LIBRETRO__
   if (s_emu_thread.joinable())
     s_emu_thread.join();
-
+#endif
   // Make sure there's nothing left over in case we're about to exit.
   HostDispatchJobs();
 }

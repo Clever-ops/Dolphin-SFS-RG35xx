@@ -142,6 +142,17 @@ static u32 GetPixelColor(u32 offset)
 
   switch (bpmem.zcontrol.pixel_format)
   {
+#ifdef __LIBRETRO__
+  case PEControl::RGB8_Z24:
+  case PEControl::Z24:
+    return 0xff  | ((src & 0xff0000) >> 8) | ((src & 0xff00) << 8) | ((src & 0xff) << 24);
+
+  case PEControl::RGBA6_Z24:
+    return Convert6To8(src & 0x3f) |                // Alpha
+           Convert6To8((src >> 18) & 0x3f) << 8 |   // Red
+           Convert6To8((src >> 12) & 0x3f) << 16 |  // Green
+           Convert6To8((src >> 6) & 0x3f) << 24;    // Blue
+#else
   case PEControl::RGB8_Z24:
   case PEControl::Z24:
     return 0xff | ((src & 0x00ffffff) << 8);
@@ -151,6 +162,7 @@ static u32 GetPixelColor(u32 offset)
            Convert6To8((src >> 6) & 0x3f) << 8 |    // Blue
            Convert6To8((src >> 12) & 0x3f) << 16 |  // Green
            Convert6To8((src >> 18) & 0x3f) << 24;   // Red
+#endif
 
   case PEControl::RGB565_Z16:
     INFO_LOG(VIDEO, "RGB565_Z16 is not supported correctly yet");

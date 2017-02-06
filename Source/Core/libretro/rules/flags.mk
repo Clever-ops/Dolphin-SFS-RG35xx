@@ -1,0 +1,16 @@
+CXX_FLAGS += -msse2
+CXX_FLAGS += -Wall
+CXX_FLAGS += -Wtype-limits
+CXX_FLAGS += -Wsign-compare
+CXX_FLAGS += -Wignored-qualifiers
+CXX_FLAGS += -Wuninitialized
+CXX_FLAGS += -Wlogical-op
+CXX_FLAGS += -Wshadow
+CXX_FLAGS += -Winit-self
+CXX_FLAGS += -Wmissing-declarations
+CXX_FLAGS += -fno-strict-aliasing
+CXX_FLAGS += -fno-exceptions
+CXX_FLAGS += -fvisibility-inlines-hidden
+CXX_FLAGS += -fvisibility=hidden
+CXX_FLAGS += -std=c++14
+CXX_FLAGS += -fomit-frame-pointer

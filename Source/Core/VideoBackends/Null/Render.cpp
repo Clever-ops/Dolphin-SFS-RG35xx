@@ -8,6 +8,15 @@
 
 #include "VideoCommon/VideoConfig.h"
 
+#ifdef __LIBRETRO__
+#include <libco.h>
+#include <libretro.h>
+#include "Core/Core.h"
+extern cothread_t mainthread;
+extern retro_video_refresh_t video_cb;
+extern bool core_stop_request;
+#endif
+
 namespace Null
 {
 // Init functions
@@ -39,8 +48,13 @@ TargetRectangle Renderer::ConvertEFBRectangle(const EFBRectangle& rc)
 }
 
 void Renderer::SwapImpl(u32, u32, u32, u32, const EFBRectangle&, u64, float)
-{
-  UpdateActiveConfig();
+{   
+#ifdef __LIBRETRO__
+   video_cb(NULL, 512, 512, 512 * 4);
+   if(Core::IsRunning() && !core_stop_request)
+      co_switch(mainthread);
+#endif
+   UpdateActiveConfig();
 }
 
 }  // namespace Null
