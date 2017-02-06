@@ -7,6 +7,8 @@ BASE_DIR = ..
 DEPS_DIR = ../../../Externals
 DOLPHIN_DIR = ../../..
 
+build: all
+
 include rules/core.mk
 
 include rules/common.mk
