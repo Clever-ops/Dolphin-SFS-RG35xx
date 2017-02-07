@@ -52,6 +52,8 @@ void cInterfaceRGL::Swap()
    if (Core::IsRunning() && !core_stop_request)
       co_switch(mainthread);
 
+   /* probably not needed */
+   glBindFramebuffer(GL_FRAMEBUFFER, hw_render.get_current_framebuffer());
 }
 
 void cInterfaceRGL::SwapInterval(int Interval)

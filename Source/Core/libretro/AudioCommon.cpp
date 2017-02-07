@@ -101,10 +101,12 @@ void CMixer::StopLogDSPAudio()
 
 void CMixer::MixerFifo::SetInputSampleRate(unsigned int rate)
 {
+   m_input_sample_rate = rate;
 }
 
 unsigned int CMixer::MixerFifo::GetInputSampleRate() const
 {
+   return m_input_sample_rate;
 }
 
 void CMixer::MixerFifo::SetVolume(unsigned int lvolume, unsigned int rvolume)
