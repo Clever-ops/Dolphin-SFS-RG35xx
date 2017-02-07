@@ -69,7 +69,13 @@ void *cInterfaceRGL::GetFuncAddress(const std::string &name)
 bool cInterfaceRGL::Create(void *window_handle, bool core)
 {
    s_opengl_mode = GLInterfaceMode::MODE_OPENGL;
+   /* doesn't seem to be used anyhwere */
+#ifdef CORE
    m_core = true;
+#else
+   m_core = false;
+#endif
+
    return true;
 }
 
@@ -87,7 +93,12 @@ bool cInterfaceRGL::Create(cInterfaceBase *main_context)
 {
 //   cInterfaceRGL *egl_context = static_cast<cInterfaceRGL *>(main_context);
 
+   /* doesn't seem to be used anyhwere */
+#ifdef CORE
+   m_core = true;
+#else
    m_core = false;
+#endif
    m_is_shared = true;
    s_backbuffer_width = 512;
    s_backbuffer_height = 512;

@@ -52,7 +52,7 @@ fpic := -fPIC
 SHARED := -shared -Wl,--no-undefined -Wl,--version-script=link.T
 SHARED_EXT := so
 
-DEFINES  := -D__LIBRETRO__
+DEFINES  := -D__LIBRETRO__ -DCORE
 INCLUDES := -I. -I$(CORE_DIR)/libretro
 
 ifeq ($(DEBUG),1)

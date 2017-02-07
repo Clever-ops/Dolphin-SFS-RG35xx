@@ -116,7 +116,7 @@ static void check_variables(void)
 void retro_get_system_info(struct retro_system_info *info)
 {
    info->need_fullpath = true;
-   info->valid_extensions = "iso";
+   info->valid_extensions = "elf|dol|gcm|iso|tgc|wbfs|ciso|gcz|wad";
    info->library_version = "v0.01";
    info->library_name = "dolphin-emu";
    info->block_extract = true;
@@ -126,8 +126,10 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
 {
    info->geometry.base_width = 640;
    info->geometry.base_height = 448;
-   info->geometry.max_width = 2048; // 640 * max scale
-   info->geometry.max_height = 2048; // 528 * max scale
+//   info->geometry.max_width = 2048; // 640 * max scale
+//   info->geometry.max_height = 2048; // 528 * max scale
+   info->geometry.max_width = 640; // 640 * max scale
+   info->geometry.max_height = 528; // 528 * max scale
    info->geometry.aspect_ratio = 4.0 / 3.0;
 //   info->timing.fps = 60.0 / 1.001;
    info->timing.fps = 60.0;
@@ -332,13 +334,13 @@ bool retro_load_game(const struct retro_game_info *game)
    {
       printf("SConfig::GetInstance().m_strVideoBackend == \"OGL\"\n");
       fflush(stdout);
-//#ifdef CORE
-//      hw_render.context_type = RETRO_HW_CONTEXT_OPENGL_CORE;
-//      hw_render.version_major = 3;
-//      hw_render.version_minor = 1;
-//#else
+#ifdef CORE
+      hw_render.context_type = RETRO_HW_CONTEXT_OPENGL_CORE;
+      hw_render.version_major = 3;
+      hw_render.version_minor = 1;
+#else
       hw_render.context_type = RETRO_HW_CONTEXT_OPENGL;
-//#endif
+#endif
       hw_render.context_reset = context_reset;
       hw_render.depth = true;
       hw_render.stencil = true;
