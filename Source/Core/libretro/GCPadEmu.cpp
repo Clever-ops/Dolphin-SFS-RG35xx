@@ -77,9 +77,10 @@ GCPadStatus GCPad::GetInput() const
    pad.substickY = (0x7FFF - input_cb(m_index, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT,
                                       RETRO_DEVICE_ID_ANALOG_Y)) >> 8;
 
-   // triggers
-   //  pad.triggerLeft = static_cast<u8>(triggers[0] * 0xFF);
-   //  pad.triggerRight = static_cast<u8>(triggers[1] * 0xFF);
+   if (pad.button & PAD_TRIGGER_L)
+      pad.triggerLeft  = 0xFF;
+   if (pad.button & PAD_TRIGGER_R)
+      pad.triggerRight = 0xFF;
 
    return pad;
 }
