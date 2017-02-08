@@ -11,6 +11,7 @@
 
 #include "UICommon/UICommon.h"
 #include "Common/Event.h"
+#include "Common/Logging/LogManager.h"
 #include "Core/Core.h"
 #include "Core/Host.h"
 #include "Core/BootManager.h"
@@ -126,10 +127,10 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
 {
    info->geometry.base_width = 640;
    info->geometry.base_height = 448;
-//   info->geometry.max_width = 2048; // 640 * max scale
-//   info->geometry.max_height = 2048; // 528 * max scale
-   info->geometry.max_width = 640; // 640 * max scale
-   info->geometry.max_height = 528; // 528 * max scale
+   info->geometry.max_width = 2048; // 640 * max scale
+   info->geometry.max_height = 2048; // 528 * max scale
+//   info->geometry.max_width = 640; // 640 * max scale
+//   info->geometry.max_height = 528; // 528 * max scale
    info->geometry.aspect_ratio = 4.0 / 3.0;
 //   info->timing.fps = 60.0 / 1.001;
    info->timing.fps = 60.0;
@@ -163,7 +164,7 @@ static void init_descriptors(void)
       { 0 },
    };
 
-//   environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
+   environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
 }
 
 void retro_reset(void)
@@ -265,11 +266,12 @@ void retro_run(void)
 
    poll_cb();
 
-   if(hw_render.context_type != RETRO_HW_CONTEXT_NONE)
-   {
-      if(!OGL::FramebufferManager::get_efbFramebuffer().empty())
-         OGL::FramebufferManager::get_efbFramebuffer()[0] = hw_render.get_current_framebuffer();
-   }
+//   if(hw_render.context_type != RETRO_HW_CONTEXT_NONE)
+//   {
+//      OGL::FramebufferManager::SetXFBFramebuffer(hw_render.get_current_framebuffer());
+//      if(!OGL::FramebufferManager::get_efbFramebuffer().empty())
+//         OGL::FramebufferManager::get_efbFramebuffer()[0] = hw_render.get_current_framebuffer();
+//   }
 
    RETRO_PERFORMANCE_INIT(dolphin_main_func);
    RETRO_PERFORMANCE_START(dolphin_main_func);
@@ -309,6 +311,13 @@ bool retro_load_game(const struct retro_game_info *game)
 
    UICommon::SetUserDirectory("");  // Auto-detect user folder
    UICommon::Init();
+
+#if 0
+   /* enable VIDEO debug logging to stdout */
+   LogManager::GetInstance()->AddListener(LogTypes::VIDEO, LogListener::CONSOLE_LISTENER);
+   LogManager::GetInstance()->SetLogLevel(LogTypes::VIDEO, LogTypes::LDEBUG);
+   LogManager::GetInstance()->SetEnable(LogTypes::VIDEO, true);
+#endif
 
 #ifdef DEBUG
    /* Fastmem installs a custom exception handler which

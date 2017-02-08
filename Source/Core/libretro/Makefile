@@ -98,6 +98,13 @@ ifeq ($(PERF_TEST),1)
 FLAGS += -DPERF_TEST
 endif
 
+ifeq ($(STATIC_LINKING), 1)
+TARGET := $(TARGET_NAME)_libretro.a
+else
+TARGET := $(TARGET_NAME)_libretro.$(SHARED_EXT)
+FLAGS += $(fpic)
+endif
+
 
 #FLAGS += -DDEBUGFAST
 #FLAGS += -DLOGGING
@@ -112,13 +119,6 @@ CFLAGS   += $(FLAGS) $(DEFINES) $(INCLUDES) $(C_FLAGS)   $(C_DEFINES)   $(C_INCL
 CXXFLAGS += $(FLAGS) $(DEFINES) $(INCLUDES) $(CXX_FLAGS) $(CXX_DEFINES) $(CXX_INCLUDES)
 LDFLAGS  += $(FLAGS) $(C_FLAGS) $(CXX_FLAGS) $(SHARED) $(LIBM)
 
-
-ifeq ($(STATIC_LINKING), 1)
-TARGET := $(TARGET_NAME)_libretro.a
-else
-TARGET := $(TARGET_NAME)_libretro.$(SHARED_EXT)
-FLAGS += $(fpic)
-endif
 
 all: $(TARGET)
 $(TARGET): $(OBJECTS)

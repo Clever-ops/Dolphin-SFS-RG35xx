@@ -47,13 +47,12 @@ public:
 
 void cInterfaceRGL::Swap()
 {
-   video_cb(RETRO_HW_FRAME_BUFFER_VALID, Renderer::GetTargetWidth(), Renderer::GetTargetHeight(), 0);
-
-   if (Core::IsRunning() && !core_stop_request)
-      co_switch(mainthread);
-
-   /* probably not needed */
-   glBindFramebuffer(GL_FRAMEBUFFER, hw_render.get_current_framebuffer());
+   if(core_stop_request)
+      return;
+   video_cb(RETRO_HW_FRAME_BUFFER_VALID, s_backbuffer_width, s_backbuffer_height, 0);
+   co_switch(mainthread);
+   s_backbuffer_width = Renderer::GetTargetWidth();
+   s_backbuffer_height = Renderer::GetTargetHeight();
 }
 
 void cInterfaceRGL::SwapInterval(int Interval)
@@ -77,6 +76,8 @@ bool cInterfaceRGL::Create(void *window_handle, bool core)
 #else
    m_core = false;
 #endif
+   s_backbuffer_width = 512;
+   s_backbuffer_height = 512;
 
    return true;
 }
