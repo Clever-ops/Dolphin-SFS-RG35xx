@@ -9,3 +9,5 @@ INPUTCOMMON_OBJECTS += $(INPUTCOMMON_DIR)/ControllerInterface/ExpressionParser.o
 INPUTCOMMON_OBJECTS += $(INPUTCOMMON_DIR)/GCAdapter.o
 #INPUTCOMMON_OBJECTS += $(INPUTCOMMON_DIR)/ControllerInterface/evdev/evdev.o
 #INPUTCOMMON_OBJECTS += $(INPUTCOMMON_DIR)/ControllerInterface/Pipes/Pipes.o
+
+OBJECTS += $(INPUTCOMMON_OBJECTS)

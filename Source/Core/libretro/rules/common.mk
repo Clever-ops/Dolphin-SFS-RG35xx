@@ -43,6 +43,8 @@ COMMON_OBJECTS += $(COMMON_DIR)/GL/GLExtensions/GLExtensions.o
 #override:
 #COMMON_OBJECTS += $(COMMON_DIR)/GL/GLInterface/GLInterface.o
 
+OBJECTS += $(COMMON_OBJECTS)
+
 
 DISTRIBUTOR          = None
 DOLPHIN_WC_BRANCH    = $(shell git rev-parse --abbrev-ref HEAD)
@@ -63,3 +65,5 @@ $(COMMON_DIR)/scmrev.h:
 $(COMMON_DIR)/Version.o: $(COMMON_DIR)/scmrev.h
 
 #.PHONY: $(COMMON_DIR)/scmrev.h
+
+

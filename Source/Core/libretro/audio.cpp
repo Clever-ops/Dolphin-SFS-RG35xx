@@ -14,8 +14,16 @@
 
 #include <libretro.h>
 
-extern retro_audio_sample_batch_t audio_batch_cb;
 std::unique_ptr<SoundStream> g_sound_stream;
+static retro_audio_sample_batch_t audio_batch_cb;
+
+void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb)
+{
+   audio_batch_cb = cb;
+}
+void retro_set_audio_sample(retro_audio_sample_t cb)
+{}
+
 
 WaveFileWriter::WaveFileWriter()
 {

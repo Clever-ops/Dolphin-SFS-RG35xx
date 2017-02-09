@@ -191,3 +191,18 @@ $(DEPS_DIR)/SOIL/stb_image_aug.o
 
 xxhash_OBJECTS = \
 $(DEPS_DIR)/xxhash/xxhash.o
+
+
+#Deps :
+OBJECTS += $(bdisasm_OBJECTS)
+OBJECTS += $(enet_OBJECTS)
+OBJECTS += $(glslang_OBJECTS)
+OBJECTS += $(hidapi__hidraw_OBJECTS)
+OBJECTS += $(mbedcrypto_OBJECTS)
+OBJECTS += $(mbedtls_OBJECTS)
+OBJECTS += $(mbedx509_OBJECTS)
+OBJECTS += $(miniupnpc_OBJECTS)
+OBJECTS += $(sfml__network_OBJECTS)
+OBJECTS += $(sfml__system_OBJECTS)
+OBJECTS += $(SOIL_OBJECTS)
+OBJECTS += $(xxhash_OBJECTS)

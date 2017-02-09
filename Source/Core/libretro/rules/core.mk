@@ -231,3 +231,6 @@ CORE_OBJECTS += $(CORE_DIR)/HW/EXI/BBA-TAP/TAP_Unix.o
 #CORE_OBJECTS += $(CORE_DIR)/HW/WiimoteReal/IOLinux.o
 #CORE_OBJECTS += $(CORE_DIR)/HW/WiimoteReal/IOhidapi.o
 #CORE_OBJECTS += $(CORE_DIR)/MemoryWatcher.o
+
+
+OBJECTS += $(CORE_OBJECTS)

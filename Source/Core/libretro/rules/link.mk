@@ -1,7 +1,7 @@
-ifneq ($(STATIC_LINKING), 0)
-LDFLAGS += -fno-pie
-LDFLAGS += -no-pie
-endif
+#ifneq ($(STATIC_LINKING), 0)
+#LDFLAGS += -fno-pie
+#LDFLAGS += -no-pie
+#endif
 
 
 #LDFLAGS += -Wl,-Map,$(notdir $@.map)

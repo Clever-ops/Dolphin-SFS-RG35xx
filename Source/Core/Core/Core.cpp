@@ -86,8 +86,10 @@
 #endif
 #ifdef __LIBRETRO__
 #include <libco.h>
+namespace Libretro {
 extern cothread_t mainthread;
 extern bool core_stop_request;
+}
 #endif
 namespace Core
 {
@@ -707,7 +709,7 @@ void EmuThread()
   if (s_job_dispatch_thread.joinable())
      s_job_dispatch_thread.join();
 
-  co_switch(mainthread);
+  co_switch(Libretro::mainthread);
 }
 
 void JobDispatchThread()
@@ -718,7 +720,7 @@ void JobDispatchThread()
       std::this_thread::sleep_for(std::chrono::milliseconds(10));
    }
 
-   while (!core_stop_request)
+   while (!Libretro::core_stop_request)
    {
       Core::HostDispatchJobs();
       std::this_thread::sleep_for(std::chrono::milliseconds(10));

@@ -48,12 +48,12 @@
 
 #ifdef __LIBRETRO__
 #include <libretro.h>
-#include <libco.h>
+namespace Libretro {
 extern struct retro_hw_render_callback hw_render;
-extern retro_video_refresh_t video_cb;
-#define GL_FRAMEBUFFER_DEFAULT hw_render.get_current_framebuffer()
+}
+#define DEFAULT_FRAMEBUFFER Libretro::hw_render.get_current_framebuffer()
 #else
-#define GL_FRAMEBUFFER_DEFAULT 0
+#define DEFAULT_FRAMEBUFFER 0
 #endif
 
 void VideoConfig::UpdateProjectionHack()
@@ -1324,7 +1324,7 @@ void Renderer::SwapImpl(u32 xfbAddr, u32 fbWidth, u32 fbStride, u32 fbHeight,
   std::swap(flipped_trc.top, flipped_trc.bottom);
 
   // Copy the framebuffer to screen.
-  DrawFrame(GL_FRAMEBUFFER_DEFAULT, flipped_trc, rc, xfbAddr, xfbSourceList, xfbCount, fbWidth, fbStride, fbHeight);
+  DrawFrame(DEFAULT_FRAMEBUFFER, flipped_trc, rc, xfbAddr, xfbSourceList, xfbCount, fbWidth, fbStride, fbHeight);
 
   // The FlushFrameDump call here is necessary even after frame dumping is stopped.
   // If left out, screenshots are "one frame" behind, as an extra frame is dumped and buffered.
@@ -1662,7 +1662,7 @@ void Renderer::DumpFrameUsingFBO(const EFBRectangle& source_rc, u32 xfb_addr,
 
   // Restore state after drawing. This isn't the game state, it's the state set by ResetAPIState.
   glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-  glBindFramebuffer(GL_FRAMEBUFFER, GL_FRAMEBUFFER_DEFAULT);
+  glBindFramebuffer(GL_FRAMEBUFFER, DEFAULT_FRAMEBUFFER);
 }
 
 void Renderer::PrepareFrameDumpRenderTexture(u32 width, u32 height)
