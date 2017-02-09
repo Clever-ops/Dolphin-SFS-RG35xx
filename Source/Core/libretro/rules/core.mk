@@ -1,7 +1,7 @@
 CORE_DIR := $(BASE_DIR)/Core
 CORE_OBJECTS :=
 CORE_OBJECTS += $(CORE_DIR)/ActionReplay.o
-CORE_OBJECTS += $(CORE_DIR)/Analytics.o
+#CORE_OBJECTS += $(CORE_DIR)/Analytics.o
 CORE_OBJECTS += $(CORE_DIR)/ARDecrypt.o
 CORE_OBJECTS += $(CORE_DIR)/BootManager.o
 CORE_OBJECTS += $(CORE_DIR)/ConfigManager.o
@@ -104,8 +104,8 @@ CORE_OBJECTS += $(CORE_DIR)/HW/GCKeyboardEmu.o
 CORE_OBJECTS += $(CORE_DIR)/HW/GCMemcard.o
 CORE_OBJECTS += $(CORE_DIR)/HW/GCMemcardDirectory.o
 CORE_OBJECTS += $(CORE_DIR)/HW/GCMemcardRaw.o
-CORE_OBJECTS += $(CORE_DIR)/HW/GCPad.o
-#override:
+#overrides:
+#CORE_OBJECTS += $(CORE_DIR)/HW/GCPad.o
 #CORE_OBJECTS += $(CORE_DIR)/HW/GCPadEmu.o
 CORE_OBJECTS += $(CORE_DIR)/HW/GPFifo.o
 CORE_OBJECTS += $(CORE_DIR)/HW/HW.o

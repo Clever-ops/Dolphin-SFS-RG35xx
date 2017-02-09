@@ -1,9 +1,9 @@
 
-
-#include "Core/HW/GCPadEmu.h"
+#include "Core/Host.h"
+#include "Core/HW/GCPad.h"
 #include "Common/Common.h"
 #include "Common/CommonTypes.h"
-#include "Core/Host.h"
+#include "InputCommon/GCPadStatus.h"
 
 #include <libretro.h>
 
@@ -23,6 +23,7 @@ void Libretro::init_input(void)
 {
    environ_cb(RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE, &rumble);
 }
+
 void Libretro::init_descriptors(void)
 {
    struct retro_input_descriptor desc[] =
@@ -48,26 +49,11 @@ void Libretro::init_descriptors(void)
       { 0 },
    };
 
-   environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);   
+   environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
 }
 
 
-GCPad::GCPad(const unsigned int index) : m_index(index)
-{
-}
-
-std::string GCPad::GetName() const
-{
-   /* needed ? */
-   return std::string("GCPad") + char('1' + m_index);
-}
-
-ControllerEmu::ControlGroup *GCPad::GetGroup(PadGroup group)
-{
-   return nullptr;
-}
-
-GCPadStatus GCPad::GetInput() const
+GCPadStatus Pad::GetStatus(int pad_num)
 {
    typedef struct
    {
@@ -93,17 +79,17 @@ GCPadStatus GCPad::GetInput() const
    };
 
    auto lock = ControllerEmu::GetStateLock(); /* needed ? */
-   //   DEBUG_VAR(m_index);
+   //   DEBUG_VAR(pad_num);
    GCPadStatus pad = {};
 
    /* limit to 1 Player for now */
-   if (m_index > 0)
+   if (pad_num > 0)
       return pad;
 
    unsigned i;
 
    for (i = 0; i < (sizeof(bindmap) / sizeof(*bindmap)); i++)
-      pad.button |= input_cb(m_index, RETRO_DEVICE_JOYPAD, 0, bindmap[i].retro) ? bindmap[i].gc : 0;
+      pad.button |= input_cb(pad_num, RETRO_DEVICE_JOYPAD, 0, bindmap[i].retro) ? bindmap[i].gc : 0;
 
    // set analog A/B analog to full or w/e, prolly not needed
    if (pad.button & PAD_BUTTON_A)
@@ -112,28 +98,29 @@ GCPadStatus GCPad::GetInput() const
    if (pad.button & PAD_BUTTON_B)
       pad.analogB = 0xFF;
 
-   pad.stickX = (0x8000 + input_cb(m_index, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT,
+   pad.stickX = (0x8000 + input_cb(pad_num, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT,
                                    RETRO_DEVICE_ID_ANALOG_X)) >> 8;
-   pad.stickY = (0x7FFF - input_cb(m_index, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT,
+   pad.stickY = (0x7FFF - input_cb(pad_num, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT,
                                    RETRO_DEVICE_ID_ANALOG_Y)) >> 8;
-   pad.substickX = (0x8000 + input_cb(m_index, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT,
+   pad.substickX = (0x8000 + input_cb(pad_num, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT,
                                       RETRO_DEVICE_ID_ANALOG_X)) >> 8;
-   pad.substickY = (0x7FFF - input_cb(m_index, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT,
+   pad.substickY = (0x7FFF - input_cb(pad_num, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT,
                                       RETRO_DEVICE_ID_ANALOG_Y)) >> 8;
 
    if (pad.button & PAD_TRIGGER_L)
       pad.triggerLeft  = 0xFF;
+
    if (pad.button & PAD_TRIGGER_R)
       pad.triggerRight = 0xFF;
 
    return pad;
 }
 
-void GCPad::SetOutput(const ControlState strength)
+void Pad::Rumble(const int pad_num, const ControlState strength)
 {
    /* todo: determine actual range used by caller */
 
-   if (m_index > 0)
+   if (pad_num > 0)
       return;
 
    uint16_t str;
@@ -145,16 +132,35 @@ void GCPad::SetOutput(const ControlState strength)
    else
       str = 0xFFFF * strength;
 
-   rumble.set_rumble_state(m_index, RETRO_RUMBLE_WEAK, str);
-   rumble.set_rumble_state(m_index, RETRO_RUMBLE_STRONG, str);
+   rumble.set_rumble_state(pad_num, RETRO_RUMBLE_WEAK, str);
+   rumble.set_rumble_state(pad_num, RETRO_RUMBLE_STRONG, str);
 }
 
-void GCPad::LoadDefaults(const ControllerInterface &ciface)
+bool Pad::GetMicButton(const int pad_num)
 {
-}
-
-bool GCPad::GetMicButton() const
-{
-   //   return input_cb(m_index, RETRO_DEVICE_JOYPAD, 0,  RETRO_DEVICE_ID_JOYPAD_L2);
+   //   return input_cb(pad_num, RETRO_DEVICE_JOYPAD, 0,  RETRO_DEVICE_ID_JOYPAD_L2);
    return false;
+}
+
+/* stubs */
+ControllerEmu::ControlGroup *Pad::GetGroup(int pad_num, PadGroup group)
+{
+   return nullptr;
+}
+
+void Pad::Shutdown()
+{
+}
+
+void Pad::Initialize()
+{
+}
+
+void Pad::LoadConfig()
+{
+}
+
+InputConfig* Pad::GetConfig()
+{
+  return nullptr;
 }
