@@ -1,11 +1,19 @@
-TARGET_NAME := dolphin
-DEBUG        = 0
-PERF_TEST    = 1
+TARGET_NAME   := dolphin
+DEBUG          = 0
+PERF_TEST      = 1
 STATIC_LINKING = 1
+LOGGING        = 1
 
-BASE_DIR = ..
-DEPS_DIR = ../../../Externals
-DOLPHIN_DIR = ../../..
+ROOT_DIR       = ../../..
+BASE_DIR       = ..
+LIBRETRO_DIR   = .
+DEPS_DIR       = $(ROOT_DIR)/Externals
+
+all: build
+
+
+DEFINES  += -DCORE
+INCLUDES += -I$(LIBRETRO_DIR)
 
 ifeq ($(platform),)
    platform = unix
@@ -23,8 +31,6 @@ ifeq ($(platform),)
       platform = win
    endif
 endif
-
-build: all
 
 include rules/core.mk
 
@@ -64,6 +70,7 @@ OBJECTS += $(VIDEOSOFTWARE_OBJECTS)
 # this is needed to disable Vulkan::VideoBackend
 $(VIDEOCOMMON_DIR)/VideoBackendBase.o: CXXFLAGS += -D__APPLE__
 
+#Deps :
 OBJECTS += $(bdisasm_OBJECTS)
 OBJECTS += $(enet_OBJECTS)
 OBJECTS += $(glslang_OBJECTS)
@@ -77,68 +84,10 @@ OBJECTS += $(sfml__system_OBJECTS)
 OBJECTS += $(SOIL_OBJECTS)
 OBJECTS += $(xxhash_OBJECTS)
 
-LIBM := -lm
-
-fpic := -fPIC
-SHARED := -shared -Wl,--no-undefined
-# version script was causing a link error : investigate / fix.
-# -Wl,--version-script=link.T
-SHARED_EXT := so
-
-DEFINES  += -D__LIBRETRO__ -DCORE
-INCLUDES += -I. -I$(CORE_DIR)/libretro
-
-ifeq ($(DEBUG),1)
-FLAGS += -O0 -g -DDEBUG
-else
-FLAGS += -g -O3 -DNDEBUG
+ifeq ($(LOGGING), 1)
+   #FLAGS += -DDEBUGFAST
+   #FLAGS += -DLOGGING
+   FLAGS += -D_DEBUG
 endif
 
-ifeq ($(PERF_TEST),1)
-FLAGS += -DPERF_TEST
-endif
-
-ifeq ($(STATIC_LINKING), 1)
-TARGET := $(TARGET_NAME)_libretro.a
-else
-TARGET := $(TARGET_NAME)_libretro.$(SHARED_EXT)
-FLAGS += $(fpic)
-endif
-
-
-#FLAGS += -DDEBUGFAST
-#FLAGS += -DLOGGING
-FLAGS += -D_DEBUG
-
-#TARGET_SUFFIX =
-#TARGET_SUFFIX = .so
-
-FLAGS += -Werror=implicit-function-declaration
-
-CFLAGS   += $(FLAGS) $(DEFINES) $(INCLUDES) $(C_FLAGS)   $(C_DEFINES)   $(C_INCLUDES)
-CXXFLAGS += $(FLAGS) $(DEFINES) $(INCLUDES) $(CXX_FLAGS) $(CXX_DEFINES) $(CXX_INCLUDES)
-LDFLAGS  += $(FLAGS) $(C_FLAGS) $(CXX_FLAGS) $(SHARED) $(LIBM)
-
-
-all: $(TARGET)
-$(TARGET): $(OBJECTS)
-ifeq ($(STATIC_LINKING), 1)
-	$(AR) rcs $@ $(OBJECTS)
-else
-	$(CXX) -o $@ $^ $(LDFLAGS) $(SHARED)
-endif
-
-%.o: %.cpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
-
-%.o: %.cc
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
-
-%.o: %.c
-	$(CC) -c -o $@ $< $(CFLAGS)
-
-clean:
-	rm -f $(TARGET) $(OBJECTS)
-
-
-.PHONY: clean test
+include rules/libretro.mk

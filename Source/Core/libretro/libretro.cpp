@@ -19,30 +19,26 @@
 #include "Core/HW/VideoInterface.h"
 #include "VideoCommon/VideoConfig.h"
 #include "VideoBackends/OGL/FramebufferManager.h"
-//#define GL_GLEXT_PROTOTYPES
-//#include <GL/gl.h>
-//#include <GL/glext.h>
-//#include "Common/GL/GLExtensions/GLExtensions.h"
-
-//#include "Common/GL/GLInterfaceBase.h"
-//#include "Common/GL/GLUtil.h"
 
 cothread_t emuthread;
 cothread_t mainthread;
 
 bool core_stop_request = false;
 
-retro_log_printf_t log_cb = NULL;
-retro_video_refresh_t video_cb = NULL;
-static retro_input_poll_t poll_cb = NULL;
-retro_input_state_t input_cb = NULL;
-retro_audio_sample_batch_t audio_batch_cb = NULL;
-retro_environment_t environ_cb = NULL;
-struct retro_perf_callback perf_cb;
+retro_environment_t environ_cb;
+retro_log_printf_t log_cb;
 
+retro_video_refresh_t video_cb;
+retro_input_state_t input_cb;
+retro_audio_sample_batch_t audio_batch_cb;
 struct retro_rumble_interface rumble;
 struct retro_hw_render_callback hw_render;
+
+static retro_input_poll_t poll_cb;
+
 #ifdef PERF_TEST
+static struct retro_perf_callback perf_cb;
+
 #define RETRO_PERFORMANCE_INIT(name) \
    retro_perf_tick_t current_ticks;\
    static struct retro_perf_counter name = {#name};\
@@ -71,7 +67,9 @@ void retro_set_environment(retro_environment_t cb)
    else
       log_cb = NULL;
 
+#ifdef PERF_TEST
    environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb);
+#endif
 }
 
 void retro_init(void)
@@ -80,7 +78,7 @@ void retro_init(void)
    enum retro_pixel_format xrgb888;
    static const struct retro_variable vars[] =
    {
-      { "gbemu_dummy", "dummy; disabled|enabled" },
+      { "dolphin_option1", "Option 1; disabled|enabled" },
       { NULL, NULL },
    };
 
@@ -106,7 +104,7 @@ static void check_variables(void)
 {
    struct retro_variable var;
 
-   var.key = "gbemu_dummy";
+   var.key = "dolphin_option1";
    var.value = NULL;
 
    if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -127,15 +125,19 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
 {
    info->geometry.base_width = 640;
    info->geometry.base_height = 448;
+
    info->geometry.max_width = 2048; // 640 * max scale
    info->geometry.max_height = 2048; // 528 * max scale
 //   info->geometry.max_width = 640; // 640 * max scale
 //   info->geometry.max_height = 528; // 528 * max scale
+
    info->geometry.aspect_ratio = 4.0 / 3.0;
-//   info->timing.fps = 60.0 / 1.001;
+
    info->timing.fps = 60.0;
+//   info->timing.fps = 60.0 / 1.001;
 //   info->timing.fps = VideoInterface::GetTargetRefreshRate();
-   info->timing.sample_rate = 32000;
+
+   info->timing.sample_rate = 32000.0;
 }
 
 
@@ -189,22 +191,18 @@ void *Host_GetRenderHandle()
 void Host_UpdateTitle(const std::string &title)
 {
    printf("title : %s\n", title.c_str());
-//   DEBUG_LINE();
 }
 
 void Host_UpdateDisasmDialog()
 {
 }
 
-//static Common::Event updateMainFrameEvent;
 void Host_UpdateMainFrame()
 {
-//   updateMainFrameEvent.Set();
 }
 
 void Host_RequestRenderWindowSize(int width, int height)
 {
-//   DEBUG_LINE();
 }
 
 void Host_SetStartupDebuggingParameters()
@@ -372,6 +370,10 @@ bool retro_load_game(const struct retro_game_info *game)
       return 1;
    }
    mainthread = co_active();
+
+   /* 4MB stack is most likely overkill
+    * todo: determine actual stack usage */
+
    emuthread = co_create(0x400000, emuthread_entry);
 
    return true;
