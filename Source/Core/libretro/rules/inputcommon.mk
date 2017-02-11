@@ -6,7 +6,7 @@ INPUTCOMMON_OBJECTS += $(INPUTCOMMON_DIR)/ControllerInterface/ControllerInterfac
 INPUTCOMMON_OBJECTS += $(INPUTCOMMON_DIR)/ControllerInterface/Device.o
 INPUTCOMMON_OBJECTS += $(INPUTCOMMON_DIR)/ControllerInterface/ExpressionParser.o
 #INPUTCOMMON_OBJECTS += $(INPUTCOMMON_DIR)/ControllerInterface/Xlib/XInput2.o
-INPUTCOMMON_OBJECTS += $(INPUTCOMMON_DIR)/GCAdapter.o
+#INPUTCOMMON_OBJECTS += $(INPUTCOMMON_DIR)/GCAdapter.o
 #INPUTCOMMON_OBJECTS += $(INPUTCOMMON_DIR)/ControllerInterface/evdev/evdev.o
 #INPUTCOMMON_OBJECTS += $(INPUTCOMMON_DIR)/ControllerInterface/Pipes/Pipes.o
 

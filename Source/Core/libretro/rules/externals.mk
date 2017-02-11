@@ -61,6 +61,8 @@ $(DEPS_DIR)/glslang/SPIRV/SpvBuilder.o \
 $(DEPS_DIR)/glslang/SPIRV/SPVRemapper.o \
 $(DEPS_DIR)/glslang/glslang/OSDependent/Unix/ossource.o
 
+$(glslang_OBJECTS) : CXX_FLAGS += -Wno-shadow -Wno-reorder -Wno-sign-compare -Wno-parentheses -Wno-unused-variable -fomit-frame-pointer
+
 # maybe $(DEPS_DIR)/hidapi/libusb can be used as a fallback here ?
 ifeq ($(platform), win)
    hidapi__hidraw_OBJECTS = $(DEPS_DIR)/hidapi/windows/hid.o
