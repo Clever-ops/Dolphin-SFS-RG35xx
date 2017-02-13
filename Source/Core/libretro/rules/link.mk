@@ -1,3 +1,11 @@
+LDFLAGS += -llzo2
+LDFLAGS += -lpng
+
+LDFLAGS += -lpthread
+LDFLAGS += -lz
+LDFLAGS += -lrt
+
+
 #ifneq ($(STATIC_LINKING), 0)
 #LDFLAGS += -fno-pie
 #LDFLAGS += -no-pie
@@ -21,8 +29,7 @@
 #LDFLAGS += -lpangoxft-1.0
 
 
-LDFLAGS += -llzo2
-##LDFLAGS += -levdev
+#LDFLAGS += -levdev
 #LDFLAGS += -lSM
 #LDFLAGS += -lICE
 #LDFLAGS += -lXext
@@ -31,15 +38,11 @@ LDFLAGS += -llzo2
 #LDFLAGS += -lGL
 #LDFLAGS += -llzo2
 
-##LDFLAGS += -lSoundTouch
-##LDFLAGS += -lbluetooth
-LDFLAGS += -lpng
+#LDFLAGS += -lSoundTouch
+#LDFLAGS += -lbluetooth
 #LDFLAGS += -lXrandr
-#LDFLAGS += -lpthread
-#LDFLAGS += -lrt
 #LDFLAGS += -lXi
 #LDFLAGS += -ldl
-#LDFLAGS += -lz
 #LDFLAGS += -lc
 
 

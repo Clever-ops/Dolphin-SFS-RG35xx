@@ -199,7 +199,7 @@ $(DEPS_DIR)/xxhash/xxhash.o
 OBJECTS += $(bdisasm_OBJECTS)
 OBJECTS += $(enet_OBJECTS)
 OBJECTS += $(glslang_OBJECTS)
-OBJECTS += $(hidapi__hidraw_OBJECTS)
+#OBJECTS += $(hidapi__hidraw_OBJECTS)
 OBJECTS += $(mbedcrypto_OBJECTS)
 OBJECTS += $(mbedtls_OBJECTS)
 OBJECTS += $(mbedx509_OBJECTS)

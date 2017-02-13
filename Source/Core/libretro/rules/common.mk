@@ -1,6 +1,6 @@
 COMMON_DIR := $(BASE_DIR)/Common
 COMMON_OBJECTS :=
-COMMON_OBJECTS += $(COMMON_DIR)/Analytics.o
+#COMMON_OBJECTS += $(COMMON_DIR)/Analytics.o
 COMMON_OBJECTS += $(COMMON_DIR)/CDUtils.o
 COMMON_OBJECTS += $(COMMON_DIR)/ColorUtil.o
 COMMON_OBJECTS += $(COMMON_DIR)/ENetUtil.o
@@ -40,6 +40,9 @@ COMMON_OBJECTS += $(COMMON_DIR)/x64FPURoundMode.o
 COMMON_OBJECTS += $(COMMON_DIR)/x64CPUDetect.o
 COMMON_OBJECTS += $(COMMON_DIR)/GL/GLUtil.o
 COMMON_OBJECTS += $(COMMON_DIR)/GL/GLExtensions/GLExtensions.o
+# disable dlsym() reference in GLExtensions.cpp
+$(COMMON_DIR)/GL/GLExtensions/GLExtensions.o : DEFINES += -U__linux__ -U__APPLE__
+
 #override:
 #COMMON_OBJECTS += $(COMMON_DIR)/GL/GLInterface/GLInterface.o
 

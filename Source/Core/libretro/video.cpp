@@ -129,7 +129,7 @@ void cInterfaceRGL::SwapInterval(int Interval)
 void *cInterfaceRGL::GetFuncAddress(const std::string &name)
 {
    void *addr = (void *)Libretro::hw_render.get_proc_address(name.c_str());
-   printf("get_proc_address(\"%s\") --> 0x%08lX\n", name.c_str(), (uintptr_t)addr);
+//   printf("get_proc_address(\"%s\") --> 0x%08lX\n", name.c_str(), (uintptr_t)addr);
    return addr;
 }
 
