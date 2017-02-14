@@ -17,7 +17,7 @@ all: build
 TARGET_NAME   := dolphin
 DEBUG          = 0
 PERF_TEST      = 1
-STATIC_LINKING = 1
+STATIC_LINKING = 0
 LOGGING        = 1
 
 ROOT_DIR       = ../../..
