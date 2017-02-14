@@ -18,7 +18,7 @@
 namespace ProcessorInterface
 {
 // STATE_TO_SAVE
-u32 m_InterruptCause;
+Common::Jit_data<u32> m_InterruptCause;
 u32 m_InterruptMask;
 // addresses for CPU fifo accesses
 u32 Fifo_CPUBase;

@@ -19,12 +19,12 @@
 
 using namespace Gen;
 
-alignas(16) static const u64 psSignBits[2] = {0x8000000000000000ULL, 0x0000000000000000ULL};
-alignas(16) static const u64 psSignBits2[2] = {0x8000000000000000ULL, 0x8000000000000000ULL};
-alignas(16) static const u64 psAbsMask[2] = {0x7FFFFFFFFFFFFFFFULL, 0xFFFFFFFFFFFFFFFFULL};
-alignas(16) static const u64 psAbsMask2[2] = {0x7FFFFFFFFFFFFFFFULL, 0x7FFFFFFFFFFFFFFFULL};
-alignas(16) static const u64 psGeneratedQNaN[2] = {0x7FF8000000000000ULL, 0x7FF8000000000000ULL};
-alignas(16) static const double half_qnan_and_s32_max[2] = {0x7FFFFFFF, -0x80000};
+static Common::Jit_data_array<u64, 2> psSignBits = {0x8000000000000000ULL, 0x0000000000000000ULL};
+static Common::Jit_data_array<u64, 2> psSignBits2 = {0x8000000000000000ULL, 0x8000000000000000ULL};
+static Common::Jit_data_array<u64, 2> psAbsMask = {0x7FFFFFFFFFFFFFFFULL, 0xFFFFFFFFFFFFFFFFULL};
+static Common::Jit_data_array<u64, 2> psAbsMask2 = {0x7FFFFFFFFFFFFFFFULL, 0x7FFFFFFFFFFFFFFFULL};
+static Common::Jit_data_array<u64, 2> psGeneratedQNaN = {0x7FF8000000000000ULL, 0x7FF8000000000000ULL};
+static Common::Jit_data_array<double, 2> half_qnan_and_s32_max = {0x7FFFFFFF, -0x80000};
 
 X64Reg Jit64::fp_tri_op(int d, int a, int b, bool reversible, bool single,
                         void (XEmitter::*avxOp)(X64Reg, X64Reg, const OpArg&),
@@ -108,7 +108,7 @@ void Jit64::HandleNaNs(UGeckoInstruction inst, X64Reg xmm_out, X64Reg xmm, X64Re
       UCOMISD(xmm, R(xmm));
       fixups.push_back(J_CC(CC_P));
     }
-    MOVDDUP(xmm, M(psGeneratedQNaN));
+    MOVDDUP(xmm, M((void*)psGeneratedQNaN));
     for (FixupBranch fixup : fixups)
       SetJumpTarget(fixup);
     FixupBranch done = J(true);
@@ -127,7 +127,7 @@ void Jit64::HandleNaNs(UGeckoInstruction inst, X64Reg xmm_out, X64Reg xmm, X64Re
       SwitchToFarCode();
       SetJumpTarget(handle_nan);
       _assert_msg_(DYNA_REC, clobber == XMM0, "BLENDVPD implicitly uses XMM0");
-      BLENDVPD(xmm, M(psGeneratedQNaN));
+      BLENDVPD(xmm, M((void*)psGeneratedQNaN));
       for (u32 x : inputs)
       {
         avx_op(&XEmitter::VCMPPD, &XEmitter::CMPPD, clobber, fpr.R(x), fpr.R(x), CMP_UNORD);
@@ -151,7 +151,7 @@ void Jit64::HandleNaNs(UGeckoInstruction inst, X64Reg xmm_out, X64Reg xmm, X64Re
       SetJumpTarget(handle_nan);
       MOVAPD(tmp, R(clobber));
       ANDNPD(clobber, R(xmm));
-      ANDPD(tmp, M(psGeneratedQNaN));
+      ANDPD(tmp, M((void*)psGeneratedQNaN));
       ORPD(tmp, R(clobber));
       MOVAPD(xmm, R(tmp));
       for (u32 x : inputs)
@@ -350,7 +350,7 @@ void Jit64::fmaddXX(UGeckoInstruction inst)
         ADDSD(XMM1, fpr.R(b));
     }
     if (inst.SUBOP5 == 31)  // nmadd
-      XORPD(XMM1, M(packed ? psSignBits2 : psSignBits));
+      XORPD(XMM1, M(packed ? (void*)psSignBits2 : (void*)psSignBits));
   }
   fpr.BindToRegister(d, !single);
   if (single)
@@ -385,14 +385,14 @@ void Jit64::fsign(UGeckoInstruction inst)
   {
   case 40:  // neg
     avx_op(&XEmitter::VXORPD, &XEmitter::XORPD, fpr.RX(d), src,
-           M(packed ? psSignBits2 : psSignBits), packed);
+           M(packed ? (void*)psSignBits2 : (void*)psSignBits), packed);
     break;
   case 136:  // nabs
-    avx_op(&XEmitter::VORPD, &XEmitter::ORPD, fpr.RX(d), src, M(packed ? psSignBits2 : psSignBits),
+    avx_op(&XEmitter::VORPD, &XEmitter::ORPD, fpr.RX(d), src, M(packed ? (void*)psSignBits2 : (void*)psSignBits),
            packed);
     break;
   case 264:  // abs
-    avx_op(&XEmitter::VANDPD, &XEmitter::ANDPD, fpr.RX(d), src, M(packed ? psAbsMask2 : psAbsMask),
+    avx_op(&XEmitter::VANDPD, &XEmitter::ANDPD, fpr.RX(d), src, M(packed ? (void*)psAbsMask2 : (void*)psAbsMask),
            packed);
     break;
   default:
@@ -608,7 +608,7 @@ void Jit64::fctiwx(UGeckoInstruction inst)
   // The upper 32 bits of the result are set to 0xfff80000,
   // except for -0.0 where they are set to 0xfff80001 (TODO).
 
-  MOVAPD(XMM0, M(half_qnan_and_s32_max));
+  MOVAPD(XMM0, M((void*)half_qnan_and_s32_max));
   MINSD(XMM0, fpr.R(b));
   switch (inst.SUBOP10)
   {

@@ -5,12 +5,13 @@
 #pragma once
 
 #include "Common/CommonTypes.h"
+#include "Common/MemoryUtil.h"
 
-alignas(16) extern const u8 pbswapShuffle1x4[16];
-alignas(16) extern const u8 pbswapShuffle2x4[16];
-alignas(16) extern const float m_one[];
-alignas(16) extern const float m_quantizeTableS[];
-alignas(16) extern const float m_dequantizeTableS[];
+extern Common::Jit_data_array<u8, 16>  pbswapShuffle1x4;
+extern Common::Jit_data_array<u8, 16>  pbswapShuffle2x4;
+extern Common::Jit_data_array<float, 4> m_one;
+extern Common::Jit_data_array<float, 128> m_quantizeTableS;
+extern Common::Jit_data_array<float, 128> m_dequantizeTableS;
 
 class CommonAsmRoutinesBase
 {

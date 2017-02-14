@@ -5,6 +5,7 @@
 #pragma once
 
 #include "Common/CommonTypes.h"
+#include "Common/MemoryUtil.h"
 class PointerWrap;
 
 namespace MMIO
@@ -52,7 +53,7 @@ enum
   PI_FLIPPER_UNK = 0x30  // BS1 writes 0x0245248A to it - prolly some bootstrap thing
 };
 
-extern u32 m_InterruptCause;
+extern Common::Jit_data<u32> m_InterruptCause;
 extern u32 m_InterruptMask;
 extern u32 Fifo_CPUBase;
 extern u32 Fifo_CPUEnd;
