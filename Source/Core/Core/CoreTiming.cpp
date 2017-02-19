@@ -65,8 +65,8 @@ static std::mutex s_ts_write_lock;
 static Common::FifoQueue<Event, false> s_ts_queue;
 
 static float s_last_OC_factor;
-Common::Jit_data<float> g_last_OC_factor_inverted;
-Common::Jit_data<int> g_slice_length;
+float g_last_OC_factor_inverted;
+int g_slice_length;
 static constexpr int MAX_SLICE_LENGTH = 20000;
 
 static s64 s_idled_cycles;
@@ -76,9 +76,9 @@ static u64 s_fake_dec_start_ticks;
 // Are we in a function that has been called from Advance()
 static bool s_is_global_timer_sane;
 
-Common::Jit_data<s64> g_global_timer;
-Common::Jit_data<u64> g_fake_TB_start_value;
-Common::Jit_data<u64> g_fake_TB_start_ticks;
+s64 g_global_timer;
+u64 g_fake_TB_start_value;
+u64 g_fake_TB_start_ticks;
 
 static EventType* s_ev_lost = nullptr;
 
@@ -359,7 +359,7 @@ void LogPendingEvents()
   std::sort(clone.begin(), clone.end());
   for (const Event& ev : clone)
   {
-    INFO_LOG(POWERPC, "PENDING: Now: %" PRId64 " Pending: %" PRId64 " Type: %s", (s64)g_global_timer,
+    INFO_LOG(POWERPC, "PENDING: Now: %" PRId64 " Pending: %" PRId64 " Type: %s", g_global_timer,
              ev.time, ev.type->name->c_str());
   }
 }

@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <cstdlib>
 #include <string>
-#include <cinttypes>
 
 #include "Common/CommonFuncs.h"
 #include "Common/CommonTypes.h"
@@ -275,48 +274,6 @@ size_t MemPhysical()
   sysinfo(&memInfo);
   return (size_t)memInfo.totalram * memInfo.mem_unit;
 #endif
-}
-
-uint8_t* Jit_data_allocator::m_buffer;
-uint8_t* Jit_data_allocator::m_last_buffer;
-size_t Jit_data_allocator::m_pos;
-int Jit_data_allocator::m_ref_count;
-
-static constexpr size_t Jit_data_size = 0x80000; // 512kb
-void* Jit_data_allocator::alloc(size_t size)
-{
-   if(!m_buffer)
-   {
-      m_buffer = (uint8_t*)AllocateExecutableMemory(Jit_data_size, true);
-      UnWriteProtectMemory(m_buffer, size); /* map as RW */
-   }
-   size = (size + 0x1F) & ~0x1F; /* 32 bytes alignement */
-   if((m_pos + size) <= Jit_data_size)
-   {
-      m_last_buffer = m_buffer + m_pos;
-      m_pos += size;
-      m_ref_count++;
-      return m_last_buffer;
-   }
-   PanicAlert("Common::Jit_data_size too small!\n"
-              "current size: %" PRId64 "\nrequested size: %" PRId64, Jit_data_size, m_pos + size);
-   return nullptr;
-}
-void Jit_data_allocator::free(void* data)
-{
-   if(!data)
-      PanicAlert("Jit_data_allocator::free() called with nullptr!\n");
-
-   m_ref_count--;
-   if(data == m_last_buffer)
-      m_pos = m_last_buffer - m_buffer;
-   if(!m_ref_count)
-   {
-      FreeMemoryPages(m_buffer, Jit_data_size);
-      m_buffer = nullptr;
-      m_last_buffer = nullptr;
-      m_pos = 0;
-   }
 }
 
 }  // namespace Common

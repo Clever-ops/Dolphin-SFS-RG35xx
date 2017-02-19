@@ -18,7 +18,7 @@
 using namespace Gen;
 
 // Not PowerPC state.  Can't put in 'this' because it's out of range...
-static Common::Jit_data<void*> s_saved_rsp;
+static void* s_saved_rsp;
 
 // PLAN: no more block numbers - crazy opcodes just contain offset within
 // dynarec buffer

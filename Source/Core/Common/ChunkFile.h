@@ -27,7 +27,6 @@
 #include "Common/Assert.h"
 #include "Common/Common.h"
 #include "Common/CommonTypes.h"
-#include "Common/MemoryUtil.h"
 #include "Common/FileUtil.h"
 #include "Common/Flag.h"
 #include "Common/Logging/Log.h"
@@ -211,18 +210,6 @@ public:
   void DoPOD(T& x)
   {
     DoVoid((void*)&x, sizeof(x));
-  }
-
-  template <typename T>
-  void Do(Common::Jit_data<T>& x)
-  {
-    Do((T&)x);
-  }
-
-  template <typename T, size_t count>
-  void Do(Common::Jit_data_array<T, count>& x)
-  {
-    Do((T(&)[count])x);
   }
 
   void Do(bool& x)

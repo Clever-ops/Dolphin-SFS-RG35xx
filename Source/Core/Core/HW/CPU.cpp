@@ -10,7 +10,6 @@
 #include "Common/Event.h"
 #include "Common/Logging/Log.h"
 #include "Common/MsgHandler.h"
-#include "Common/MemoryUtil.h"
 #include "Core/Core.h"
 #include "Core/HW/CPU.h"
 #include "Core/HW/Memmap.h"
@@ -23,7 +22,7 @@ namespace CPU
 // CPU Thread execution state.
 // Requires s_state_change_lock to modify the value.
 // Read access is unsynchronized.
-static Common::Jit_data<State> s_state = CPU_POWERDOWN;
+static State s_state = CPU_POWERDOWN;
 
 // Synchronizes EnableStepping and PauseAndLock so only one instance can be
 // active at a time. Simplifies code by eliminating several edge cases where

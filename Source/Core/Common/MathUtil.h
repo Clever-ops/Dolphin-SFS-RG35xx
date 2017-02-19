@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "Common/CommonTypes.h"
-#include "Common/MemoryUtil.h"
 
 namespace MathUtil
 {
@@ -127,10 +126,10 @@ u32 ClassifyDouble(double dvalue);
 // More efficient float version.
 u32 ClassifyFloat(float fvalue);
 
-extern Common::Jit_data_array<int, 32> frsqrte_expected_base;
-extern Common::Jit_data_array<int, 32> frsqrte_expected_dec;
-extern Common::Jit_data_array<int, 32> fres_expected_base;
-extern Common::Jit_data_array<int, 32> fres_expected_dec;
+extern const int frsqrte_expected_base[];
+extern const int frsqrte_expected_dec[];
+extern const int fres_expected_base[];
+extern const int fres_expected_dec[];
 
 // PowerPC approximation algorithms
 double ApproximateReciprocalSquareRoot(double val);

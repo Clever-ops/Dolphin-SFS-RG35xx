@@ -7,7 +7,6 @@
 #include "Common/ChunkFile.h"
 #include "Common/CommonFuncs.h"
 #include "Common/CommonTypes.h"
-#include "Common/MemoryUtil.h"
 #include "Core/HW/GPFifo.h"
 #include "Core/HW/Memmap.h"
 #include "Core/HW/ProcessorInterface.h"
@@ -28,10 +27,10 @@ namespace GPFifo
 // the same function could use both methods. Compile 2 different versions of each such block?
 
 // More room for the fastmodes
-Common::Jit_data_array<u8, GATHER_PIPE_SIZE * 16> m_gatherPipe;
+alignas(32) u8 m_gatherPipe[GATHER_PIPE_SIZE * 16];
 
 // pipe counter
-Common::Jit_data<u32> m_gatherPipeCount = 0;
+u32 m_gatherPipeCount = 0;
 
 void DoState(PointerWrap& p)
 {
@@ -42,7 +41,7 @@ void DoState(PointerWrap& p)
 void Init()
 {
   ResetGatherPipe();
-  memset(m_gatherPipe, 0, GATHER_PIPE_SIZE * 16);
+  memset(m_gatherPipe, 0, sizeof(m_gatherPipe));
 }
 
 bool IsEmpty()

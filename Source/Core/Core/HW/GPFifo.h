@@ -5,7 +5,6 @@
 #pragma once
 
 #include "Common/CommonTypes.h"
-#include "Common/MemoryUtil.h"
 
 class PointerWrap;
 
@@ -17,10 +16,10 @@ enum
 };
 
 // More room for the fastmodes
-extern Common::Jit_data_array<u8, GATHER_PIPE_SIZE * 16> m_gatherPipe;
+alignas(32) extern u8 m_gatherPipe[GATHER_PIPE_SIZE * 16];
 
 // pipe counter
-extern Common::Jit_data<u32> m_gatherPipeCount;
+extern u32 m_gatherPipeCount;
 
 // Init
 void Init();

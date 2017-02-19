@@ -8,7 +8,6 @@
 #include "Common/CPUDetect.h"
 #include "Common/Intrinsics.h"
 #include "Common/MathUtil.h"
-#include "Common/MemoryUtil.h"
 #include "Core/HW/MMIO.h"
 #include "Core/HW/Memmap.h"
 #include "Core/PowerPC/Gekko.h"
@@ -822,8 +821,8 @@ void EmuCodeBlock::avx_op(void (XEmitter::*avxOp)(X64Reg, X64Reg, const OpArg&, 
   }
 }
 
-static Common::Jit_data_array<u64, 2> psMantissaTruncate = {0xFFFFFFFFF8000000ULL, 0xFFFFFFFFF8000000ULL};
-static Common::Jit_data_array<u64, 2> psRoundBit = {0x8000000, 0x8000000};
+alignas(16) static const u64 psMantissaTruncate[2] = {0xFFFFFFFFF8000000ULL, 0xFFFFFFFFF8000000ULL};
+alignas(16) static const u64 psRoundBit[2] = {0x8000000, 0x8000000};
 
 // Emulate the odd truncation/rounding that the PowerPC does on the RHS operand before
 // a single precision multiply. To be precise, it drops the low 28 bits of the mantissa,
@@ -836,16 +835,16 @@ void EmuCodeBlock::Force25BitPrecision(X64Reg output, const OpArg& input, X64Reg
     // mantissa = (mantissa & ~0xFFFFFFF) + ((mantissa & (1ULL << 27)) << 1);
     if (input.IsSimpleReg() && cpu_info.bAVX)
     {
-      VPAND(tmp, input.GetSimpleReg(), M((void*)psRoundBit));
-      VPAND(output, input.GetSimpleReg(), M((void*)psMantissaTruncate));
+      VPAND(tmp, input.GetSimpleReg(), M(psRoundBit));
+      VPAND(output, input.GetSimpleReg(), M(psMantissaTruncate));
       PADDQ(output, R(tmp));
     }
     else
     {
       if (!input.IsSimpleReg(output))
         MOVAPD(output, input);
-      avx_op(&XEmitter::VPAND, &XEmitter::PAND, tmp, R(output), M((void*)psRoundBit), true, true);
-      PAND(output, M((void*)psMantissaTruncate));
+      avx_op(&XEmitter::VPAND, &XEmitter::PAND, tmp, R(output), M(psRoundBit), true, true);
+      PAND(output, M(psMantissaTruncate));
       PADDQ(output, R(tmp));
     }
   }
@@ -855,8 +854,8 @@ void EmuCodeBlock::Force25BitPrecision(X64Reg output, const OpArg& input, X64Reg
   }
 }
 
-static Common::Jit_data<u32> temp32;
-static Common::Jit_data<u64> temp64;
+alignas(16) static u32 temp32;
+alignas(16) static u64 temp64;
 
 // Since the following float conversion functions are used in non-arithmetic PPC float instructions,
 // they must convert floats bitexact and never flush denormals to zero or turn SNaNs into QNaNs.
@@ -948,36 +947,15 @@ void EmuCodeBlock::ConvertDoubleToSingle(X64Reg dst, X64Reg src)
 
 #else   // MORE_ACCURATE_DOUBLETOSINGLE
 
-/* cannot use a template with __m128i */
-class Jit_data__m128i
-{
-   __m128i* m_data;
-public:
-   Jit_data__m128i(__m128i val)
-   {
-      m_data = (__m128i*)Common::Jit_data_allocator::alloc(sizeof(__m128i));
-      *m_data = val;
-   }
-   ~Jit_data__m128i()
-   {
-      Common::Jit_data_allocator::free(m_data);
-      m_data = nullptr;
-   }
-   __m128i* operator&()
-   {
-      return m_data;
-   }
-};
-
-static Jit_data__m128i double_sign_bit = _mm_set_epi64x(0xffffffffffffffff,
-                                                        0x7fffffffffffffff);
-static Jit_data__m128i single_qnan_bit = _mm_set_epi64x(0xffffffffffffffff,
-                                                        0xffffffffffbfffff);
-static Jit_data__m128i double_qnan_bit = _mm_set_epi64x(0xffffffffffffffff,
-                                                        0xfff7ffffffffffff);
+alignas(16) static const __m128i double_sign_bit = _mm_set_epi64x(0xffffffffffffffff,
+                                                                  0x7fffffffffffffff);
+alignas(16) static const __m128i single_qnan_bit = _mm_set_epi64x(0xffffffffffffffff,
+                                                                  0xffffffffffbfffff);
+alignas(16) static const __m128i double_qnan_bit = _mm_set_epi64x(0xffffffffffffffff,
+                                                                  0xfff7ffffffffffff);
 
 // Smallest positive double that results in a normalized single.
-static Common::Jit_data<double> min_norm_single = std::numeric_limits<float>::min();
+alignas(16) static const double min_norm_single = std::numeric_limits<float>::min();
 
 void EmuCodeBlock::ConvertDoubleToSingle(X64Reg dst, X64Reg src)
 {

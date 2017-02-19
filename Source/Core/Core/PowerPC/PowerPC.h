@@ -9,7 +9,6 @@
 #include <tuple>
 
 #include "Common/CommonTypes.h"
-#include "Common/MemoryUtil.h"
 
 #include "Core/Debugger/PPCDebugInterface.h"
 #include "Core/PowerPC/BreakPoints.h"
@@ -290,7 +289,7 @@ struct TranslateResult
 TranslateResult JitCache_TranslateAddress(u32 address);
 
 static const int BAT_INDEX_SHIFT = 17;
-using BatTable = Common::Jit_data_array<u32, 1 << (32 - BAT_INDEX_SHIFT)>;  // 128 KB
+using BatTable = std::array<u32, 1 << (32 - BAT_INDEX_SHIFT)>;  // 128 KB
 extern BatTable ibat_table;
 extern BatTable dbat_table;
 inline bool TranslateBatAddess(const BatTable& bat_table, u32* address)
