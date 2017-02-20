@@ -358,6 +358,16 @@ void LogPendingEvents()
   }
 }
 
+// Should only be called from the CPU thread after the PPC clock has changed
+void AdjustEventQueueTimes(u32 new_ppc_clock, u32 old_ppc_clock)
+{
+  for (Event& ev : s_event_queue)
+  {
+    const s64 ticks = (ev.time - PowerPC::jit_data.rw->g_global_timer) * new_ppc_clock / old_ppc_clock;
+    ev.time = PowerPC::jit_data.rw->g_global_timer + ticks;
+  }
+}
+
 void Idle()
 {
   if (SConfig::GetInstance().bSyncGPUOnSkipIdleHack)

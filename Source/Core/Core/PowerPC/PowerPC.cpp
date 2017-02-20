@@ -4,6 +4,8 @@
 
 #include <cstring>
 
+#include "Core/PowerPC/PowerPC.h"
+
 #include "Common/Assert.h"
 #include "Common/ChunkFile.h"
 #include "Common/CommonTypes.h"
@@ -22,8 +24,6 @@
 #include "Core/PowerPC/Interpreter/Interpreter.h"
 #include "Core/PowerPC/JitCommon/JitAsmCommon.h"
 #include "Core/PowerPC/JitInterface.h"
-#include "Core/PowerPC/PPCTables.h"
-#include "Core/PowerPC/PowerPC.h"
 
 namespace PowerPC
 {
@@ -33,7 +33,7 @@ PowerPCState ppcState;
 static CPUCoreBase* s_cpu_core_base = nullptr;
 static bool s_cpu_core_base_is_injected = false;
 Interpreter* const s_interpreter = Interpreter::getInstance();
-static CoreMode s_mode = MODE_INTERPRETER;
+static CoreMode s_mode = CoreMode::Interpreter;
 
 Watches watches;
 BreakPoints breakpoints;
@@ -152,8 +152,6 @@ static void ResetRegisters()
 
 static void InitializeCPUCore(int cpu_core)
 {
-  PPCTables::InitTables(cpu_core);
-
   // We initialize the interpreter because
   // it is used on boot and code window independently.
   s_interpreter->Init();
@@ -176,11 +174,11 @@ static void InitializeCPUCore(int cpu_core)
 
   if (s_cpu_core_base != s_interpreter)
   {
-    s_mode = MODE_JIT;
+    s_mode = CoreMode::JIT;
   }
   else
   {
-    s_mode = MODE_INTERPRETER;
+    s_mode = CoreMode::Interpreter;
   }
 }
 
@@ -193,17 +191,23 @@ void Init(int cpu_core)
   s_invalidate_cache_thread_safe =
       CoreTiming::RegisterEvent("invalidateEmulatedCache", InvalidateCacheThreadSafe);
 
-  ppcState.pagetable_base = 0;
-  ppcState.pagetable_hashmask = 0;
-  ppcState.tlb = {};
-
-  ResetRegisters();
+  Reset();
 
   InitializeCPUCore(cpu_core);
   ppcState.iCache.Init();
 
   if (SConfig::GetInstance().bEnableDebugging)
     breakpoints.ClearAllTemporary();
+}
+
+void Reset()
+{
+  ppcState.pagetable_base = 0;
+  ppcState.pagetable_hashmask = 0;
+  ppcState.tlb = {};
+
+  ResetRegisters();
+  ppcState.iCache.Reset();
 }
 
 void ScheduleInvalidateCacheThreadSafe(u32 address)
@@ -225,18 +229,18 @@ void Shutdown()
 
 CoreMode GetMode()
 {
-  return !s_cpu_core_base_is_injected ? s_mode : MODE_INTERPRETER;
+  return !s_cpu_core_base_is_injected ? s_mode : CoreMode::Interpreter;
 }
 
 static void ApplyMode()
 {
   switch (s_mode)
   {
-  case MODE_INTERPRETER:  // Switching from JIT to interpreter
+  case CoreMode::Interpreter:  // Switching from JIT to interpreter
     s_cpu_core_base = s_interpreter;
     break;
 
-  case MODE_JIT:  // Switching from interpreter to JIT.
+  case CoreMode::JIT:  // Switching from interpreter to JIT.
     // Don't really need to do much. It'll work, the cache will refill itself.
     s_cpu_core_base = JitInterface::GetCore();
     if (!s_cpu_core_base)  // Has a chance to not get a working JIT core if one isn't active on host

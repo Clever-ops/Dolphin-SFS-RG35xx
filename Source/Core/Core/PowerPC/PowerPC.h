@@ -33,26 +33,22 @@ enum
   CORE_CACHEDINTERPRETER,
 };
 
-enum CoreMode
+enum class CoreMode
 {
-  MODE_INTERPRETER,
-  MODE_JIT,
+  Interpreter,
+  JIT,
 };
 
 // TLB cache
-#define TLB_SIZE 128
-#define NUM_TLBS 2
-#define TLB_WAYS 2
+constexpr size_t TLB_SIZE = 128;
+constexpr size_t NUM_TLBS = 2;
+constexpr size_t TLB_WAYS = 2;
 
-#define HW_PAGE_INDEX_SHIFT 12
-#define HW_PAGE_INDEX_MASK 0x3f
-#define HW_PAGE_TAG_SHIFT 18
-
-#define TLB_TAG_INVALID 0xffffffff
-
-struct tlb_entry
+struct TLBEntry
 {
-  u32 tag[TLB_WAYS] = {TLB_TAG_INVALID, TLB_TAG_INVALID};
+  static constexpr u32 INVALID_TAG = 0xffffffff;
+
+  u32 tag[TLB_WAYS] = {INVALID_TAG, INVALID_TAG};
   u32 paddr[TLB_WAYS] = {};
   u32 pte[TLB_WAYS] = {};
   u8 recent = 0;
@@ -119,7 +115,10 @@ struct PowerPCState
   // also for power management, but we don't care about that.
   u32 spr[1024];
 
-  std::array<std::array<tlb_entry, TLB_SIZE / TLB_WAYS>, NUM_TLBS> tlb;
+  // Storage for the stack pointer of the BLR optimization.
+  u8* stored_stack_pointer;
+
+  std::array<std::array<TLBEntry, TLB_SIZE / TLB_WAYS>, NUM_TLBS> tlb;
 
   u32 pagetable_base;
   u32 pagetable_hashmask;
@@ -140,18 +139,19 @@ extern MemChecks memchecks;
 extern PPCDebugInterface debug_interface;
 
 void Init(int cpu_core);
+void Reset();
 void Shutdown();
 void DoState(PointerWrap& p);
 void ScheduleInvalidateCacheThreadSafe(u32 address);
 
 CoreMode GetMode();
-// [NOT THREADSAFE] CPU Thread or CPU::PauseAndLock or CORE_UNINITIALIZED
+// [NOT THREADSAFE] CPU Thread or CPU::PauseAndLock or Core::State::Uninitialized
 void SetMode(CoreMode _coreType);
 const char* GetCPUName();
 
 // Set the current CPU Core to the given implementation until removed.
 // Remove the current injected CPU Core by passing nullptr.
-// While an external CPUCoreBase is injected, GetMode() will return MODE_INTERPRETER.
+// While an external CPUCoreBase is injected, GetMode() will return CoreMode::Interpreter.
 // Init() will be called when added and Shutdown() when removed.
 // [Threadsafety: Same as SetMode(), except it cannot be called from inside the CPU
 //  run loop on the CPU Thread - it doesn't make sense for a CPU to remove itself

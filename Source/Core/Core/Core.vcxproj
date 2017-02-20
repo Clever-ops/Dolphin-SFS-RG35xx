@@ -172,30 +172,40 @@
     <ClCompile Include="IOS\Device.cpp" />
     <ClCompile Include="IOS\DeviceStub.cpp" />
     <ClCompile Include="IOS\IPC.cpp" />
+    <ClCompile Include="IOS\MIOS.cpp" />
     <ClCompile Include="IOS\DI\DI.cpp" />
     <ClCompile Include="IOS\ES\ES.cpp" />
     <ClCompile Include="IOS\ES\Formats.cpp" />
     <ClCompile Include="IOS\FS\FileIO.cpp" />
     <ClCompile Include="IOS\FS\FS.cpp" />
-    <ClCompile Include="IOS\Network\Config.cpp" />
     <ClCompile Include="IOS\Network\ICMPLin.cpp" />
-    <ClCompile Include="IOS\Network\NWC24Config.cpp" />
+    <ClCompile Include="IOS\Network\MACUtils.cpp" />
     <ClCompile Include="IOS\Network\Socket.cpp" />
-    <ClCompile Include="IOS\Network\Net.cpp" />
     <ClCompile Include="IOS\Network\SSL.cpp" />
+    <ClCompile Include="IOS\Network\IP\Top.cpp" />
+    <ClCompile Include="IOS\Network\KD\NetKDRequest.cpp" />
+    <ClCompile Include="IOS\Network\KD\NetKDTime.cpp" />
+    <ClCompile Include="IOS\Network\KD\NWC24Config.cpp" />
+    <ClCompile Include="IOS\Network\NCD\Config.cpp" />
+    <ClCompile Include="IOS\Network\NCD\Manage.cpp" />
+    <ClCompile Include="IOS\Network\WD\Command.cpp" />
     <ClCompile Include="IOS\SDIO\SDIOSlot0.cpp" />
     <ClCompile Include="IOS\STM\STM.cpp" />
     <ClCompile Include="IOS\USB\Common.cpp" />
-    <ClCompile Include="IOS\USB\USBV0.cpp" />
-    <ClCompile Include="IOS\USB\USB_HIDv4.cpp">
-      <!--
-      Disable "nonstandard extension used : zero-sized array in struct/union" warning,
-      which is hit in libusb.h.
-      -->
+    <ClCompile Include="IOS\USB\LibusbDevice.cpp">
       <DisableSpecificWarnings>4200;%(DisableSpecificWarnings)</DisableSpecificWarnings>
     </ClCompile>
+    <ClCompile Include="IOS\USB\Host.cpp">
+      <DisableSpecificWarnings>4200;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+    </ClCompile>
+    <ClCompile Include="IOS\USB\OH0\OH0.cpp" />
+    <ClCompile Include="IOS\USB\OH0\OH0Device.cpp" />
+    <ClCompile Include="IOS\USB\USB_HID\HIDv4.cpp" />
+    <ClCompile Include="IOS\USB\USB_VEN\VEN.cpp" />
+    <ClCompile Include="IOS\USB\USBV0.cpp" />
+    <ClCompile Include="IOS\USB\USBV4.cpp" />
+    <ClCompile Include="IOS\USB\USBV5.cpp" />
     <ClCompile Include="IOS\USB\USB_KBD.cpp" />
-    <ClCompile Include="IOS\USB\USB_VEN.cpp" />
     <ClCompile Include="IOS\USB\Bluetooth\BTBase.cpp" />
     <ClCompile Include="IOS\USB\Bluetooth\BTEmu.cpp" />
     <ClCompile Include="IOS\USB\Bluetooth\BTStub.cpp" />
@@ -404,25 +414,37 @@
     <ClInclude Include="IOS\Device.h" />
     <ClInclude Include="IOS\DeviceStub.h" />
     <ClInclude Include="IOS\IPC.h" />
+    <ClInclude Include="IOS\MIOS.h" />
     <ClInclude Include="IOS\DI\DI.h" />
     <ClInclude Include="IOS\ES\ES.h" />
     <ClInclude Include="IOS\ES\Formats.h" />
     <ClInclude Include="IOS\FS\FileIO.h" />
     <ClInclude Include="IOS\FS\FS.h" />
-    <ClInclude Include="IOS\Network\Config.h" />
     <ClInclude Include="IOS\Network\ICMPLin.h" />
-    <ClInclude Include="IOS\Network\NWC24Config.h" />
     <ClInclude Include="IOS\Network\ICMP.h" />
+    <ClInclude Include="IOS\Network\MACUtils.h" />
     <ClInclude Include="IOS\Network\Socket.h" />
-    <ClInclude Include="IOS\Network\Net.h" />
     <ClInclude Include="IOS\Network\SSL.h" />
+    <ClInclude Include="IOS\Network\IP\Top.h" />
+    <ClInclude Include="IOS\Network\KD\NetKDRequest.h" />
+    <ClInclude Include="IOS\Network\KD\NetKDTime.h" />
+    <ClInclude Include="IOS\Network\KD\NWC24Config.h" />
+    <ClInclude Include="IOS\Network\NCD\Config.h" />
+    <ClInclude Include="IOS\Network\NCD\Manage.h" />
+    <ClInclude Include="IOS\Network\WD\Command.h" />
     <ClInclude Include="IOS\SDIO\SDIOSlot0.h" />
     <ClInclude Include="IOS\STM\STM.h" />
     <ClInclude Include="IOS\USB\Common.h" />
+    <ClInclude Include="IOS\USB\LibusbDevice.h" />
+    <ClInclude Include="IOS\USB\Host.h" />
+    <ClInclude Include="IOS\USB\OH0\OH0.h" />
+    <ClInclude Include="IOS\USB\OH0\OH0Device.h" />
+    <ClInclude Include="IOS\USB\USB_HID\HIDv4.h" />
+    <ClInclude Include="IOS\USB\USB_VEN\VEN.h" />
     <ClInclude Include="IOS\USB\USBV0.h" />
-    <ClInclude Include="IOS\USB\USB_HIDv4.h" />
+    <ClInclude Include="IOS\USB\USBV4.h" />
+    <ClInclude Include="IOS\USB\USBV5.h" />
     <ClInclude Include="IOS\USB\USB_KBD.h" />
-    <ClInclude Include="IOS\USB\USB_VEN.h" />
     <ClInclude Include="IOS\USB\Bluetooth\BTBase.h" />
     <ClInclude Include="IOS\USB\Bluetooth\BTEmu.h" />
     <ClInclude Include="IOS\USB\Bluetooth\BTStub.h" />
@@ -447,13 +469,10 @@
     <ClInclude Include="PowerPC\CachedInterpreter\InterpreterBlockCache.h" />
     <ClInclude Include="PowerPC\Interpreter\Interpreter.h" />
     <ClInclude Include="PowerPC\Interpreter\Interpreter_FPUtils.h" />
-    <ClInclude Include="PowerPC\Interpreter\Interpreter_Tables.h" />
     <ClInclude Include="PowerPC\Jit64IL\JitIL.h" />
-    <ClInclude Include="PowerPC\Jit64IL\JitIL_Tables.h" />
     <ClInclude Include="PowerPC\Jit64\FPURegCache.h" />
     <ClInclude Include="PowerPC\Jit64\GPRRegCache.h" />
     <ClInclude Include="PowerPC\Jit64\Jit.h" />
-    <ClInclude Include="PowerPC\Jit64\Jit64_Tables.h" />
     <ClInclude Include="PowerPC\Jit64\JitAsm.h" />
     <ClInclude Include="PowerPC\Jit64\JitRegCache.h" />
     <ClInclude Include="PowerPC\JitILCommon\IR.h" />

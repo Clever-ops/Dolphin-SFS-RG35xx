@@ -19,14 +19,35 @@ using namespace Arm64Gen;
 void JitArm64::GenerateAsm()
 {
   // This value is all of the callee saved registers that we are required to save.
-  // According to the AACPS64 we need to save R19 ~ R30.
+  // According to the AACPS64 we need to save R19 ~ R30 and Q8 ~ Q15.
   const u32 ALL_CALLEE_SAVED = 0x7FF80000;
+  const u32 ALL_CALLEE_SAVED_FPR = 0x0000FF00;
   BitSet32 regs_to_save(ALL_CALLEE_SAVED);
+  BitSet32 regs_to_save_fpr(ALL_CALLEE_SAVED_FPR);
   enterCode = GetCodePtr();
 
   ABI_PushRegisters(regs_to_save);
+  m_float_emit.ABI_PushRegisters(regs_to_save_fpr, X30);
 
   MOVP2R(PPC_REG, &PowerPC::ppcState);
+
+  // Swap the stack pointer, so we have proper guard pages.
+  ADD(X0, SP, 0);
+  MOVP2R(X1, &m_saved_stack_pointer);
+  STR(INDEX_UNSIGNED, X0, X1, 0);
+  MOVP2R(X1, &m_stack_pointer);
+  LDR(INDEX_UNSIGNED, X0, X1, 0);
+  FixupBranch no_fake_stack = CBZ(X0);
+  ADD(SP, X0, 0);
+  SetJumpTarget(no_fake_stack);
+
+  // Push {nullptr; -1} as invalid destination on the stack.
+  MOVI2R(X0, 0xFFFFFFFF);
+  STP(INDEX_PRE, ZR, X0, SP, -16);
+
+  // Store the stack pointer, so we can reset it if the BLR optimization fails.
+  ADD(X0, SP, 0);
+  STR(INDEX_UNSIGNED, X0, PPC_REG, PPCSTATE_OFF(stored_stack_pointer));
 
   // The PC will be loaded into DISPATCHER_PC after the call to CoreTiming::Advance().
   // Advance() does an exception check so we don't know what PC to use until afterwards.
@@ -119,6 +140,7 @@ void JitArm64::GenerateAsm()
 
   // Call JIT
   SetJumpTarget(no_block_available);
+  ResetStack();
   MOV(W0, DISPATCHER_PC);
   MOVP2R(X30, reinterpret_cast<void*>(&JitTrampoline));
   BLR(X30);
@@ -150,6 +172,13 @@ void JitArm64::GenerateAsm()
   B(dispatcherNoCheck);
 
   SetJumpTarget(Exit);
+
+  // Reset the stack pointer, as the BLR optimization have touched it.
+  MOVP2R(X1, &m_saved_stack_pointer);
+  LDR(INDEX_UNSIGNED, X0, X1, 0);
+  ADD(SP, X0, 0);
+
+  m_float_emit.ABI_PopRegisters(regs_to_save_fpr, X30);
   ABI_PopRegisters(regs_to_save);
   RET(X30);
 

@@ -22,14 +22,11 @@
 
 #if _M_X86
 #include "Core/PowerPC/Jit64/Jit.h"
-#include "Core/PowerPC/Jit64/Jit64_Tables.h"
 #include "Core/PowerPC/Jit64IL/JitIL.h"
-#include "Core/PowerPC/Jit64IL/JitIL_Tables.h"
 #endif
 
 #if _M_ARM_64
 #include "Core/PowerPC/JitArm64/Jit.h"
-#include "Core/PowerPC/JitArm64/JitArm64_Tables.h"
 #endif
 
 namespace JitInterface
@@ -70,31 +67,7 @@ CPUCoreBase* InitJitCore(int core)
   g_jit->Init();
   return ptr;
 }
-void InitTables(int core)
-{
-  switch (core)
-  {
-#if _M_X86
-  case PowerPC::CORE_JIT64:
-    Jit64Tables::InitTables();
-    break;
-  case PowerPC::CORE_JITIL64:
-    JitILTables::InitTables();
-    break;
-#endif
-#if _M_ARM_64
-  case PowerPC::CORE_JITARM64:
-    JitArm64Tables::InitTables();
-    break;
-#endif
-  case PowerPC::CORE_CACHEDINTERPRETER:
-    // has no tables
-    break;
-  default:
-    PanicAlert("Unrecognizable cpu_core: %d", core);
-    break;
-  }
-}
+
 CPUCoreBase* GetCore()
 {
   return g_jit;
@@ -135,9 +108,9 @@ void GetProfileResults(ProfileStats* prof_stats)
   prof_stats->timecost_sum = 0;
   prof_stats->block_stats.clear();
 
-  Core::EState old_state = Core::GetState();
-  if (old_state == Core::CORE_RUN)
-    Core::SetState(Core::CORE_PAUSE);
+  Core::State old_state = Core::GetState();
+  if (old_state == Core::State::Running)
+    Core::SetState(Core::State::Paused);
 
   QueryPerformanceFrequency((LARGE_INTEGER*)&prof_stats->countsPerSec);
   g_jit->GetBlockCache()->RunOnBlocks([&prof_stats](const JitBlock& block) {
@@ -153,8 +126,8 @@ void GetProfileResults(ProfileStats* prof_stats)
   });
 
   sort(prof_stats->block_stats.begin(), prof_stats->block_stats.end());
-  if (old_state == Core::CORE_RUN)
-    Core::SetState(Core::CORE_RUN);
+  if (old_state == Core::State::Running)
+    Core::SetState(Core::State::Running);
 }
 
 int GetHostCode(u32* address, const u8** code, u32* code_size)

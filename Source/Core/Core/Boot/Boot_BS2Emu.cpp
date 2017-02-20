@@ -2,10 +2,15 @@
 // Licensed under GPLv2+
 // Refer to the license.txt file included.
 
-#include "Common/Assert.h"
+#include <map>
+#include <string>
+#include <vector>
+
 #include "Common/CommonPaths.h"
 #include "Common/CommonTypes.h"
 #include "Common/FileUtil.h"
+#include "Common/Logging/Log.h"
+#include "Common/MsgHandler.h"
 #include "Common/NandPaths.h"
 #include "Common/SettingsHandler.h"
 
@@ -13,13 +18,11 @@
 #include "Core/ConfigManager.h"
 #include "Core/Core.h"
 #include "Core/HLE/HLE.h"
-#include "Core/HW/CPU.h"
 #include "Core/HW/DVDInterface.h"
 #include "Core/HW/EXI/EXI_DeviceIPL.h"
 #include "Core/HW/Memmap.h"
 #include "Core/IOS/ES/Formats.h"
 #include "Core/IOS/IPC.h"
-#include "Core/MemTools.h"
 #include "Core/PatchEngine.h"
 #include "Core/PowerPC/PowerPC.h"
 
@@ -196,18 +199,14 @@ bool CBoot::SetupWiiMemory(u64 ios_title_id)
 
   SettingsHandler gen;
   std::string serno;
-  std::string settings_Filename(
+  const std::string settings_file_path(
       Common::GetTitleDataPath(TITLEID_SYSMENU, Common::FROM_SESSION_ROOT) + WII_SETTING);
-  if (File::Exists(settings_Filename))
+  if (File::Exists(settings_file_path) && gen.Open(settings_file_path))
   {
-    File::IOFile settingsFileHandle(settings_Filename, "rb");
-    if (settingsFileHandle.ReadBytes((void*)gen.GetData(), SettingsHandler::SETTINGS_SIZE))
-    {
-      gen.Decrypt();
-      serno = gen.GetValue("SERNO");
-      gen.Reset();
-    }
-    File::Delete(settings_Filename);
+    serno = gen.GetValue("SERNO");
+    gen.Reset();
+
+    File::Delete(settings_file_path);
   }
 
   if (serno.empty() || serno == "000000000")
@@ -215,7 +214,7 @@ bool CBoot::SetupWiiMemory(u64 ios_title_id)
     if (Core::g_want_determinism)
       serno = "123456789";
     else
-      serno = gen.generateSerialNumber();
+      serno = SettingsHandler::GenerateSerialNumber();
     INFO_LOG(BOOT, "No previous serial number found, generated one instead: %s", serno.c_str());
   }
   else
@@ -233,18 +232,14 @@ bool CBoot::SetupWiiMemory(u64 ios_title_id)
   gen.AddSetting("VIDEO", region_setting.video);
   gen.AddSetting("GAME", region_setting.game);
 
-  File::CreateFullPath(settings_Filename);
+  if (!gen.Save(settings_file_path))
   {
-    File::IOFile settingsFileHandle(settings_Filename, "wb");
-
-    if (!settingsFileHandle.WriteBytes(gen.GetData(), SettingsHandler::SETTINGS_SIZE))
-    {
-      PanicAlertT("SetupWiiMemory: Can't create setting.txt file");
-      return false;
-    }
-    // Write the 256 byte setting.txt to memory.
-    Memory::CopyToEmu(0x3800, gen.GetData(), SettingsHandler::SETTINGS_SIZE);
+    PanicAlertT("SetupWiiMemory: Can't create setting.txt file");
+    return false;
   }
+
+  // Write the 256 byte setting.txt to memory.
+  Memory::CopyToEmu(0x3800, gen.GetData(), SettingsHandler::SETTINGS_SIZE);
 
   INFO_LOG(BOOT, "Setup Wii Memory...");
 
@@ -283,7 +278,7 @@ bool CBoot::SetupWiiMemory(u64 ios_title_id)
   Memory::Write_U16(0x8201, 0x000030e6);                // Dev console / debug capable
   Memory::Write_U32(0x00000000, 0x000030f0);            // Apploader
 
-  if (!IOS::HLE::SetupMemory(ios_title_id))
+  if (!IOS::HLE::Reload(ios_title_id))
   {
     return false;
   }

@@ -81,6 +81,7 @@ u64 CEXIIPL::NetPlay_GetEmulatedTime()
 }
 
 #include "Core/HW/SI/SI_DeviceGCController.h"
+#include "Core/ConfigManager.h"
 
 int CSIDevice_GCController::NetPlay_InGamePadToLocalPad(int numPAD)
 {

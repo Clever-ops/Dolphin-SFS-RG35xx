@@ -14,6 +14,8 @@
 
 #include <libretro.h>
 
+#define BACKEND_LIBRETRO "Libretro"
+
 std::unique_ptr<SoundStream> g_sound_stream;
 static retro_audio_sample_batch_t audio_batch_cb;
 
@@ -150,8 +152,13 @@ void ShutdownSoundStream()
 std::vector<std::string> GetSoundBackends()
 {
   std::vector<std::string> backends;
-  backends.push_back("Libretro");
+  backends.push_back(BACKEND_LIBRETRO);
   return backends;
+}
+
+std::string GetDefaultSoundBackend()
+{
+  return BACKEND_LIBRETRO;
 }
 
 bool SupportsDPL2Decoder(const std::string& backend)

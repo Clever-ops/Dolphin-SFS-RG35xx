@@ -6,6 +6,8 @@
 #include <climits>
 #include <memory>
 
+#include "AudioCommon/AudioCommon.h"
+
 #include "Common/CDUtils.h"
 #include "Common/CommonPaths.h"
 #include "Common/CommonTypes.h"
@@ -75,6 +77,7 @@ void SConfig::SaveSettings()
   SaveAnalyticsSettings(ini);
   SaveNetworkSettings(ini);
   SaveBluetoothPassthroughSettings(ini);
+  SaveUSBPassthroughSettings(ini);
   SaveSysconfSettings(ini);
 
   ini.Save(File::GetUserPath(F_DOLPHINCONFIG_IDX));
@@ -341,6 +344,20 @@ void SConfig::SaveBluetoothPassthroughSettings(IniFile& ini)
   section->Set("LinkKeys", m_bt_passthrough_link_keys);
 }
 
+void SConfig::SaveUSBPassthroughSettings(IniFile& ini)
+{
+  IniFile::Section* section = ini.GetOrCreateSection("USBPassthrough");
+
+  std::ostringstream oss;
+  for (const auto& device : m_usb_passthrough_devices)
+    oss << StringFromFormat("%04x:%04x", device.first, device.second) << ',';
+  std::string devices_string = oss.str();
+  if (!devices_string.empty())
+    devices_string.pop_back();
+
+  section->Set("Devices", devices_string);
+}
+
 void SConfig::SaveSysconfSettings(IniFile& ini)
 {
   IniFile::Section* section = ini.GetOrCreateSection("Sysconf");
@@ -398,6 +415,7 @@ void SConfig::LoadSettings()
   LoadNetworkSettings(ini);
   LoadAnalyticsSettings(ini);
   LoadBluetoothPassthroughSettings(ini);
+  LoadUSBPassthroughSettings(ini);
   LoadSysconfSettings(ini);
 }
 
@@ -613,17 +631,7 @@ void SConfig::LoadDSPSettings(IniFile& ini)
   dsp->Get("DumpAudio", &m_DumpAudio, false);
   dsp->Get("DumpAudioSilent", &m_DumpAudioSilent, false);
   dsp->Get("DumpUCode", &m_DumpUCode, false);
-#if defined __linux__ && HAVE_ALSA
-  dsp->Get("Backend", &sBackend, BACKEND_ALSA);
-#elif defined __APPLE__
-  dsp->Get("Backend", &sBackend, BACKEND_COREAUDIO);
-#elif defined _WIN32
-  dsp->Get("Backend", &sBackend, BACKEND_XAUDIO2);
-#elif defined ANDROID
-  dsp->Get("Backend", &sBackend, BACKEND_OPENSLES);
-#else
-  dsp->Get("Backend", &sBackend, BACKEND_NULLSOUND);
-#endif
+  dsp->Get("Backend", &sBackend, AudioCommon::GetDefaultSoundBackend());
   dsp->Get("Volume", &m_Volume, 100);
   dsp->Get("CaptureLog", &m_DSPCaptureLog, false);
 
@@ -672,6 +680,27 @@ void SConfig::LoadBluetoothPassthroughSettings(IniFile& ini)
   section->Get("VID", &m_bt_passthrough_vid, -1);
   section->Get("PID", &m_bt_passthrough_pid, -1);
   section->Get("LinkKeys", &m_bt_passthrough_link_keys, "");
+}
+
+void SConfig::LoadUSBPassthroughSettings(IniFile& ini)
+{
+  IniFile::Section* section = ini.GetOrCreateSection("USBPassthrough");
+  m_usb_passthrough_devices.clear();
+  std::string devices_string;
+  std::vector<std::string> pairs;
+  section->Get("Devices", &devices_string, "");
+  SplitString(devices_string, ',', pairs);
+  for (const auto& pair : pairs)
+  {
+    const auto index = pair.find(':');
+    if (index == std::string::npos)
+      continue;
+
+    const u16 vid = static_cast<u16>(strtol(pair.substr(0, index).c_str(), nullptr, 16));
+    const u16 pid = static_cast<u16>(strtol(pair.substr(index + 1).c_str(), nullptr, 16));
+    if (vid && pid)
+      m_usb_passthrough_devices.emplace(vid, pid);
+  }
 }
 
 void SConfig::LoadSysconfSettings(IniFile& ini)
@@ -761,7 +790,13 @@ void SConfig::LoadDefaults()
 
   m_strName = "NONE";
   m_strGameID = "00000000";
+  m_title_id = 0;
   m_revision = 0;
+}
+
+bool SConfig::IsUSBDeviceWhitelisted(const std::pair<u16, u16> vid_pid) const
+{
+  return m_usb_passthrough_devices.find(vid_pid) != m_usb_passthrough_devices.end();
 }
 
 const char* SConfig::GetDirectoryForRegion(DiscIO::Region region)
@@ -843,6 +878,7 @@ bool SConfig::AutoSetup(EBootBS2 _BootBS2)
       }
       m_strName = pVolume->GetInternalName();
       m_strGameID = pVolume->GetGameID();
+      pVolume->GetTitleID(&m_title_id);
       m_revision = pVolume->GetRevision();
 
       // Check if we have a Wii disc
@@ -909,6 +945,7 @@ bool SConfig::AutoSetup(EBootBS2 _BootBS2)
       {
         m_strName = pVolume->GetInternalName();
         m_strGameID = pVolume->GetGameID();
+        pVolume->GetTitleID(&m_title_id);
       }
       else
       {
@@ -916,12 +953,13 @@ bool SConfig::AutoSetup(EBootBS2 _BootBS2)
         // if this is the second boot we would be using the Name and id of the last title
         m_strName.clear();
         m_strGameID.clear();
+        m_title_id = 0;
       }
 
       // Use the TitleIDhex for name and/or game ID if launching
       // from nand folder or if it is not ascii characters
       // (specifically sysmenu could potentially apply to other things)
-      std::string titleidstr = StringFromFormat("%016" PRIx64, ContentLoader.GetTitleID());
+      std::string titleidstr = StringFromFormat("%016" PRIx64, m_title_id);
 
       if (m_strName.empty())
       {

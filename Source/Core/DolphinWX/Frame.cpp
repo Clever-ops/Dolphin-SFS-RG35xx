@@ -164,7 +164,7 @@ WXLRESULT CRenderFrame::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lPa
     {
     case SC_SCREENSAVE:
     case SC_MONITORPOWER:
-      if (Core::GetState() == Core::CORE_RUN && SConfig::GetInstance().bDisableScreenSaver)
+      if (Core::GetState() == Core::State::Running && SConfig::GetInstance().bDisableScreenSaver)
         break;
     default:
       return wxFrame::MSWWindowProc(nMsg, wParam, lParam);
@@ -180,7 +180,7 @@ WXLRESULT CRenderFrame::MSWWindowProc(WXUINT nMsg, WXWPARAM wParam, WXLPARAM lPa
 
     case WM_USER_SETCURSOR:
       if (SConfig::GetInstance().bHideCursor && main_frame->RendererHasFocus() &&
-          Core::GetState() == Core::CORE_RUN)
+          Core::GetState() == Core::State::Running)
         SetCursor(wxCURSOR_BLANK);
       else
         SetCursor(wxNullCursor);
@@ -229,6 +229,8 @@ wxDEFINE_EVENT(wxEVT_HOST_COMMAND, wxCommandEvent);
 wxDEFINE_EVENT(DOLPHIN_EVT_LOCAL_INI_CHANGED, wxCommandEvent);
 wxDEFINE_EVENT(DOLPHIN_EVT_RELOAD_THEME_BITMAPS, wxCommandEvent);
 wxDEFINE_EVENT(DOLPHIN_EVT_UPDATE_LOAD_WII_MENU_ITEM, wxCommandEvent);
+wxDEFINE_EVENT(DOLPHIN_EVT_BOOT_SOFTWARE, wxCommandEvent);
+wxDEFINE_EVENT(DOLPHIN_EVT_STOP_SOFTWARE, wxCommandEvent);
 
 // Event tables
 BEGIN_EVENT_TABLE(CFrame, CRenderFrame)
@@ -495,13 +497,15 @@ void CFrame::BindEvents()
   Bind(DOLPHIN_EVT_RELOAD_THEME_BITMAPS, &CFrame::OnReloadThemeBitmaps, this);
   Bind(DOLPHIN_EVT_RELOAD_GAMELIST, &CFrame::OnReloadGameList, this);
   Bind(DOLPHIN_EVT_UPDATE_LOAD_WII_MENU_ITEM, &CFrame::OnUpdateLoadWiiMenuItem, this);
+  Bind(DOLPHIN_EVT_BOOT_SOFTWARE, &CFrame::OnPlay, this);
+  Bind(DOLPHIN_EVT_STOP_SOFTWARE, &CFrame::OnStop, this);
 }
 
 bool CFrame::RendererIsFullscreen()
 {
   bool fullscreen = false;
 
-  if (Core::GetState() == Core::CORE_RUN || Core::GetState() == Core::CORE_PAUSE)
+  if (Core::GetState() == Core::State::Running || Core::GetState() == Core::State::Paused)
   {
     fullscreen = m_RenderFrame->IsFullScreen();
   }
@@ -519,7 +523,7 @@ void CFrame::OnQuit(wxCommandEvent& WXUNUSED(event))
 void CFrame::OnActive(wxActivateEvent& event)
 {
   m_bRendererHasFocus = (event.GetActive() && event.GetEventObject() == m_RenderFrame);
-  if (Core::GetState() == Core::CORE_RUN || Core::GetState() == Core::CORE_PAUSE)
+  if (Core::GetState() == Core::State::Running || Core::GetState() == Core::State::Paused)
   {
     if (m_bRendererHasFocus)
     {
@@ -528,15 +532,15 @@ void CFrame::OnActive(wxActivateEvent& event)
       else if (RendererIsFullscreen() && g_ActiveConfig.ExclusiveFullscreenEnabled())
         DoExclusiveFullscreen(true);  // Regain exclusive mode
 
-      if (SConfig::GetInstance().m_PauseOnFocusLost && Core::GetState() == Core::CORE_PAUSE)
+      if (SConfig::GetInstance().m_PauseOnFocusLost && Core::GetState() == Core::State::Paused)
         DoPause();
 
-      if (SConfig::GetInstance().bHideCursor && Core::GetState() == Core::CORE_RUN)
+      if (SConfig::GetInstance().bHideCursor && Core::GetState() == Core::State::Running)
         m_RenderParent->SetCursor(wxCURSOR_BLANK);
     }
     else
     {
-      if (SConfig::GetInstance().m_PauseOnFocusLost && Core::GetState() == Core::CORE_RUN)
+      if (SConfig::GetInstance().m_PauseOnFocusLost && Core::GetState() == Core::State::Running)
         DoPause();
 
       if (SConfig::GetInstance().bHideCursor)
@@ -550,7 +554,7 @@ void CFrame::OnClose(wxCloseEvent& event)
 {
   // Before closing the window we need to shut down the emulation core.
   // We'll try to close this window again once that is done.
-  if (Core::GetState() != Core::CORE_UNINITIALIZED)
+  if (Core::GetState() != Core::State::Uninitialized)
   {
     DoStop();
     if (event.CanVeto())
@@ -618,7 +622,7 @@ void CFrame::OnResize(wxSizeEvent& event)
 
   if (!IsMaximized() && !IsIconized() &&
       !(SConfig::GetInstance().bRenderToMain && RendererIsFullscreen()) &&
-      !(Core::GetState() != Core::CORE_UNINITIALIZED && SConfig::GetInstance().bRenderToMain &&
+      !(Core::GetState() != Core::State::Uninitialized && SConfig::GetInstance().bRenderToMain &&
         SConfig::GetInstance().bRenderWindowAutoSize))
   {
     SConfig::GetInstance().iWidth = GetSize().GetWidth();
@@ -678,7 +682,7 @@ void CFrame::OnHostMessage(wxCommandEvent& event)
   switch (event.GetId())
   {
   case IDM_UPDATE_DISASM_DIALOG:  // For breakpoints causing pausing
-    if (!g_pCodeWindow || Core::GetState() != Core::CORE_PAUSE)
+    if (!g_pCodeWindow || Core::GetState() != Core::State::Paused)
       return;
   // fallthrough
 
@@ -1202,10 +1206,10 @@ void CFrame::PollHotkeys(wxTimerEvent& event)
   if (!HotkeyManagerEmu::IsEnabled())
     return;
 
-  if (Core::GetState() == Core::CORE_UNINITIALIZED || Core::GetState() == Core::CORE_PAUSE)
+  if (Core::GetState() == Core::State::Uninitialized || Core::GetState() == Core::State::Paused)
     g_controller_interface.UpdateInput();
 
-  if (Core::GetState() != Core::CORE_STOPPING)
+  if (Core::GetState() != Core::State::Stopping)
   {
     HotkeyManagerEmu::GetStatus();
     ParseHotkeys();

@@ -129,7 +129,7 @@ $(DEPS_DIR)/mbedtls/library/xtea.o
 
 mbedtls_OBJECTS = \
 $(DEPS_DIR)/mbedtls/library/debug.o \
-$(DEPS_DIR)/mbedtls/library/net.o \
+$(DEPS_DIR)/mbedtls/library/net_sockets.o \
 $(DEPS_DIR)/mbedtls/library/ssl_cache.o \
 $(DEPS_DIR)/mbedtls/library/ssl_ciphersuites.o \
 $(DEPS_DIR)/mbedtls/library/ssl_cli.o \

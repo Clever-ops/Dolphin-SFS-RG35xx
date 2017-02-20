@@ -6,24 +6,20 @@
 #include <string>
 
 #include "Common/CommonPaths.h"
+#include "Common/CommonTypes.h"
 #include "Common/FileUtil.h"
 #include "Common/NandPaths.h"
 
 #include "Core/Boot/Boot.h"
 #include "Core/Boot/Boot_DOL.h"
-#include "Core/HLE/HLE.h"
-#include "Core/HW/Memmap.h"
-#include "Core/HW/VideoInterface.h"
 #include "Core/IOS/FS/FileIO.h"
 #include "Core/IOS/IPC.h"
 #include "Core/PatchEngine.h"
 #include "Core/PowerPC/PowerPC.h"
 
-#include "DiscIO/Enums.h"
 #include "DiscIO/NANDContentLoader.h"
 #include "DiscIO/Volume.h"
 #include "DiscIO/VolumeCreator.h"
-#include "DiscIO/WiiWad.h"
 
 static u32 state_checksum(u32* buf, int len)
 {
@@ -87,7 +83,7 @@ bool CBoot::Boot_WiiWAD(const std::string& _pFilename)
   File::CreateFullPath(Common::GetTitleDataPath(titleID, Common::FROM_SESSION_ROOT));
 
   if (titleID == TITLEID_SYSMENU)
-    IOS::HLE::HLE_IPC_CreateVirtualFATFilesystem();
+    IOS::HLE::CreateVirtualFATFilesystem();
   // setup Wii memory
 
   u64 ios_title_id = 0x0000000100000000ULL | ContentLoader.GetIosVersion();
@@ -111,16 +107,6 @@ bool CBoot::Boot_WiiWAD(const std::string& _pFilename)
   // because the realmode code at 0x3400 initializes everything itself anyway.
   MSR = 0;
   PC = 0x3400;
-
-  // Pass the "#002 check"
-  // Apploader should write the IOS version and revision to 0x3140, and compare it
-  // to 0x3188 to pass the check, but we don't do it, and i don't know where to read the IOS rev...
-  // Currently we just write 0xFFFF for the revision, copy manually and it works fine :p
-
-  // TODO : figure it correctly : where should we read the IOS rev that the wad "needs" ?
-  Memory::Write_U16(ContentLoader.GetIosVersion(), 0x00003140);
-  Memory::Write_U16(0xFFFF, 0x00003142);
-  Memory::Write_U32(Memory::Read_U32(0x00003140), 0x00003188);
 
   // Load patches and run startup patches
   const std::unique_ptr<DiscIO::IVolume> pVolume(DiscIO::CreateVolumeFromFilename(_pFilename));

@@ -16,6 +16,8 @@
 //   Ioctlv: Depends on the handler
 // Replies may be sent immediately or asynchronously for ioctls and ioctlvs.
 
+#include "Core/IOS/IPC.h"
+
 #include <algorithm>
 #include <array>
 #include <cinttypes>
@@ -41,15 +43,23 @@
 #include "Core/IOS/ES/ES.h"
 #include "Core/IOS/FS/FS.h"
 #include "Core/IOS/FS/FileIO.h"
-#include "Core/IOS/IPC.h"
-#include "Core/IOS/Network/Net.h"
+#include "Core/IOS/MIOS.h"
+#include "Core/IOS/Network/IP/Top.h"
+#include "Core/IOS/Network/KD/NetKDRequest.h"
+#include "Core/IOS/Network/KD/NetKDTime.h"
+#include "Core/IOS/Network/NCD/Manage.h"
 #include "Core/IOS/Network/SSL.h"
+#include "Core/IOS/Network/Socket.h"
+#include "Core/IOS/Network/WD/Command.h"
 #include "Core/IOS/SDIO/SDIOSlot0.h"
 #include "Core/IOS/STM/STM.h"
 #include "Core/IOS/USB/Bluetooth/BTEmu.h"
 #include "Core/IOS/USB/Bluetooth/BTReal.h"
+#include "Core/IOS/USB/OH0/OH0.h"
+#include "Core/IOS/USB/OH0/OH0Device.h"
+#include "Core/IOS/USB/USB_HID/HIDv4.h"
 #include "Core/IOS/USB/USB_KBD.h"
-#include "Core/IOS/USB/USB_VEN.h"
+#include "Core/IOS/USB/USB_VEN/VEN.h"
 #include "Core/IOS/WFS/WFSI.h"
 #include "Core/IOS/WFS/WFSSRV.h"
 
@@ -57,10 +67,6 @@ namespace CoreTiming
 {
 struct EventType;
 }  // namespace CoreTiming
-
-#if defined(__LIBUSB__)
-#include "Core/IOS/USB/USB_HIDv4.h"
-#endif
 
 namespace IOS
 {
@@ -84,6 +90,8 @@ static CoreTiming::EventType* s_event_enqueue;
 static CoreTiming::EventType* s_event_sdio_notify;
 
 static u64 s_last_reply_time;
+
+static u64 s_active_title_id;
 
 static constexpr u64 ENQUEUE_REQUEST_FLAG = 0x100000000ULL;
 static constexpr u64 ENQUEUE_ACKNOWLEDGEMENT_FLAG = 0x200000000ULL;
@@ -109,6 +117,7 @@ struct IosMemoryValues
   u32 ram_vendor;
   u32 unknown_begin;
   u32 unknown_end;
+  u32 sysmenu_sync;
 };
 
 constexpr u32 ADDR_MEM1_SIZE = 0x3100;
@@ -154,216 +163,279 @@ constexpr u32 RAM_VENDOR_MIOS = 0xCAFEBABE;
 // The writes are usually contained in a single function that
 // mostly writes raw literals to the relevant locations.
 // e.g. IOS9, version 1034, content id 0x00000006, function at 0xffff6884
-constexpr std::array<IosMemoryValues, 31> ios_memory_values = {
+constexpr std::array<IosMemoryValues, 40> ios_memory_values = {
     {{
          9,          0x9040a,     0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,    MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,   0x93400000,       MEM2_ARENA_BEGIN,
          0x933E0000, 0x933E0000,  0x93400000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, PLACEHOLDER, PLACEHOLDER,
+         RAM_VENDOR, PLACEHOLDER, PLACEHOLDER,      0,
+     },
+     {
+         11,         0xb000a,     0x102506,         MEM1_SIZE,
+         MEM1_SIZE,  MEM1_END,    MEM1_ARENA_BEGIN, MEM1_ARENA_END,
+         MEM2_SIZE,  MEM2_SIZE,   0x93400000,       MEM2_ARENA_BEGIN,
+         0x933E0000, 0x933E0000,  0x93400000,       HOLLYWOOD_REVISION,
+         RAM_VENDOR, PLACEHOLDER, PLACEHOLDER,      0,
      },
      {
          12,         0xc020e,     0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,    MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,   0x93400000,       MEM2_ARENA_BEGIN,
          0x933E0000, 0x933E0000,  0x93400000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, PLACEHOLDER, PLACEHOLDER,
+         RAM_VENDOR, PLACEHOLDER, PLACEHOLDER,      0,
      },
      {
          13,         0xd0408,     0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,    MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,   0x93400000,       MEM2_ARENA_BEGIN,
          0x933E0000, 0x933E0000,  0x93400000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, PLACEHOLDER, PLACEHOLDER,
+         RAM_VENDOR, PLACEHOLDER, PLACEHOLDER,      0,
      },
      {
          14,         0xe0408,     0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,    MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,   0x93400000,       MEM2_ARENA_BEGIN,
          0x933E0000, 0x933E0000,  0x93400000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, PLACEHOLDER, PLACEHOLDER,
+         RAM_VENDOR, PLACEHOLDER, PLACEHOLDER,      0,
      },
      {
          15,         0xf0408,     0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,    MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,   0x93400000,       MEM2_ARENA_BEGIN,
          0x933E0000, 0x933E0000,  0x93400000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, PLACEHOLDER, PLACEHOLDER,
+         RAM_VENDOR, PLACEHOLDER, PLACEHOLDER,      0,
      },
      {
          17,         0x110408,    0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,    MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,   0x93400000,       MEM2_ARENA_BEGIN,
          0x933E0000, 0x933E0000,  0x93400000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, PLACEHOLDER, PLACEHOLDER,
+         RAM_VENDOR, PLACEHOLDER, PLACEHOLDER,      0,
+     },
+     {
+         20,         0x14000c,    0x102506,         MEM1_SIZE,
+         MEM1_SIZE,  MEM1_END,    MEM1_ARENA_BEGIN, MEM1_ARENA_END,
+         MEM2_SIZE,  MEM2_SIZE,   0x93400000,       MEM2_ARENA_BEGIN,
+         0x933E0000, 0x933E0000,  0x93400000,       HOLLYWOOD_REVISION,
+         RAM_VENDOR, PLACEHOLDER, PLACEHOLDER,      0,
      },
      {
          21,         0x15040f,    0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,    MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,   0x93400000,       MEM2_ARENA_BEGIN,
          0x933E0000, 0x933E0000,  0x93400000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, PLACEHOLDER, PLACEHOLDER,
+         RAM_VENDOR, PLACEHOLDER, PLACEHOLDER,      0,
      },
      {
          22,         0x16050e,    0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,    MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,   0x93400000,       MEM2_ARENA_BEGIN,
          0x933E0000, 0x933E0000,  0x93400000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, PLACEHOLDER, PLACEHOLDER,
+         RAM_VENDOR, PLACEHOLDER, PLACEHOLDER,      0,
      },
      {
          28,         0x1c070f,   0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93800000,       MEM2_ARENA_BEGIN,
          0x937E0000, 0x937E0000, 0x93800000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93800000, 0x93820000,
+         RAM_VENDOR, 0x93800000, 0x93820000,       0,
+     },
+     {
+         30,         0x1e0a10,   0x40308,          MEM1_SIZE,
+         MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
+         MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
+         0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          31,         0x1f0e18,   0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          33,         0x210e18,   0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          34,         0x220e18,   0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          35,         0x230e18,   0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          36,         0x240e18,   0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          37,         0x25161f,   0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          38,         0x26101c,   0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
+     },
+     {
+         40,         0x280911,   0x022308,         MEM1_SIZE,
+         MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
+         MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
+         0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          41,         0x290e17,   0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          43,         0x2b0e17,   0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          45,         0x2d0e17,   0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          46,         0x2e0e17,   0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          48,         0x30101c,   0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
+     },
+     {
+         50,         0x321319,   0x101008,         MEM1_SIZE,
+         MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
+         MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
+         0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
+     },
+     {
+         51,         0x331219,   0x071108,         MEM1_SIZE,
+         MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
+         MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
+         0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
+     },
+     {
+         52,         0x34161d,   0x101008,         MEM1_SIZE,
+         MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
+         MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
+         0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          53,         0x35161f,   0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          55,         0x37161f,   0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          56,         0x38161e,   0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          57,         0x39171f,   0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          58,         0x3a1820,   0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          59,         0x3b1c21,   0x101811,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
+     },
+     {
+         60,         0x3c181e,   0x112408,         MEM1_SIZE,
+         MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
+         MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
+         0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          61,         0x3d161e,   0x030110,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          62,         0x3e191e,   0x022712,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
+     },
+     {
+         70,         0x461a1f,   0x060309,         MEM1_SIZE,
+         MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
+         MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
+         0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          80,         0x501b20,   0x030310,         MEM1_SIZE,
          MEM1_SIZE,  MEM1_END,   MEM1_ARENA_BEGIN, MEM1_ARENA_END,
          MEM2_SIZE,  MEM2_SIZE,  0x93600000,       MEM2_ARENA_BEGIN,
          0x935E0000, 0x935E0000, 0x93600000,       HOLLYWOOD_REVISION,
-         RAM_VENDOR, 0x93600000, 0x93620000,
+         RAM_VENDOR, 0x93600000, 0x93620000,       0,
      },
      {
          257,
@@ -383,6 +455,7 @@ constexpr std::array<IosMemoryValues, 31> ios_memory_values = {
          0x93600000,
          HOLLYWOOD_REVISION,
          RAM_VENDOR_MIOS,
+         PLACEHOLDER,
          PLACEHOLDER,
          PLACEHOLDER,
      }}};
@@ -411,7 +484,15 @@ static void SDIO_EventNotify_CPUThread(u64 userdata, s64 cycles_late)
     device->EventNotify();
 }
 
-bool SetupMemory(u64 ios_title_id)
+// The title ID is a u64 where the first 32 bits are used for the title type.
+// For IOS title IDs, the type will always be 00000001 (system), and the lower 32 bits
+// are used for the IOS major version -- which is what we want here.
+u32 GetVersion()
+{
+  return static_cast<u32>(s_active_title_id);
+}
+
+static bool SetupMemory(u64 ios_title_id)
 {
   auto target_imv = std::find_if(
       ios_memory_values.begin(), ios_memory_values.end(),
@@ -449,7 +530,7 @@ bool SetupMemory(u64 ios_title_id)
   Memory::Write_U8(0xDE, ADDR_BOOT_FLAG);
   Memory::Write_U8(0xAD, ADDR_APPLOADER_FLAG);
   Memory::Write_U16(0xBEEF, ADDR_DEVKIT_BOOT_PROGRAM_VERSION);
-  Memory::Write_U32(0x00000000, ADDR_SYSMENU_SYNC);
+  Memory::Write_U32(target_imv->sysmenu_sync, ADDR_SYSMENU_SYNC);
   return true;
 }
 
@@ -465,7 +546,7 @@ std::shared_ptr<T> AddDevice(const char* device_name)
   return device;
 }
 
-void Reinit()
+static void AddStaticDevices()
 {
   std::lock_guard<std::mutex> lock(s_device_map_mutex);
   _assert_msg_(IOS, s_device_map.empty(), "Reinit called while already initialized");
@@ -483,7 +564,7 @@ void Reinit()
   AddDevice<Device::STMEventHook>("/dev/stm/eventhook");
   AddDevice<Device::FS>("/dev/fs");
 
-  // IOS allows two ES devices at a time
+  // IOS allows three ES devices at a time
   for (auto& es_device : s_es_handles)
     es_device = AddDevice<Device::ES>("/dev/es");
 
@@ -495,28 +576,23 @@ void Reinit()
   AddDevice<Device::NetIPTop>("/dev/net/ip/top");
   AddDevice<Device::NetSSL>("/dev/net/ssl");
   AddDevice<Device::USB_KBD>("/dev/usb/kbd");
-  AddDevice<Device::USB_VEN>("/dev/usb/ven");
   AddDevice<Device::SDIOSlot0>("/dev/sdio/slot0");
   AddDevice<Device::Stub>("/dev/sdio/slot1");
-#if defined(__LIBUSB__)
   AddDevice<Device::USB_HIDv4>("/dev/usb/hid");
-#else
-  AddDevice<Device::Stub>("/dev/usb/hid");
-#endif
+  AddDevice<Device::OH0>("/dev/usb/oh0");
   AddDevice<Device::Stub>("/dev/usb/oh1");
+  AddDevice<Device::USB_VEN>("/dev/usb/ven");
   AddDevice<Device::WFSSRV>("/dev/usb/wfssrv");
   AddDevice<Device::WFSI>("/dev/wfsi");
 }
 
 void Init()
 {
-  Reinit();
-
   s_event_enqueue = CoreTiming::RegisterEvent("IPCEvent", EnqueueEvent);
   s_event_sdio_notify = CoreTiming::RegisterEvent("SDIO_EventNotify", SDIO_EventNotify_CPUThread);
 }
 
-void Reset(bool hard)
+void Reset(const bool clear_devices)
 {
   CoreTiming::RemoveAllEvents(s_event_enqueue);
 
@@ -529,7 +605,7 @@ void Reset(bool hard)
     device.reset();
   }
 
-  if (hard)
+  if (clear_devices)
   {
     std::lock_guard<std::mutex> lock(s_device_map_mutex);
     s_device_map.clear();
@@ -544,6 +620,35 @@ void Reset(bool hard)
 void Shutdown()
 {
   Reset(true);
+}
+
+constexpr u64 BC_TITLE_ID = 0x0000000100000100;
+constexpr u64 MIOS_TITLE_ID = 0x0000000100000101;
+
+bool Reload(const u64 ios_title_id)
+{
+  // A real Wii goes through several steps before getting to MIOS.
+  //
+  // * The System Menu detects a GameCube disc and launches BC (1-100) instead of the game.
+  // * BC (similar to boot1) lowers the clock speed to the Flipper's and then launches boot2.
+  // * boot2 sees the lowered clock speed and launches MIOS (1-101) instead of the System Menu.
+  //
+  // Because we currently don't have boot1 and boot2, and BC is only ever used to launch MIOS
+  // (indirectly via boot2), we can just launch MIOS when BC is launched.
+  if (ios_title_id == BC_TITLE_ID)
+    return Reload(MIOS_TITLE_ID);
+
+  if (!SetupMemory(ios_title_id))
+    return false;
+
+  s_active_title_id = ios_title_id;
+  Reset(true);
+
+  if (ios_title_id == MIOS_TITLE_ID)
+    return MIOS::Load();
+
+  AddStaticDevices();
+  return true;
 }
 
 void SetDefaultContentFile(const std::string& file_name)
@@ -609,6 +714,10 @@ void DoState(PointerWrap& p)
   p.Do(s_request_queue);
   p.Do(s_reply_queue);
   p.Do(s_last_reply_time);
+  p.Do(s_active_title_id);
+
+  if (s_active_title_id == MIOS_TITLE_ID)
+    return;
 
   // We need to make sure all file handles are closed so IOS::HLE::Device::FS::DoState can
   // successfully save or re-create /tmp
@@ -642,6 +751,10 @@ void DoState(PointerWrap& p)
         }
         case Device::Device::DeviceType::FileIO:
           s_fdmap[i] = std::make_shared<Device::FileIO>(i, "");
+          s_fdmap[i]->DoState(p);
+          break;
+        case Device::Device::DeviceType::OH0:
+          s_fdmap[i] = std::make_shared<Device::OH0Device>(i, "");
           s_fdmap[i]->DoState(p);
           break;
         }
@@ -709,6 +822,10 @@ static s32 OpenDevice(const OpenRequest& request)
     device = GetUnusedESDevice();
     if (!device)
       return IPC_EESEXHAUSTED;
+  }
+  else if (request.path.find("/dev/usb/oh0/") == 0 && !GetDeviceByName(request.path))
+  {
+    device = std::make_shared<Device::OH0Device>(new_fd, request.path);
   }
   else if (request.path.find("/dev/") == 0)
   {
@@ -850,6 +967,13 @@ void UpdateDevices()
       entry.second->Update();
     }
   }
+}
+
+void UpdateWantDeterminism(const bool new_want_determinism)
+{
+  WiiSockMan::GetInstance().UpdateWantDeterminism(new_want_determinism);
+  for (const auto& device : s_device_map)
+    device.second->UpdateWantDeterminism(new_want_determinism);
 }
 }  // namespace HLE
 }  // namespace IOS

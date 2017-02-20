@@ -77,7 +77,6 @@ static bool s_bDiscChange = false;
 static bool s_bReset = false;
 static std::string s_author = "";
 static std::string s_discChange = "";
-static u64 s_titleID = 0;
 static u8 s_MD5[16];
 static u8 s_bongos, s_memcards;
 static u8 s_revision[20];
@@ -282,17 +281,17 @@ void SetPolledDevice()
 // NOTE: Host Thread
 void DoFrameStep()
 {
-  if (Core::GetState() == Core::CORE_PAUSE)
+  if (Core::GetState() == Core::State::Paused)
   {
     // if already paused, frame advance for 1 frame
     s_bFrameStep = true;
     Core::RequestRefreshInfo();
-    Core::SetState(Core::CORE_RUN);
+    Core::SetState(Core::State::Running);
   }
   else if (!s_bFrameStep)
   {
     // if not paused yet, pause immediately instead
-    Core::SetState(Core::CORE_PAUSE);
+    Core::SetState(Core::State::Paused);
   }
 }
 
@@ -401,11 +400,6 @@ void SignalDiscChange(const std::string& new_path)
 void SetReset(bool reset)
 {
   s_bReset = reset;
-}
-
-void SetTitleId(u64 title_id)
-{
-  s_titleID = title_id;
 }
 
 bool IsUsingPad(int controller)
@@ -527,11 +521,13 @@ void ChangeWiiPads(bool instantly)
   if (instantly && (s_controllers >> 4) == controllers)
     return;
 
+  const auto bt = std::static_pointer_cast<IOS::HLE::Device::BluetoothEmu>(
+      IOS::HLE::GetDeviceByName("/dev/usb/oh1/57e/305"));
   for (int i = 0; i < MAX_WIIMOTES; ++i)
   {
     g_wiimote_sources[i] = IsUsingWiimote(i) ? WIIMOTE_SRC_EMU : WIIMOTE_SRC_NONE;
-    if (!SConfig::GetInstance().m_bt_passthrough_enabled)
-      IOS::HLE::GetUsbPointer()->AccessWiiMote(i | 0x100)->Activate(IsUsingWiimote(i));
+    if (!SConfig::GetInstance().m_bt_passthrough_enabled && bt)
+      bt->AccessWiiMote(i | 0x100)->Activate(IsUsingWiimote(i));
   }
 }
 
@@ -579,17 +575,6 @@ bool BeginRecordingInput(int controllers)
     State::SaveAs(save_path);
     s_bRecordingFromSaveState = true;
 
-    // This is only done here if starting from save state because otherwise we won't have the
-    // titleid. Otherwise it's set in IOS::HLE::Device::ES.
-    // TODO: find a way to GetTitleDataPath() from Movie::Init()
-    if (SConfig::GetInstance().bWii)
-    {
-      if (File::Exists(Common::GetTitleDataPath(s_titleID, Common::FROM_SESSION_ROOT) +
-                       "banner.bin"))
-        Movie::s_bClearSave = false;
-      else
-        Movie::s_bClearSave = true;
-    }
     std::thread md5thread(GetMD5);
     md5thread.detach();
     GetSettings();
@@ -869,9 +854,9 @@ void RecordInput(GCPadStatus* PadStatus, int controllerID)
 
   CheckPadStatus(PadStatus, controllerID);
 
-  EnsureTmpInputSize((size_t)(s_currentByte + 8));
-  memcpy(&(tmpInput[s_currentByte]), &s_padState, 8);
-  s_currentByte += 8;
+  EnsureTmpInputSize((size_t)(s_currentByte + sizeof(ControllerState)));
+  memcpy(&tmpInput[s_currentByte], &s_padState, sizeof(ControllerState));
+  s_currentByte += sizeof(ControllerState);
   s_totalBytes = s_currentByte;
 }
 
@@ -1106,11 +1091,11 @@ void LoadInput(const std::string& filename)
         }
         else
         {
-          const ptrdiff_t frame = mismatch_index / 8;
+          const ptrdiff_t frame = mismatch_index / sizeof(ControllerState);
           ControllerState curPadState;
-          memcpy(&curPadState, &tmpInput[frame * 8], 8);
+          memcpy(&curPadState, &tmpInput[frame * sizeof(ControllerState)], sizeof(ControllerState));
           ControllerState movPadState;
-          memcpy(&movPadState, &movInput[frame * 8], 8);
+          memcpy(&movPadState, &movInput[frame * sizeof(ControllerState)], sizeof(ControllerState));
           PanicAlertT(
               "Warning: You loaded a save whose movie mismatches on frame %td. You should load "
               "another save before continuing, or load this state with read-only mode off. "
@@ -1190,10 +1175,10 @@ void PlayController(GCPadStatus* PadStatus, int controllerID)
   if (!IsPlayingInput() || !IsUsingPad(controllerID) || tmpInput == nullptr)
     return;
 
-  if (s_currentByte + 8 > s_totalBytes)
+  if (s_currentByte + sizeof(ControllerState) > s_totalBytes)
   {
-    PanicAlertT("Premature movie end in PlayController. %u + 8 > %u", (u32)s_currentByte,
-                (u32)s_totalBytes);
+    PanicAlertT("Premature movie end in PlayController. %u + %zu > %u", (u32)s_currentByte,
+                sizeof(ControllerState), (u32)s_totalBytes);
     EndPlayInput(!s_bReadOnly);
     return;
   }
@@ -1204,8 +1189,8 @@ void PlayController(GCPadStatus* PadStatus, int controllerID)
   memset(PadStatus, 0, sizeof(GCPadStatus));
   PadStatus->err = e;
 
-  memcpy(&s_padState, &(tmpInput[s_currentByte]), 8);
-  s_currentByte += 8;
+  memcpy(&s_padState, &tmpInput[s_currentByte], sizeof(ControllerState));
+  s_currentByte += sizeof(ControllerState);
 
   PadStatus->triggerLeft = s_padState.TriggerL;
   PadStatus->triggerRight = s_padState.TriggerR;
@@ -1491,6 +1476,9 @@ void GetSettings()
   s_bNetPlay = NetPlay::IsNetPlayRunning();
   if (SConfig::GetInstance().bWii)
   {
+    u64 title_id = SConfig::GetInstance().m_title_id;
+    s_bClearSave =
+        !File::Exists(Common::GetTitleDataPath(title_id, Common::FROM_SESSION_ROOT) + "banner.bin");
     s_language = SConfig::GetInstance().m_wii_language;
   }
   else

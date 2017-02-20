@@ -52,20 +52,13 @@
 #include "Core/ConfigManager.h"
 #include "Core/HW/DVDInterface.h"
 #include "Core/HW/Memmap.h"
-#include "Core/HW/Wiimote.h"
 #include "Core/IOS/ES/ES.h"
 #include "Core/IOS/ES/Formats.h"
-#include "Core/IOS/USB/Bluetooth/BTEmu.h"
-#include "Core/IOS/USB/Bluetooth/WiimoteDevice.h"
-#include "Core/Movie.h"
 #include "Core/PowerPC/PowerPC.h"
+#include "Core/WiiRoot.h"
 #include "Core/ec_wii.h"
 #include "DiscIO/NANDContentLoader.h"
 #include "DiscIO/Volume.h"
-
-#ifdef _WIN32
-#include <Windows.h>
-#endif
 
 namespace IOS
 {
@@ -125,7 +118,8 @@ void ES::OpenInternal()
     m_TitleID = contentLoader.GetTitleID();
 
     m_TitleIDs.clear();
-    DiscIO::cUIDsys::AccessInstance().GetTitleIDs(m_TitleIDs);
+    DiscIO::cUIDsys uid_sys{Common::FromWhichRoot::FROM_SESSION_ROOT};
+    uid_sys.GetTitleIDs(m_TitleIDs);
     // uncomment if  ES_GetOwnedTitlesCount / ES_GetOwnedTitles is implemented
     // m_TitleIDsOwned.clear();
     // DiscIO::cUIDsys::AccessInstance().GetTitleIDs(m_TitleIDsOwned, true);
@@ -209,7 +203,7 @@ void ES::Close()
   m_ContentAccessMap.clear();
   m_TitleIDs.clear();
   m_TitleID = -1;
-  m_AccessIdentID = 0x6000000;
+  m_AccessIdentID = 0;
 
   INFO_LOG(IOS_ES, "ES: Close");
   m_is_active = false;
@@ -321,6 +315,8 @@ IPCCommandResult ES::IOCtlV(const IOCtlVRequest& request)
     return Decrypt(request);
   case IOCTL_ES_LAUNCH:
     return Launch(request);
+  case IOCTL_ES_LAUNCHBC:
+    return LaunchBC(request);
   case IOCTL_ES_CHECKKOREAREGION:
     return CheckKoreaRegion(request);
   case IOCTL_ES_GETDEVICECERT:
@@ -408,7 +404,7 @@ IPCCommandResult ES::AddContentStart(const IOCtlVRequest& request)
   if (title_id != m_addtitle_tmd.GetTitleId())
   {
     ERROR_LOG(IOS_ES, "IOCTL_ES_ADDCONTENTSTART: title id %016" PRIx64 " != "
-                      "TMD title id %016lx, ignoring",
+                      "TMD title id %016" PRIx64 ", ignoring",
               title_id, m_addtitle_tmd.GetTitleId());
   }
 
@@ -1107,7 +1103,6 @@ IPCCommandResult ES::Launch(const IOCtlVRequest& request)
 {
   _dbg_assert_(IOS_ES, request.in_vectors.size() == 2);
   bool bSuccess = false;
-  bool bReset = false;
 
   u64 TitleID = Memory::Read_U64(request.in_vectors[0].address);
   u32 view = Memory::Read_U32(request.in_vectors[1].address);
@@ -1115,6 +1110,9 @@ IPCCommandResult ES::Launch(const IOCtlVRequest& request)
   u32 devicetype = Memory::Read_U32(request.in_vectors[1].address + 12);
   u64 titleid = Memory::Read_U64(request.in_vectors[1].address + 16);
   u16 access = Memory::Read_U16(request.in_vectors[1].address + 24);
+
+  NOTICE_LOG(IOS_ES, "IOCTL_ES_LAUNCH %016" PRIx64 " %08x %016" PRIx64 " %08x %016" PRIx64 " %04x",
+             TitleID, view, ticketid, devicetype, titleid, access);
 
   // ES_LAUNCH should probably reset thw whole state, which at least means closing all open files.
   // leaving them open through ES_LAUNCH may cause hangs and other funky behavior
@@ -1172,61 +1170,36 @@ IPCCommandResult ES::Launch(const IOCtlVRequest& request)
   }
   else
   {
-    bool* wiiMoteConnected = new bool[MAX_BBMOTES];
-    if (!SConfig::GetInstance().m_bt_passthrough_enabled)
-    {
-      BluetoothEmu* s_Usb = GetUsbPointer();
-      for (unsigned int i = 0; i < MAX_BBMOTES; i++)
-        wiiMoteConnected[i] = s_Usb->m_WiiMotes[i].IsConnected();
-    }
-
-    Reset(true);
-    Reinit();
-    SetupMemory(ios_to_load);
-    bReset = true;
-
-    if (!SConfig::GetInstance().m_bt_passthrough_enabled)
-    {
-      BluetoothEmu* s_Usb = GetUsbPointer();
-      for (unsigned int i = 0; i < MAX_BBMOTES; i++)
-      {
-        if (wiiMoteConnected[i])
-        {
-          s_Usb->m_WiiMotes[i].Activate(false);
-          s_Usb->m_WiiMotes[i].Activate(true);
-        }
-        else
-        {
-          s_Usb->m_WiiMotes[i].Activate(false);
-        }
-      }
-    }
-    delete[] wiiMoteConnected;
+    ResetAfterLaunch(ios_to_load);
     SetDefaultContentFile(tContentFile);
-  }
-
-  // Note: If we just reset the PPC, don't write anything to the command buffer. This
-  // could clobber the DOL we just loaded.
-
-  ERROR_LOG(IOS_ES, "IOCTL_ES_LAUNCH %016" PRIx64 " %08x %016" PRIx64 " %08x %016" PRIx64 " %04x",
-            TitleID, view, ticketid, devicetype, titleid, access);
-  //                     IOCTL_ES_LAUNCH 0001000248414341 00000001 0001c0fef3df2cfa 00000000
-  //                     0001000248414341 ffff
-
-  // This is necessary because Reset(true) above deleted this object.  Ew.
-
-  if (!bReset)
-  {
-    // The command type is overwritten with the reply type.
-    Memory::Write_U32(IPC_REPLY, request.address);
-    // IOS also writes back the command that was responded to in the FD field.
-    Memory::Write_U32(IPC_CMD_IOCTLV, request.address + 8);
   }
 
   // Generate a "reply" to the IPC command.  ES_LAUNCH is unique because it
   // involves restarting IOS; IOS generates two acknowledgements in a row.
+  // Note: If we just reset the PPC, don't write anything to the command buffer. This
+  // could clobber the DOL we just loaded.
   EnqueueCommandAcknowledgement(request.address, 0);
   return GetNoReply();
+}
+
+IPCCommandResult ES::LaunchBC(const IOCtlVRequest& request)
+{
+  if (request.in_vectors.size() != 0 || request.io_vectors.size() != 0)
+    return GetDefaultReply(ES_PARAMETER_SIZE_OR_ALIGNMENT);
+
+  // Here, IOS checks the clock speed and prevents ioctlv 0x25 from being used in GC mode.
+  // An alternative way to do this is to check whether the current active IOS is MIOS.
+  if (GetVersion() == 0x101)
+    return GetDefaultReply(ES_PARAMETER_SIZE_OR_ALIGNMENT);
+
+  ResetAfterLaunch(0x0000000100000100);
+  EnqueueCommandAcknowledgement(request.address, 0);
+  return GetNoReply();
+}
+
+void ES::ResetAfterLaunch(const u64 ios_to_load) const
+{
+  Reload(ios_to_load);
 }
 
 IPCCommandResult ES::CheckKoreaRegion(const IOCtlVRequest& request)
@@ -1316,59 +1289,14 @@ u32 ES::ES_DIVerify(const std::vector<u8>& tmd)
   File::CreateFullPath(tmd_path);
   File::CreateFullPath(Common::GetTitleDataPath(tmd_title_id, Common::FROM_SESSION_ROOT));
 
-  Movie::SetTitleId(tmd_title_id);
-  std::string save_path = Common::GetTitleDataPath(tmd_title_id, Common::FROM_SESSION_ROOT);
-  if (Movie::IsRecordingInput())
-  {
-    // TODO: Check for the actual save data
-    if (File::Exists(save_path + "banner.bin"))
-      Movie::SetClearSave(false);
-    else
-      Movie::SetClearSave(true);
-  }
-
-  // TODO: Force the game to save to another location, instead of moving the user's save.
-  if (Movie::IsPlayingInput() && Movie::IsConfigSaved() && Movie::IsStartingFromClearSave())
-  {
-    if (File::Exists(save_path + "banner.bin"))
-    {
-      if (File::Exists(save_path + "../backup/"))
-      {
-        // The last run of this game must have been to play back a movie, so their save is already
-        // backed up.
-        File::DeleteDirRecursively(save_path);
-      }
-      else
-      {
-#ifdef _WIN32
-        MoveFile(UTF8ToTStr(save_path).c_str(), UTF8ToTStr(save_path + "../backup/").c_str());
-#else
-        File::CopyDir(save_path, save_path + "../backup/");
-        File::DeleteDirRecursively(save_path);
-#endif
-      }
-    }
-  }
-  else if (File::Exists(save_path + "../backup/"))
-  {
-    // Delete the save made by a previous movie, and copy back the user's save.
-    if (File::Exists(save_path + "banner.bin"))
-      File::DeleteDirRecursively(save_path);
-#ifdef _WIN32
-    MoveFile(UTF8ToTStr(save_path + "../backup/").c_str(), UTF8ToTStr(save_path).c_str());
-#else
-    File::CopyDir(save_path + "../backup/", save_path);
-    File::DeleteDirRecursively(save_path + "../backup/");
-#endif
-  }
-
   if (!File::Exists(tmd_path))
   {
     File::IOFile tmd_file(tmd_path, "wb");
     if (!tmd_file.WriteBytes(tmd.data(), tmd.size()))
       ERROR_LOG(IOS_ES, "DIVerify failed to write disc TMD to NAND.");
   }
-  DiscIO::cUIDsys::AccessInstance().AddTitle(tmd_title_id);
+  DiscIO::cUIDsys uid_sys{Common::FromWhichRoot::FROM_SESSION_ROOT};
+  uid_sys.AddTitle(tmd_title_id);
   // DI_VERIFY writes to title.tmd, which is read and cached inside the NAND Content Manager.
   // clear the cache to avoid content access mismatches.
   DiscIO::CNANDContentManager::Access().ClearCache();

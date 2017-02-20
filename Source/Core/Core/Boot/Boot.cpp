@@ -2,6 +2,9 @@
 // Licensed under GPLv2+
 // Refer to the license.txt file included.
 
+#include "Core/Boot/Boot.h"
+
+#include <string>
 #include <vector>
 
 #include <zlib.h>
@@ -10,10 +13,10 @@
 #include "Common/CommonPaths.h"
 #include "Common/CommonTypes.h"
 #include "Common/FileUtil.h"
+#include "Common/Logging/Log.h"
 #include "Common/MsgHandler.h"
 #include "Common/StringUtil.h"
 
-#include "Core/Boot/Boot.h"
 #include "Core/Boot/Boot_DOL.h"
 #include "Core/ConfigManager.h"
 #include "Core/Core.h"
@@ -23,7 +26,6 @@
 #include "Core/HW/DVDInterface.h"
 #include "Core/HW/EXI/EXI_DeviceIPL.h"
 #include "Core/HW/Memmap.h"
-#include "Core/HW/ProcessorInterface.h"
 #include "Core/HW/VideoInterface.h"
 #include "Core/Host.h"
 #include "Core/IOS/IPC.h"
@@ -36,7 +38,6 @@
 #include "DiscIO/Enums.h"
 #include "DiscIO/NANDContentLoader.h"
 #include "DiscIO/Volume.h"
-#include "DiscIO/VolumeCreator.h"
 
 bool CBoot::DVDRead(u64 dvd_offset, u32 output_address, u32 length, bool decrypt)
 {
@@ -277,8 +278,6 @@ bool CBoot::BootUp()
       PanicAlertT("Warning - starting ISO in wrong console mode!");
     }
 
-    std::string game_id = DVDInterface::GetVolume().GetGameID();
-
     std::vector<u8> tmd_buffer = pVolume.GetTMD();
     if (!tmd_buffer.empty())
     {
@@ -387,6 +386,11 @@ bool CBoot::BootUp()
       PowerPC::DBATUpdated();
       PowerPC::IBATUpdated();
 
+      // Because there is no TMD to get the requested system (IOS) version from,
+      // we default to IOS58, which is the version used by the Homebrew Channel.
+      if (dolLoader.IsWii())
+        SetupWiiMemory(0x000000010000003a);
+
       dolLoader.Load();
       PC = dolLoader.GetEntryPoint();
     }
@@ -421,7 +425,9 @@ bool CBoot::BootUp()
     // Poor man's bootup
     if (_StartupPara.bWii)
     {
-      SetupWiiMemory(0x0000000100000050ULL);
+      // Because there is no TMD to get the requested system (IOS) version from,
+      // we default to IOS58, which is the version used by the Homebrew Channel.
+      SetupWiiMemory(0x000000010000003a);
     }
     else
     {

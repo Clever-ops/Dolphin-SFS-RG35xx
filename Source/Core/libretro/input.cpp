@@ -294,7 +294,6 @@ void Libretro::init_descriptors(void)
 
 GCPadStatus Pad::GetStatus(int pad_num)
 {
-   auto lock = ControllerEmu::GetStateLock(); /* needed ? */
    //   DEBUG_VAR(pad_num);
    GCPadStatus pad = {};
 

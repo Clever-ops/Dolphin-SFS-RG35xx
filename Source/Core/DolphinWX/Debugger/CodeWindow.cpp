@@ -28,13 +28,11 @@
 #include "Common/CommonTypes.h"
 #include "Common/StringUtil.h"
 #include "Common/SymbolDB.h"
+#include "Core/ConfigManager.h"
 #include "Core/Core.h"
 #include "Core/Debugger/Debugger_SymbolMap.h"
 #include "Core/Debugger/PPCDebugInterface.h"
 #include "Core/HW/CPU.h"
-#include "Core/HW/Memmap.h"
-#include "Core/HW/SystemTimers.h"
-#include "Core/Host.h"
 #include "Core/PowerPC/BreakPoints.h"
 #include "Core/PowerPC/Gekko.h"
 #include "Core/PowerPC/JitInterface.h"
@@ -309,7 +307,7 @@ void CCodeWindow::SingleStep()
   if (CPU::IsStepping())
   {
     PowerPC::CoreMode old_mode = PowerPC::GetMode();
-    PowerPC::SetMode(PowerPC::MODE_INTERPRETER);
+    PowerPC::SetMode(PowerPC::CoreMode::Interpreter);
     PowerPC::breakpoints.ClearAllTemporary();
     CPU::StepOpcode(&sync_event);
     sync_event.WaitFor(std::chrono::milliseconds(20));
@@ -361,7 +359,7 @@ void CCodeWindow::StepOut()
     using clock = std::chrono::steady_clock;
     clock::time_point timeout = clock::now() + std::chrono::seconds(5);
     PowerPC::CoreMode old_mode = PowerPC::GetMode();
-    PowerPC::SetMode(PowerPC::MODE_INTERPRETER);
+    PowerPC::SetMode(PowerPC::CoreMode::Interpreter);
 
     // Loop until either the current instruction is a return instruction with no Link flag
     // or a breakpoint is detected so it can step at the breakpoint. If the PC is currently
@@ -457,7 +455,7 @@ void CCodeWindow::UpdateLists()
 
 void CCodeWindow::UpdateCallstack()
 {
-  if (Core::GetState() == Core::CORE_STOPPING)
+  if (Core::GetState() == Core::State::Stopping)
     return;
 
   callstack->Clear();
@@ -482,7 +480,7 @@ void CCodeWindow::OnCPUMode(wxCommandEvent& event)
   switch (event.GetId())
   {
   case IDM_INTERPRETER:
-    PowerPC::SetMode(UseInterpreter() ? PowerPC::MODE_INTERPRETER : PowerPC::MODE_JIT);
+    PowerPC::SetMode(UseInterpreter() ? PowerPC::CoreMode::Interpreter : PowerPC::CoreMode::JIT);
     break;
   case IDM_BOOT_TO_PAUSE:
     SConfig::GetInstance().bBootToPause = event.IsChecked();

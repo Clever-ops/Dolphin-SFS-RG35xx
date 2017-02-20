@@ -73,27 +73,25 @@ endif()
 option(DSPTOOL "Build dsptool" OFF)
 
 list(APPEND CMAKE_MODULE_PATH
-	${CMAKE_SOURCE_DIR}/CMakeTests
+        ${CMAKE_SOURCE_DIR}/CMake
 )
 
 # Support functions
 include(CheckAndAddFlag)
 include(CheckCCompilerFlag)
+include(DolphinCompileDefinitions)
+
+# Enable folders for IDE
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Libraries to link
 set(LIBS)
 
 # Set up paths
-if(APPLE)
-	# The gettext module will install the translations unconditionally.
-	# Redirect the installation to a build directory where it does no harm.
-	set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR}/install-dummy)
-else()
-	set(bindir  ${CMAKE_INSTALL_PREFIX}/bin               CACHE PATH "bindir")
-	set(datadir ${CMAKE_INSTALL_PREFIX}/share/dolphin-emu CACHE PATH "datadir")
-	set(mandir  ${CMAKE_INSTALL_PREFIX}/share/man         CACHE PATH "mandir")
-	add_definitions(-DDATA_DIR="${datadir}/")
-endif()
+set(bindir  ${CMAKE_INSTALL_PREFIX}/bin               CACHE PATH "bindir")
+set(datadir ${CMAKE_INSTALL_PREFIX}/share/dolphin-emu CACHE PATH "datadir")
+set(mandir  ${CMAKE_INSTALL_PREFIX}/share/man         CACHE PATH "mandir")
+add_definitions(-DDATA_DIR="${datadir}/")
 
 if(CMAKE_SYSROOT)
 	# If we should use a sysroot, tell pkg-config to search for packages in there, not on the host
@@ -111,7 +109,22 @@ include(CCache)
 
 # for revision info
 find_package(Git)
-if(GIT_FOUND AND NOT DOLPHIN_WC_REVISION)
+if(GIT_FOUND)
+	# make sure version information gets re-run when the current Git HEAD changes
+	execute_process(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} rev-parse --git-path HEAD
+		OUTPUT_VARIABLE dolphin_git_head_filename
+		OUTPUT_STRIP_TRAILING_WHITESPACE)
+	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${dolphin_git_head_filename}")
+
+	execute_process(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} rev-parse --symbolic-full-name HEAD
+		OUTPUT_VARIABLE dolphin_git_head_symbolic
+		OUTPUT_STRIP_TRAILING_WHITESPACE)
+	execute_process(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+		COMMAND ${GIT_EXECUTABLE} rev-parse --git-path ${dolphin_git_head_symbolic}
+		OUTPUT_VARIABLE dolphin_git_head_symbolic_filename
+		OUTPUT_STRIP_TRAILING_WHITESPACE)
+	set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${dolphin_git_head_symbolic_filename}")
+
 	# defines DOLPHIN_WC_REVISION
 	EXECUTE_PROCESS(WORKING_DIRECTORY ${PROJECT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} rev-parse HEAD
 		OUTPUT_VARIABLE DOLPHIN_WC_REVISION
@@ -193,6 +206,12 @@ endif()
 
 if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
 	check_and_add_flag(EXCEPTIONS /EHsc)
+	dolphin_compile_definitions(-D_DEBUG DEBUG_ONLY)
+
+	string(APPEND CMAKE_EXE_LINKER_FLAGS " /NXCOMPAT")
+	string(APPEND CMAKE_EXE_LINKER_FLAGS " /BASE:0x00400000")
+	string(APPEND CMAKE_EXE_LINKER_FLAGS " /DYNAMICBASE:NO")
+	string(APPEND CMAKE_EXE_LINKER_FLAGS " /FIXED")
 
 	# Only MSBuild needs this, other generators will compile one file at a time
 	if(CMAKE_GENERATOR MATCHES "Visual Studio")
@@ -225,10 +244,10 @@ else()
 	check_and_add_flag(VISIBILITY_INLINES_HIDDEN -fvisibility-inlines-hidden)
 	check_and_add_flag(VISIBILITY_HIDDEN -fvisibility=hidden)
 
-	check_c_compiler_flag(-fomit-frame-pointer FLAG_C_FOMIT_FRAME_POINTER)
-	if(FLAG_C_FOMIT_FRAME_POINTER)
-		add_compile_options($<$<CONFIG:Release>:-fomit-frame-pointer>)
-	endif()
+	check_and_add_flag(FOMIT_FRAME_POINTER -fomit-frame-pointer RELEASE_ONLY)
+
+	dolphin_compile_definitions(_DEBUG DEBUG_ONLY)
+	check_and_add_flag(GGDB -ggdb DEBUG_ONLY)
 
 	if(NOT ANDROID AND _M_X86_64)
 		# PIE is required on Android, but not supported with the x86_64 jit currently
@@ -237,17 +256,10 @@ else()
 		if(NO_PIE_UPSTREAM)
 			set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -no-pie")
 		endif()
-		check_c_compiler_flag("-nopie" NO_PIE_PATCHED)
-		if(NO_PIE_PATCHED)
-			set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -nopie")
-		endif()
 	endif()
 endif()
 
 if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
-	# This doesn't play well with the packaging script that doesn't understand @rpath
-	set(CMAKE_MACOSX_RPATH OFF)
-
 	if(NOT OSX_USE_DEFAULT_SEARCH_PATH)
 		# Hack up the path to prioritize the path to built-in OS libraries to
 		# increase the chance of not depending on a bunch of copies of them
@@ -334,19 +346,13 @@ if(NOT CMAKE_BUILD_TYPE)
 		"Build type (Release/Debug/RelWithDebInfo/MinSizeRel)" FORCE)
 endif()
 
-
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	add_definitions(-D_DEBUG)
-	check_and_add_flag(GGDB -ggdb)
-
-	option(ENABLE_GPROF "Enable gprof profiling (must be using Debug build)" OFF)
-	if(ENABLE_GPROF)
-		check_and_add_flag(HAVE_PG -pg)
-		if(NOT FLAG_C_HAVE_PG)
-			message(FATAL_ERROR "Compiler option -pg is not supported")
-		endif()
-		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
+option(ENABLE_GPROF "Enable gprof profiling (must be using Debug build)" OFF)
+if(ENABLE_GPROF)
+	check_and_add_flag(HAVE_PG -pg)
+	if(NOT FLAG_C_HAVE_PG)
+		message(FATAL_ERROR "Compiler option -pg is not supported")
 	endif()
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pg")
 endif()
 
 if(FASTLOG)
@@ -430,85 +436,6 @@ if (OPENGL_GL)
 	include_directories(${OPENGL_INCLUDE_DIR})
 endif()
 
-if(ENABLE_ALSA)
-	find_package(ALSA)
-	if(ALSA_FOUND)
-		add_definitions(-DHAVE_ALSA=1)
-		message(STATUS "ALSA found, enabling ALSA sound backend")
-	else()
-		add_definitions(-DHAVE_ALSA=0)
-		message(STATUS "ALSA NOT found, disabling ALSA sound backend")
-	endif()
-else()
-	message(STATUS "ALSA explicitly disabled, disabling ALSA sound backend")
-endif()
-
-if(ENABLE_AO)
-	check_lib(AO ao ao QUIET)
-	if(AO_FOUND)
-		add_definitions(-DHAVE_AO=1)
-		message(STATUS "ao found, enabling ao sound backend")
-	else()
-		add_definitions(-DHAVE_AO=0)
-		message(STATUS "ao NOT found, disabling ao sound backend")
-	endif()
-else()
-	message(STATUS "ao explicitly disabled, disabling ao sound backend")
-endif()
-
-if(ENABLE_BLUEZ)
-	check_lib(BLUEZ bluez bluez QUIET)
-	if(BLUEZ_FOUND)
-		add_definitions(-DHAVE_BLUEZ=1)
-		message(STATUS "bluez found, enabling bluetooth support")
-	else()
-		add_definitions(-DHAVE_BLUEZ=0)
-		message(STATUS "bluez NOT found, disabling bluetooth support")
-	endif()
-else()
-	message(STATUS "bluez explicitly disabled, disabling bluetooth support")
-endif()
-
-if(ENABLE_PULSEAUDIO)
-	check_lib(PULSEAUDIO libpulse pulse QUIET)
-	if(PULSEAUDIO_FOUND)
-		add_definitions(-DHAVE_PULSEAUDIO=1)
-		message(STATUS "PulseAudio found, enabling PulseAudio sound backend")
-	else()
-		add_definitions(-DHAVE_PULSEAUDIO=0)
-		message(STATUS "PulseAudio NOT found, disabling PulseAudio sound backend")
-	endif()
-else()
-	message(STATUS "PulseAudio explicitly disabled, disabling PulseAudio sound backend")
-endif()
-
-if(ENABLE_OPENAL)
-	find_package(OpenAL)
-	if(OPENAL_FOUND)
-		add_definitions(-DHAVE_OPENAL=1)
-		include_directories(${OPENAL_INCLUDE_DIR})
-		message(STATUS "OpenAL found, enabling OpenAL sound backend")
-	else()
-		add_definitions(-DHAVE_OPENAL=0)
-		message(STATUS "OpenAL NOT found, disabling OpenAL sound backend")
-	endif()
-else()
-	message(STATUS "OpenAL explicitly disabled, disabling OpenAL sound backend")
-endif()
-
-if(ENABLE_LLVM)
-	find_package(LLVM)
-	if (LLVM_FOUND)
-		add_definitions(-DHAS_LLVM=1)
-		set(HAS_LLVM 1)
-
-		include_directories(${LLVM_INCLUDE_DIRS})
-		list(APPEND LIBS ${LLVM_LIBRARIES})
-
-		message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
-	endif()
-endif()
-
 set(USE_X11 0)
 
 if(UNIX AND NOT APPLE AND NOT ANDROID AND NOT ENABLE_HEADLESS)
@@ -571,7 +498,7 @@ if(NOT ANDROID)
 		option(PA_USE_ASIO "Enable PortAudio support for ASIO" OFF)
 		option(PA_USE_DS "Enable PortAudio support for DirectSound" OFF)
 		option(PA_USE_WDMKS "Enable PortAudio support for WDMKS" OFF)
-		add_subdirectory(Externals/portaudio)
+		add_subdirectory(Externals/portaudio EXCLUDE_FROM_ALL)
 		set(PORTAUDIO_LIBRARIES portaudio_static)
 	endif()
 endif()
@@ -710,6 +637,7 @@ else()
 	set(PNG png)
 endif()
 
+find_package(OpenAL)
 if(OPENAL_FOUND)
 	if(NOT APPLE)
 		check_lib(SOUNDTOUCH soundtouch SoundTouch soundtouch/SoundTouch.h QUIET)
@@ -720,25 +648,6 @@ if(OPENAL_FOUND)
 		message(STATUS "Using static soundtouch from Externals")
 		add_subdirectory(Externals/soundtouch)
 		include_directories(Externals)
-	endif()
-endif()
-
-if(ENABLE_SDL)
-	find_package(SDL2)
-	if(SDL2_FOUND)
-		message(STATUS "Using shared SDL2")
-		add_definitions(-DHAVE_SDL=1)
-		include_directories(${SDL2_INCLUDE_DIR})
-	else()
-		# SDL2 not found, try SDL
-		find_package(SDL OPTIONAL)
-		if(SDL_FOUND)
-			message(STATUS "Using shared SDL")
-			add_definitions(-DHAVE_SDL=1)
-			include_directories(${SDL_INCLUDE_DIR})
-		else()
-			message(STATUS "SDL NOT found, disabling SDL input")
-		endif()
 	endif()
 endif()
 
@@ -866,16 +775,6 @@ if(NOT ANDROID)
 	add_definitions(-DHAVE_HIDAPI=1)
 endif()
 
-find_library(OPENSLES_LIBRARIES NAMES OpenSLES)
-find_path(OPENSLES_INCLUDE_DIR NAMES SLES/OpenSLES.h)
-
-if (OPENSLES_LIBRARIES AND OPENSLES_INCLUDE_DIR)
-	set(OPENSLES_FOUND 1)
-	add_definitions(-DHAVE_OPENSLES=1)
-	include_directories(${OPENSLES_INCLUDE_DIR})
-	message(STATUS "OpenSLES found, enabling OpenSLES sound backend")
-endif()
-
 if(NOT DISABLE_WX)
 	find_package(wxWidgets COMPONENTS core aui adv)
 
@@ -932,10 +831,7 @@ if(NOT DISABLE_WX)
 		# These definitions and includes are used when building dolphin against wx,
 		# not when building wx itself (see wxw3 CMakeLists.txt for that)
 		if(APPLE)
-			add_definitions(-D__WXOSX_COCOA__)
 		elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux|FreeBSD")
-			add_definitions(-D__WXGTK__)
-
 			# Check for required libs
 			check_lib(GTHREAD2 gthread-2.0 gthread-2.0 glib/gthread.h REQUIRED)
 			check_lib(PANGOCAIRO pangocairo pangocairo pango/pangocairo.h REQUIRED)
@@ -943,7 +839,6 @@ if(NOT DISABLE_WX)
 			# Required for wxUSE_STACKWALKER in Externals/wxWidgets3/wx/wxgtk.h
 			find_package(Backtrace REQUIRED)
 		elseif(WIN32)
-			add_definitions(-D__WXMSW__)
 		else()
 			message(FATAL_ERROR "wxWidgets in Externals is not compatible with your platform")
 		endif()
@@ -970,13 +865,10 @@ else()
 	set(DOLPHIN_WC_IS_STABLE "0")
 endif()
 
-file(WRITE ${PROJECT_BINARY_DIR}/Source/Core/Common/scmrev.h
-	"#define SCM_REV_STR \"" ${DOLPHIN_WC_REVISION} "\"\n"
-	"#define SCM_DESC_STR \"" ${DOLPHIN_WC_DESCRIBE} "\"\n"
-	"#define SCM_BRANCH_STR \"" ${DOLPHIN_WC_BRANCH} "\"\n"
-	"#define SCM_IS_MASTER " ${DOLPHIN_WC_IS_STABLE} "\n"
-	"#define SCM_DISTRIBUTOR_STR \"" ${DISTRIBUTOR} "\"\n"
-	)
+configure_file(
+	"${PROJECT_SOURCE_DIR}/Source/Core/Common/scmrev.h.in"
+	"${PROJECT_BINARY_DIR}/Source/Core/Common/scmrev.h"
+)
 include_directories("${PROJECT_BINARY_DIR}/Source/Core")
 
 ########################################
@@ -989,7 +881,7 @@ if(GTEST_FOUND AND USE_SHARED_GTEST)
 else()
 	message(STATUS "Using static gtest from Externals")
 	include_directories(Externals/gtest/include)
-	add_subdirectory(Externals/gtest)
+	add_subdirectory(Externals/gtest EXCLUDE_FROM_ALL)
 endif()
 
 enable_testing()
@@ -1002,13 +894,13 @@ add_subdirectory(Source)
 ########################################
 # Install shared data files
 #
-if(NOT APPLE)
-	install(DIRECTORY Data/Sys/ DESTINATION ${datadir}/sys PATTERN)
+if(NOT CMAKE_SYSTEM_NAME MATCHES "Darwin|Windows")
+  install(DIRECTORY Data/Sys/ DESTINATION ${datadir}/sys PATTERN)
 endif()
-if(NOT ${CMAKE_SYSTEM_NAME} MATCHES "Linux|FreeBSD|OpenBSD|Darwin")
+if(NOT CMAKE_SYSTEM_NAME MATCHES "Linux|FreeBSD|OpenBSD|Darwin")
 	install(FILES Data/license.txt DESTINATION ${datadir})
 endif()
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux|FreeBSD|OpenBSD")
+if(CMAKE_SYSTEM_NAME MATCHES "Linux|FreeBSD|OpenBSD")
 	# Install the application icon and menu item
 	install(FILES Data/dolphin-emu.svg
 		DESTINATION ${CMAKE_INSTALL_PREFIX}/share/icons/hicolor/scalable/apps)

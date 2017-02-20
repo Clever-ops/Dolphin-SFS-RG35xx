@@ -22,9 +22,9 @@
 #include "Core/HW/VideoInterface.h"
 #include "Core/HW/WII_IPC.h"
 #include "Core/IOS/IPC.h"
+#include "Core/Movie.h"
 #include "Core/State.h"
 #include "Core/WiiRoot.h"
-#include "DiscIO/NANDContentLoader.h"
 
 namespace HW
 {
@@ -51,8 +51,6 @@ void Init()
   if (SConfig::GetInstance().bWii)
   {
     Core::InitializeWiiRoot(Core::g_want_determinism);
-    DiscIO::cUIDsys::AccessInstance().UpdateLocation();
-    DiscIO::CSharedContent::AccessInstance().UpdateLocation();
     IOS::Init();
     IOS::HLE::Init();  // Depends on Memory
   }
@@ -60,12 +58,11 @@ void Init()
 
 void Shutdown()
 {
+  // IOS should always be shut down regardless of bWii because it can be running in GC mode (MIOS).
+  IOS::HLE::Shutdown();  // Depends on Memory
+  IOS::Shutdown();
   if (SConfig::GetInstance().bWii)
-  {
-    IOS::HLE::Shutdown();  // Depends on Memory
-    IOS::Shutdown();
     Core::ShutdownWiiRoot();
-  }
 
   SystemTimers::Shutdown();
   CPU::Shutdown();

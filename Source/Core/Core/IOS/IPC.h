@@ -45,19 +45,16 @@ enum IPCCommandType : u32
   IPC_REPLY = 8,
 };
 
-// Init
+// Init events and devices
 void Init();
-
-// Needs to be called after Reset(true) to recreate the device tree
-void Reinit();
-
-bool SetupMemory(u64 ios_title_id);
-
+// Reset all events and devices (and optionally clear them)
+void Reset(bool clear_devices = false);
 // Shutdown
 void Shutdown();
 
-// Reset
-void Reset(bool hard = false);
+// Reload IOS (to a possibly different version); set up memory and devices.
+bool Reload(u64 ios_title_id);
+u32 GetVersion();
 
 // Do State
 void DoState(PointerWrap& p);
@@ -76,6 +73,8 @@ void Update();
 
 // Update Devices
 void UpdateDevices();
+
+void UpdateWantDeterminism(bool new_want_determinism);
 
 void ExecuteCommand(u32 address);
 

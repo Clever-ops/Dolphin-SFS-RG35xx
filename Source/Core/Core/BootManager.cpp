@@ -86,6 +86,8 @@ private:
   int Volume;
   int m_wii_language;
   float m_EmulationSpeed;
+  float m_OCFactor;
+  bool m_OCEnable;
   std::string strBackend;
   std::string sBackend;
   std::string m_strGPUDeterminismMode;
@@ -120,6 +122,8 @@ void ConfigCache::SaveConfig(const SConfig& config)
   sBackend = config.sBackend;
   m_strGPUDeterminismMode = config.m_strGPUDeterminismMode;
   m_wii_language = config.m_wii_language;
+  m_OCFactor = config.m_OCFactor;
+  m_OCEnable = config.m_OCEnable;
 
   std::copy(std::begin(g_wiimote_sources), std::end(g_wiimote_sources), std::begin(iWiimoteSource));
   std::copy(std::begin(config.m_SIDevice), std::end(config.m_SIDevice), std::begin(Pads));
@@ -194,6 +198,8 @@ void ConfigCache::RestoreConfig(SConfig* config)
   config->m_strVideoBackend = strBackend;
   config->sBackend = sBackend;
   config->m_strGPUDeterminismMode = m_strGPUDeterminismMode;
+  config->m_OCFactor = m_OCFactor;
+  config->m_OCEnable = m_OCEnable;
   VideoBackendBase::ActivateBackend(config->m_strVideoBackend);
 }
 
@@ -222,8 +228,8 @@ bool BootCore(const std::string& _rFilename)
 
   StartUp.m_BootType = SConfig::BOOT_ISO;
   StartUp.m_strFilename = _rFilename;
-  SConfig::GetInstance().m_LastFilename = _rFilename;
-  SConfig::GetInstance().SaveSettings();
+  StartUp.m_LastFilename = _rFilename;
+  StartUp.SaveSettings();
   StartUp.bRunCompareClient = false;
   StartUp.bRunCompareServer = false;
 
@@ -260,19 +266,18 @@ bool BootCore(const std::string& _rFilename)
     core_section->Get("ProgressiveScan", &StartUp.bProgressive, StartUp.bProgressive);
     core_section->Get("PAL60", &StartUp.bPAL60, StartUp.bPAL60);
     core_section->Get("GameCubeLanguage", &StartUp.SelectedLanguage, StartUp.SelectedLanguage);
-    if (core_section->Get("EmulationSpeed", &SConfig::GetInstance().m_EmulationSpeed,
-                          SConfig::GetInstance().m_EmulationSpeed))
+    if (core_section->Get("EmulationSpeed", &StartUp.m_EmulationSpeed, StartUp.m_EmulationSpeed))
       config_cache.bSetEmulationSpeed = true;
 
-    if (dsp_section->Get("Volume", &SConfig::GetInstance().m_Volume,
-                         SConfig::GetInstance().m_Volume))
+    if (dsp_section->Get("Volume", &StartUp.m_Volume, StartUp.m_Volume))
       config_cache.bSetVolume = true;
-    dsp_section->Get("EnableJIT", &SConfig::GetInstance().m_DSPEnableJIT,
-                     SConfig::GetInstance().m_DSPEnableJIT);
-    dsp_section->Get("Backend", &SConfig::GetInstance().sBackend, SConfig::GetInstance().sBackend);
+    dsp_section->Get("EnableJIT", &StartUp.m_DSPEnableJIT, StartUp.m_DSPEnableJIT);
+    dsp_section->Get("Backend", &StartUp.sBackend, StartUp.sBackend);
     VideoBackendBase::ActivateBackend(StartUp.m_strVideoBackend);
     core_section->Get("GPUDeterminismMode", &StartUp.m_strGPUDeterminismMode,
                       StartUp.m_strGPUDeterminismMode);
+    core_section->Get("Overclock", &StartUp.m_OCFactor, StartUp.m_OCFactor);
+    core_section->Get("OverclockEnable", &StartUp.m_OCEnable, StartUp.m_OCEnable);
 
     for (unsigned int i = 0; i < MAX_SI_CHANNELS; ++i)
     {
@@ -280,14 +285,20 @@ bool BootCore(const std::string& _rFilename)
       controls_section->Get(StringFromFormat("PadType%u", i), &source, -1);
       if (source >= SIDEVICE_NONE && source < SIDEVICE_COUNT)
       {
-        SConfig::GetInstance().m_SIDevice[i] = (SIDevices)source;
+        StartUp.m_SIDevice[i] = static_cast<SIDevices>(source);
         config_cache.bSetPads[i] = true;
       }
     }
 
+    Core::g_aspect_wide = StartUp.bWii;
+
     // Wii settings
     if (StartUp.bWii)
     {
+      IniFile::Section* wii_section = game_ini.GetOrCreateSection("Wii");
+      wii_section->Get("Widescreen", &Core::g_aspect_wide, !!StartUp.m_wii_aspect_ratio);
+      wii_section->Get("Language", &StartUp.m_wii_language, StartUp.m_wii_language);
+
       int source;
       for (unsigned int i = 0; i < MAX_WIIMOTES; ++i)
       {
@@ -308,9 +319,6 @@ bool BootCore(const std::string& _rFilename)
         g_wiimote_sources[WIIMOTE_BALANCE_BOARD] = source;
         WiimoteReal::ChangeWiimoteSource(WIIMOTE_BALANCE_BOARD, source);
       }
-
-      IniFile::Section* wii_section = game_ini.GetOrCreateSection("Wii");
-      wii_section->Get("Language", &StartUp.m_wii_language, StartUp.m_wii_language);
     }
   }
 
@@ -346,16 +354,17 @@ bool BootCore(const std::string& _rFilename)
     StartUp.bEnableCheats = g_NetPlaySettings.m_EnableCheats;
     StartUp.bDSPHLE = g_NetPlaySettings.m_DSPHLE;
     StartUp.bEnableMemcardSdWriting = g_NetPlaySettings.m_WriteToMemcard;
+    StartUp.bCopyWiiSaveNetplay = g_NetPlaySettings.m_CopyWiiSave;
     StartUp.iCPUCore = g_NetPlaySettings.m_CPUcore;
     StartUp.SelectedLanguage = g_NetPlaySettings.m_SelectedLanguage;
     StartUp.bOverrideGCLanguage = g_NetPlaySettings.m_OverrideGCLanguage;
     StartUp.bProgressive = g_NetPlaySettings.m_ProgressiveScan;
     StartUp.bPAL60 = g_NetPlaySettings.m_PAL60;
-    SConfig::GetInstance().m_DSPEnableJIT = g_NetPlaySettings.m_DSPEnableJIT;
-    SConfig::GetInstance().m_OCEnable = g_NetPlaySettings.m_OCEnable;
-    SConfig::GetInstance().m_OCFactor = g_NetPlaySettings.m_OCFactor;
-    SConfig::GetInstance().m_EXIDevice[0] = g_NetPlaySettings.m_EXIDevice[0];
-    SConfig::GetInstance().m_EXIDevice[1] = g_NetPlaySettings.m_EXIDevice[1];
+    StartUp.m_DSPEnableJIT = g_NetPlaySettings.m_DSPEnableJIT;
+    StartUp.m_OCEnable = g_NetPlaySettings.m_OCEnable;
+    StartUp.m_OCFactor = g_NetPlaySettings.m_OCFactor;
+    StartUp.m_EXIDevice[0] = g_NetPlaySettings.m_EXIDevice[0];
+    StartUp.m_EXIDevice[1] = g_NetPlaySettings.m_EXIDevice[1];
     config_cache.bSetEXIDevice[0] = true;
     config_cache.bSetEXIDevice[1] = true;
   }
@@ -382,7 +391,7 @@ bool BootCore(const std::string& _rFilename)
   }
 
   if (StartUp.bWii)
-    SConfig::GetInstance().SaveSettingsToSysconf();
+    StartUp.SaveSettingsToSysconf();
 
   // Run the game
   // Init the core
@@ -405,6 +414,7 @@ void RestoreConfig()
 {
   SConfig::GetInstance().LoadSettingsFromSysconf();
   SConfig::GetInstance().m_strGameID = "00000000";
+  SConfig::GetInstance().m_title_id = 0;
   config_cache.RestoreConfig(&SConfig::GetInstance());
 }
 

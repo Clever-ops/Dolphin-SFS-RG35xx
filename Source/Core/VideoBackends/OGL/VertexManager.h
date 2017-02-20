@@ -4,6 +4,11 @@
 
 #pragma once
 
+#include <memory>
+#include <vector>
+
+#include "Common/CommonTypes.h"
+#include "Common/GL/GLUtil.h"
 #include "VideoCommon/NativeVertexFormat.h"
 #include "VideoCommon/VertexManagerBase.h"
 
@@ -27,7 +32,10 @@ class VertexManager : public VertexManagerBase
 public:
   VertexManager();
   ~VertexManager();
-  NativeVertexFormat* CreateNativeVertexFormat(const PortableVertexDeclaration& vtx_decl) override;
+
+  std::unique_ptr<NativeVertexFormat>
+  CreateNativeVertexFormat(const PortableVertexDeclaration& vtx_decl) override;
+
   void CreateDeviceObjects() override;
   void DestroyDeviceObjects() override;
 
