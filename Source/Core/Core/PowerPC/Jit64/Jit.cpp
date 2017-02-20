@@ -771,7 +771,7 @@ const u8* Jit64::DoJit(u32 em_address, PPCAnalyst::CodeBuffer* code_buf, JitBloc
       SetJumpTarget(extException);
       TEST(32, PPCSTATE(msr), Imm32(0x0008000));
       FixupBranch noExtIntEnable = J_CC(CC_Z, true);
-      TEST(32, M(&ProcessorInterface::m_InterruptCause),
+      TEST(32, M(&PowerPC::jit_data.rw->m_InterruptCause),
            Imm32(ProcessorInterface::INT_CAUSE_CP | ProcessorInterface::INT_CAUSE_PE_TOKEN |
                  ProcessorInterface::INT_CAUSE_PE_FINISH));
       FixupBranch noCPInt = J_CC(CC_Z, true);

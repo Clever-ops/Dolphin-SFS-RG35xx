@@ -157,9 +157,6 @@ static void EFB_Write(u32 data, u32 addr)
   }
 }
 
-BatTable ibat_table;
-BatTable dbat_table;
-
 static void GenerateDSIException(u32 _EffectiveAddress, bool _bWrite);
 
 template <XCheckTLBFlag flag, typename T, bool never_translate = false>
@@ -618,7 +615,7 @@ bool IsOptimizableRAMAddress(const u32 address)
   //
   // We store whether an access can be optimized to an unchecked access
   // in dbat_table.
-  u32 bat_result = dbat_table[address >> BAT_INDEX_SHIFT];
+  u32 bat_result = jit_data.rw->dbat_table[address >> BAT_INDEX_SHIFT];
   return (bat_result & 2) != 0;
 }
 
@@ -767,7 +764,7 @@ u32 IsOptimizableMMIOAccess(u32 address, u32 accessSize)
   // Translate address
   // If we also optimize for TLB mappings, we'd have to clear the
   // JitCache on each TLB invalidation.
-  if (!TranslateBatAddess(dbat_table, &address))
+  if (!TranslateBatAddess(jit_data.rw->dbat_table, &address))
     return 0;
 
   // Check whether the address is an aligned address of an MMIO register.
@@ -789,7 +786,7 @@ bool IsOptimizableGatherPipeWrite(u32 address)
   // Translate address, only check BAT mapping.
   // If we also optimize for TLB mappings, we'd have to clear the
   // JitCache on each TLB invalidation.
-  if (!TranslateBatAddess(dbat_table, &address))
+  if (!TranslateBatAddess(jit_data.rw->dbat_table, &address))
     return false;
 
   // Check whether the translated address equals the address in WPAR.
@@ -1207,20 +1204,20 @@ static void UpdateFakeMMUBat(BatTable& bat_table, u32 start_addr)
 
 void DBATUpdated()
 {
-  dbat_table = {};
-  UpdateBATs(dbat_table, SPR_DBAT0U);
+  jit_data.rw->dbat_table = {};
+  UpdateBATs(jit_data.rw->dbat_table, SPR_DBAT0U);
   bool extended_bats = SConfig::GetInstance().bWii && HID4.SBE;
   if (extended_bats)
-    UpdateBATs(dbat_table, SPR_DBAT4U);
+    UpdateBATs(jit_data.rw->dbat_table, SPR_DBAT4U);
   if (Memory::m_pFakeVMEM)
   {
     // In Fake-MMU mode, insert some extra entries into the BAT tables.
-    UpdateFakeMMUBat(dbat_table, 0x40000000);
-    UpdateFakeMMUBat(dbat_table, 0x70000000);
+    UpdateFakeMMUBat(jit_data.rw->dbat_table, 0x40000000);
+    UpdateFakeMMUBat(jit_data.rw->dbat_table, 0x70000000);
   }
 
 #ifndef _ARCH_32
-  Memory::UpdateLogicalMemory(dbat_table);
+  Memory::UpdateLogicalMemory(jit_data.rw->dbat_table);
 #endif
 
   // IsOptimizable*Address and dcbz depends on the BAT mapping, so we need a flush here.
@@ -1229,16 +1226,16 @@ void DBATUpdated()
 
 void IBATUpdated()
 {
-  ibat_table = {};
-  UpdateBATs(ibat_table, SPR_IBAT0U);
+  jit_data.rw->ibat_table = {};
+  UpdateBATs(jit_data.rw->ibat_table, SPR_IBAT0U);
   bool extended_bats = SConfig::GetInstance().bWii && HID4.SBE;
   if (extended_bats)
-    UpdateBATs(ibat_table, SPR_IBAT4U);
+    UpdateBATs(jit_data.rw->ibat_table, SPR_IBAT4U);
   if (Memory::m_pFakeVMEM)
   {
     // In Fake-MMU mode, insert some extra entries into the BAT tables.
-    UpdateFakeMMUBat(ibat_table, 0x40000000);
-    UpdateFakeMMUBat(ibat_table, 0x70000000);
+    UpdateFakeMMUBat(jit_data.rw->ibat_table, 0x40000000);
+    UpdateFakeMMUBat(jit_data.rw->ibat_table, 0x70000000);
   }
   JitInterface::ClearSafe();
 }
@@ -1250,7 +1247,7 @@ void IBATUpdated()
 template <const XCheckTLBFlag flag>
 static TranslateAddressResult TranslateAddress(const u32 address)
 {
-  u32 bat_result = (IsOpcodeFlag(flag) ? ibat_table : dbat_table)[address >> BAT_INDEX_SHIFT];
+  u32 bat_result = (IsOpcodeFlag(flag) ? jit_data.rw->ibat_table : jit_data.rw->dbat_table)[address >> BAT_INDEX_SHIFT];
   if (bat_result & 1)
   {
     u32 result_addr = (bat_result & ~3) | (address & 0x0001FFFF);

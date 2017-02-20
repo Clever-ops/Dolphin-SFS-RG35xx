@@ -105,7 +105,7 @@ FixupBranch EmuCodeBlock::CheckIfSafeAddress(const OpArg& reg_value, X64Reg reg_
 
   // Perform lookup to see if we can use fast path.
   SHR(32, R(scratch), Imm8(PowerPC::BAT_INDEX_SHIFT));
-  TEST(32, MScaled(scratch, SCALE_4, PtrOffset(&PowerPC::dbat_table[0])), Imm32(2));
+  TEST(32, MScaled(scratch, SCALE_4, PtrOffset(&PowerPC::jit_data.rw->dbat_table[0])), Imm32(2));
 
   if (scratch == reg_addr)
     POP(scratch);
@@ -821,9 +821,6 @@ void EmuCodeBlock::avx_op(void (XEmitter::*avxOp)(X64Reg, X64Reg, const OpArg&, 
   }
 }
 
-alignas(16) static const u64 psMantissaTruncate[2] = {0xFFFFFFFFF8000000ULL, 0xFFFFFFFFF8000000ULL};
-alignas(16) static const u64 psRoundBit[2] = {0x8000000, 0x8000000};
-
 // Emulate the odd truncation/rounding that the PowerPC does on the RHS operand before
 // a single precision multiply. To be precise, it drops the low 28 bits of the mantissa,
 // rounding to nearest as it does.
@@ -835,16 +832,16 @@ void EmuCodeBlock::Force25BitPrecision(X64Reg output, const OpArg& input, X64Reg
     // mantissa = (mantissa & ~0xFFFFFFF) + ((mantissa & (1ULL << 27)) << 1);
     if (input.IsSimpleReg() && cpu_info.bAVX)
     {
-      VPAND(tmp, input.GetSimpleReg(), M(psRoundBit));
-      VPAND(output, input.GetSimpleReg(), M(psMantissaTruncate));
+      VPAND(tmp, input.GetSimpleReg(), M(PowerPC::jit_data.ro->psRoundBit));
+      VPAND(output, input.GetSimpleReg(), M(PowerPC::jit_data.ro->psMantissaTruncate));
       PADDQ(output, R(tmp));
     }
     else
     {
       if (!input.IsSimpleReg(output))
         MOVAPD(output, input);
-      avx_op(&XEmitter::VPAND, &XEmitter::PAND, tmp, R(output), M(psRoundBit), true, true);
-      PAND(output, M(psMantissaTruncate));
+      avx_op(&XEmitter::VPAND, &XEmitter::PAND, tmp, R(output), M(PowerPC::jit_data.ro->psRoundBit), true, true);
+      PAND(output, M(PowerPC::jit_data.ro->psMantissaTruncate));
       PADDQ(output, R(tmp));
     }
   }
@@ -853,9 +850,6 @@ void EmuCodeBlock::Force25BitPrecision(X64Reg output, const OpArg& input, X64Reg
     MOVAPD(output, input);
   }
 }
-
-alignas(16) static u32 temp32;
-alignas(16) static u64 temp64;
 
 // Since the following float conversion functions are used in non-arithmetic PPC float instructions,
 // they must convert floats bitexact and never flush denormals to zero or turn SNaNs into QNaNs.
@@ -869,15 +863,7 @@ alignas(16) static u64 temp64;
 // In case it does happen, phire's more accurate implementation of ConvertDoubleToSingle() is
 // reproduced below.
 
-//#define MORE_ACCURATE_DOUBLETOSINGLE
 #ifdef MORE_ACCURATE_DOUBLETOSINGLE
-
-alignas(16) static const __m128i double_exponent = _mm_set_epi64x(0, 0x7ff0000000000000);
-alignas(16) static const __m128i double_fraction = _mm_set_epi64x(0, 0x000fffffffffffff);
-alignas(16) static const __m128i double_sign_bit = _mm_set_epi64x(0, 0x8000000000000000);
-alignas(16) static const __m128i double_explicit_top_bit = _mm_set_epi64x(0, 0x0010000000000000);
-alignas(16) static const __m128i double_top_two_bits = _mm_set_epi64x(0, 0xc000000000000000);
-alignas(16) static const __m128i double_bottom_bits = _mm_set_epi64x(0, 0x07ffffffe0000000);
 
 // This is the same algorithm used in the interpreter (and actual hardware)
 // The documentation states that the conversion of a double with an outside the
@@ -889,7 +875,7 @@ void EmuCodeBlock::ConvertDoubleToSingle(X64Reg dst, X64Reg src)
   MOVSD(XMM1, R(src));
 
   // Grab Exponent
-  PAND(XMM1, M(&double_exponent));
+  PAND(XMM1, M(&PowerPC::jit_data.ro->double_exponent));
   PSRLQ(XMM1, 52);
   MOVD_xmm(R(RSCRATCH), XMM1);
 
@@ -908,15 +894,15 @@ void EmuCodeBlock::ConvertDoubleToSingle(X64Reg dst, X64Reg src)
 
   // xmm1 = fraction | 0x0010000000000000
   MOVSD(XMM1, R(src));
-  PAND(XMM1, M(&double_fraction));
-  POR(XMM1, M(&double_explicit_top_bit));
+  PAND(XMM1, M(&PowerPC::jit_data.ro->double_fraction));
+  POR(XMM1, M(&PowerPC::jit_data.ro->double_explicit_top_bit));
 
   // fraction >> shift
   PSRLQ(XMM1, R(XMM0));
 
   // OR the sign bit in.
   MOVSD(XMM0, R(src));
-  PAND(XMM0, M(&double_sign_bit));
+  PAND(XMM0, M(&PowerPC::jit_data.ro->double_sign_bit));
   PSRLQ(XMM0, 32);
   POR(XMM1, R(XMM0));
 
@@ -929,12 +915,12 @@ void EmuCodeBlock::ConvertDoubleToSingle(X64Reg dst, X64Reg src)
 
   // We want bits 0, 1
   MOVSD(XMM1, R(src));
-  PAND(XMM1, M(&double_top_two_bits));
+  PAND(XMM1, M(&PowerPC::jit_data.ro->double_top_two_bits));
   PSRLQ(XMM1, 32);
 
   // And 5 through to 34
   MOVSD(XMM0, R(src));
-  PAND(XMM0, M(&double_bottom_bits));
+  PAND(XMM0, M(&PowerPC::jit_data.ro->double_bottom_bits));
   PSRLQ(XMM0, 29);
 
   // OR them togther
@@ -947,16 +933,6 @@ void EmuCodeBlock::ConvertDoubleToSingle(X64Reg dst, X64Reg src)
 
 #else   // MORE_ACCURATE_DOUBLETOSINGLE
 
-alignas(16) static const __m128i double_sign_bit = _mm_set_epi64x(0xffffffffffffffff,
-                                                                  0x7fffffffffffffff);
-alignas(16) static const __m128i single_qnan_bit = _mm_set_epi64x(0xffffffffffffffff,
-                                                                  0xffffffffffbfffff);
-alignas(16) static const __m128i double_qnan_bit = _mm_set_epi64x(0xffffffffffffffff,
-                                                                  0xfff7ffffffffffff);
-
-// Smallest positive double that results in a normalized single.
-alignas(16) static const double min_norm_single = std::numeric_limits<float>::min();
-
 void EmuCodeBlock::ConvertDoubleToSingle(X64Reg dst, X64Reg src)
 {
   // Most games have flush-to-zero enabled, which causes the single -> double -> single process here
@@ -966,8 +942,8 @@ void EmuCodeBlock::ConvertDoubleToSingle(X64Reg dst, X64Reg src)
   // Here, check to see if the source is small enough that it will result in a denormal, and pass it
   // to the x87 unit
   // if it is.
-  avx_op(&XEmitter::VPAND, &XEmitter::PAND, XMM0, R(src), M(&double_sign_bit), true, true);
-  UCOMISD(XMM0, M(&min_norm_single));
+  avx_op(&XEmitter::VPAND, &XEmitter::PAND, XMM0, R(src), M(&PowerPC::jit_data.ro->double_sign_bit), true, true);
+  UCOMISD(XMM0, M(&PowerPC::jit_data.ro->min_norm_single));
   FixupBranch nanConversion = J_CC(CC_P, true);
   FixupBranch denormalConversion = J_CC(CC_B, true);
   CVTSD2SS(dst, R(src));
@@ -981,14 +957,14 @@ void EmuCodeBlock::ConvertDoubleToSingle(X64Reg dst, X64Reg src)
   FixupBranch continue1 = J_CC(CC_C, true);
   // Clear the quiet bit of the SNaN, which was 0 (signalling) but got set to 1 (quiet) by
   // conversion.
-  ANDPS(dst, M(&single_qnan_bit));
+  ANDPS(dst, M(&PowerPC::jit_data.ro->single_qnan_bit));
   FixupBranch continue2 = J(true);
 
   SetJumpTarget(denormalConversion);
-  MOVSD(M(&temp64), src);
-  FLD(64, M(&temp64));
-  FSTP(32, M(&temp32));
-  MOVSS(dst, M(&temp32));
+  MOVSD(M(&PowerPC::jit_data.rw->temp64), src);
+  FLD(64, M(&PowerPC::jit_data.rw->temp64));
+  FSTP(32, M(&PowerPC::jit_data.rw->temp32));
+  MOVSS(dst, M(&PowerPC::jit_data.rw->temp32));
   FixupBranch continue3 = J(true);
   SwitchToNearCode();
 
@@ -1024,7 +1000,7 @@ void EmuCodeBlock::ConvertSingleToDouble(X64Reg dst, X64Reg src, bool src_is_gpr
   SetJumpTarget(nanConversion);
   TEST(32, R(gprsrc), Imm32(0x00400000));
   FixupBranch continue1 = J_CC(CC_NZ, true);
-  ANDPD(dst, M(&double_qnan_bit));
+  ANDPD(dst, M(&PowerPC::jit_data.ro->double_qnan_bit));
   FixupBranch continue2 = J(true);
   SwitchToNearCode();
 

@@ -287,13 +287,13 @@ void Jit64::mfspr(UGeckoInstruction inst)
     // cost of calling out to C for this is actually significant.
     // Scale downcount by the CPU overclocking factor.
     CVTSI2SS(XMM0, PPCSTATE(downcount));
-    MULSS(XMM0, M(&CoreTiming::g_last_OC_factor_inverted));
+    MULSS(XMM0, M(&PowerPC::jit_data.rw->g_last_OC_factor_inverted));
     CVTSS2SI(RDX, R(XMM0));  // RDX is downcount scaled by the overclocking factor
-    MOV(32, R(RAX), M(&CoreTiming::g_slice_length));
+    MOV(32, R(RAX), M(&PowerPC::jit_data.rw->g_slice_length));
     SUB(64, R(RAX), R(RDX));  // cycles since the last CoreTiming::Advance() event is (slicelength -
                               // Scaled_downcount)
-    ADD(64, R(RAX), M(&CoreTiming::g_global_timer));
-    SUB(64, R(RAX), M(&CoreTiming::g_fake_TB_start_ticks));
+    ADD(64, R(RAX), M(&PowerPC::jit_data.rw->g_global_timer));
+    SUB(64, R(RAX), M(&PowerPC::jit_data.rw->g_fake_TB_start_ticks));
     // It might seem convenient to correct the timer for the block position here for even more
     // accurate
     // timing, but as of currently, this can break games. If we end up reading a time *after* the
@@ -309,7 +309,7 @@ void Jit64::mfspr(UGeckoInstruction inst)
     // a / 12 = (a * 0xAAAAAAAAAAAAAAAB) >> 67
     MOV(64, R(RDX), Imm64(0xAAAAAAAAAAAAAAABULL));
     MUL(64, R(RDX));
-    MOV(64, R(RAX), M(&CoreTiming::g_fake_TB_start_value));
+    MOV(64, R(RAX), M(&PowerPC::jit_data.rw->g_fake_TB_start_value));
     SHR(64, R(RDX), Imm8(3));
     ADD(64, R(RAX), R(RDX));
     MOV(64, PPCSTATE(spr[SPR_TL]), R(RAX));
@@ -407,7 +407,7 @@ void Jit64::mtmsr(UGeckoInstruction inst)
   FixupBranch noExceptionsPending = J_CC(CC_Z);
 
   // Check if a CP interrupt is waiting and keep the GPU emulation in sync (issue 4336)
-  TEST(32, M(&ProcessorInterface::m_InterruptCause), Imm32(ProcessorInterface::INT_CAUSE_CP));
+  TEST(32, M(&PowerPC::jit_data.rw->m_InterruptCause), Imm32(ProcessorInterface::INT_CAUSE_CP));
   FixupBranch cpInt = J_CC(CC_NZ);
 
   MOV(32, PPCSTATE(pc), Imm32(js.compilerPC + 4));
@@ -656,15 +656,10 @@ void Jit64::mffsx(UGeckoInstruction inst)
   MOVSD(fpr.RX(d), R(XMM0));
 }
 
-// MXCSR = s_fpscr_to_mxcsr[FPSCR & 7]
-static const u32 s_fpscr_to_mxcsr[] = {
-    0x1F80, 0x7F80, 0x5F80, 0x3F80, 0x9F80, 0xFF80, 0xDF80, 0xBF80,
-};
-
 // Needs value of FPSCR in RSCRATCH.
 void Jit64::UpdateMXCSR()
 {
-  LEA(64, RSCRATCH2, M(&s_fpscr_to_mxcsr));
+  LEA(64, RSCRATCH2, M(&PowerPC::jit_data.ro->s_fpscr_to_mxcsr));
   AND(32, R(RSCRATCH), Imm32(7));
   LDMXCSR(MComplex(RSCRATCH2, RSCRATCH, SCALE_4, 0));
 }
@@ -730,7 +725,7 @@ void Jit64::mtfsfix(UGeckoInstruction inst)
 
   // Field 7 contains NI and RN.
   if (inst.CRFD == 7)
-    LDMXCSR(M(&s_fpscr_to_mxcsr[imm & 7]));
+    LDMXCSR(M(&PowerPC::jit_data.ro->s_fpscr_to_mxcsr[imm & 7]));
 }
 
 void Jit64::mtfsfx(UGeckoInstruction inst)
