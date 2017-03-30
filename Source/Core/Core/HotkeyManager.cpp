@@ -9,10 +9,12 @@
 
 #include "Common/Common.h"
 #include "Common/CommonTypes.h"
+#include "Common/StringUtil.h"
 
 #include "InputCommon/ControllerEmu/Control/Input.h"
 #include "InputCommon/ControllerEmu/ControlGroup/Buttons.h"
 #include "InputCommon/ControllerEmu/ControlGroup/ControlGroup.h"
+#include "InputCommon/ControllerEmu/Setting/BooleanSetting.h"
 #include "InputCommon/GCPadStatus.h"
 
 const std::string hotkey_labels[] = {
@@ -225,11 +227,6 @@ ControllerEmu::ControlGroup* GetHotkeyGroup(HotkeyGroup group)
   return static_cast<HotkeyManager*>(s_config.GetController(0))->GetHotkeyGroup(group);
 }
 
-ControllerEmu::ControlGroup* GetOptionsGroup()
-{
-  return static_cast<HotkeyManager*>(s_config.GetController(0))->GetOptionsGroup();
-}
-
 void Shutdown()
 {
   s_config.ClearControllers();
@@ -269,14 +266,6 @@ HotkeyManager::HotkeyManager()
       m_keys[group]->controls.emplace_back(new ControllerEmu::Input(hotkey_labels[key]));
     }
   }
-
-  groups.emplace_back(m_options = new ControllerEmu::ControlGroup(_trans("Options")));
-  m_options->boolean_settings.emplace_back(
-      std::make_unique<ControllerEmu::ControlGroup::BackgroundInputSetting>(
-          _trans("Background Input")));
-  m_options->boolean_settings.emplace_back(
-      std::make_unique<ControllerEmu::ControlGroup::BooleanSetting>(
-          _trans("Iterative Input"), false, ControllerEmu::ControlGroup::SettingType::VIRTUAL));
 }
 
 HotkeyManager::~HotkeyManager()
@@ -306,11 +295,6 @@ void HotkeyManager::GetInput(HotkeyStatus* const kb)
 ControllerEmu::ControlGroup* HotkeyManager::GetHotkeyGroup(HotkeyGroup group) const
 {
   return m_hotkey_groups[group];
-}
-
-ControllerEmu::ControlGroup* HotkeyManager::GetOptionsGroup() const
-{
-  return m_options;
 }
 
 int HotkeyManager::FindGroupByID(int id) const

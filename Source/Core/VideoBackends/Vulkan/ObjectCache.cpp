@@ -327,7 +327,7 @@ std::pair<VkPipeline, bool> ObjectCache::GetPipelineWithCacheResult(const Pipeli
 std::string ObjectCache::GetDiskCacheFileName(const char* type)
 {
   return StringFromFormat("%svulkan-%s-%s.cache", File::GetUserPath(D_SHADERCACHE_IDX).c_str(),
-                          SConfig::GetInstance().m_strGameID.c_str(), type);
+                          SConfig::GetInstance().GetGameID().c_str(), type);
 }
 
 class PipelineCacheReadCallback : public LinearDiskCacheReader<u32, u8>
@@ -536,21 +536,25 @@ struct ShaderCacheReader : public LinearDiskCacheReader<Uid, u32>
 
 void ObjectCache::LoadShaderCaches()
 {
-  ShaderCacheReader<VertexShaderUid> vs_reader(m_vs_cache.shader_map);
-  m_vs_cache.disk_cache.OpenAndRead(GetDiskCacheFileName("vs"), vs_reader);
-  SETSTAT(stats.numVertexShadersCreated, static_cast<int>(m_vs_cache.shader_map.size()));
-  SETSTAT(stats.numVertexShadersAlive, static_cast<int>(m_vs_cache.shader_map.size()));
+  if (g_ActiveConfig.bShaderCache)
+  {
+    ShaderCacheReader<VertexShaderUid> vs_reader(m_vs_cache.shader_map);
+    m_vs_cache.disk_cache.OpenAndRead(GetDiskCacheFileName("vs"), vs_reader);
 
-  ShaderCacheReader<PixelShaderUid> ps_reader(m_ps_cache.shader_map);
-  m_ps_cache.disk_cache.OpenAndRead(GetDiskCacheFileName("ps"), ps_reader);
+    ShaderCacheReader<PixelShaderUid> ps_reader(m_ps_cache.shader_map);
+    m_ps_cache.disk_cache.OpenAndRead(GetDiskCacheFileName("ps"), ps_reader);
+
+    if (g_vulkan_context->SupportsGeometryShaders())
+    {
+      ShaderCacheReader<GeometryShaderUid> gs_reader(m_gs_cache.shader_map);
+      m_gs_cache.disk_cache.OpenAndRead(GetDiskCacheFileName("gs"), gs_reader);
+    }
+  }
+
   SETSTAT(stats.numPixelShadersCreated, static_cast<int>(m_ps_cache.shader_map.size()));
   SETSTAT(stats.numPixelShadersAlive, static_cast<int>(m_ps_cache.shader_map.size()));
-
-  if (g_vulkan_context->SupportsGeometryShaders())
-  {
-    ShaderCacheReader<GeometryShaderUid> gs_reader(m_gs_cache.shader_map);
-    m_gs_cache.disk_cache.OpenAndRead(GetDiskCacheFileName("gs"), gs_reader);
-  }
+  SETSTAT(stats.numVertexShadersCreated, static_cast<int>(m_vs_cache.shader_map.size()));
+  SETSTAT(stats.numVertexShadersAlive, static_cast<int>(m_vs_cache.shader_map.size()));
 }
 
 template <typename T>

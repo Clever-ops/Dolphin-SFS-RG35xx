@@ -76,7 +76,7 @@ static u32 EvaluateBranchTarget(UGeckoInstruction instr, u32 pc)
 bool AnalyzeFunction(u32 startAddr, Symbol& func, int max_size)
 {
   if (!func.name.size())
-    func.name = StringFromFormat("zz_%07x_", startAddr & 0x0FFFFFF);
+    func.name = StringFromFormat("zz_%07x_", startAddr & 0x0FFFFFFF);
   if (func.analyzed)
     return true;  // No error, just already did it.
 
@@ -486,7 +486,7 @@ void PPCAnalyzer::ReorderInstructions(u32 instructions, CodeOp* code)
     ReorderInstructionsCore(instructions, code, false, REORDER_CMP);
 }
 
-void PPCAnalyzer::SetInstructionStats(CodeBlock* block, CodeOp* code, GekkoOPInfo* opinfo,
+void PPCAnalyzer::SetInstructionStats(CodeBlock* block, CodeOp* code, const GekkoOPInfo* opinfo,
                                       u32 index)
 {
   code->wantsCR0 = false;

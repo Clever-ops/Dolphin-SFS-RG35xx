@@ -6,13 +6,12 @@
 #include <utility>
 #include <vector>
 
-#include "Common/CommonFuncs.h"
 #include "Common/CommonTypes.h"
 #include "Common/FileUtil.h"
 #include "Common/Logging/Log.h"
 #include "Common/MsgHandler.h"
 #include "Common/NandPaths.h"
-#include "Core/Boot/Boot.h"
+#include "Common/Swap.h"
 #include "Core/Boot/ElfReader.h"
 #include "Core/ConfigManager.h"
 #include "Core/Core.h"
@@ -23,6 +22,7 @@
 #include "Core/HW/DVDThread.h"
 #include "Core/HW/Memmap.h"
 #include "Core/HW/SystemTimers.h"
+#include "Core/IOS/ES/Formats.h"
 #include "Core/IOS/MIOS.h"
 #include "Core/PowerPC/PPCSymbolDB.h"
 #include "Core/PowerPC/PowerPC.h"
@@ -97,7 +97,7 @@ static std::vector<u8> GetMIOSBinary()
   if (!loader.IsValid())
     return {};
 
-  const auto* content = loader.GetContentByIndex(loader.GetBootIndex());
+  const auto* content = loader.GetContentByIndex(loader.GetTMD().GetBootIndex());
   if (!content)
     return {};
 
@@ -123,19 +123,8 @@ static void ReinitHardware()
 static void UpdateRunningGame()
 {
   DVDThread::WaitUntilIdle();
-  const DiscIO::IVolume& volume = DVDInterface::GetVolume();
   SConfig::GetInstance().m_BootType = SConfig::BOOT_MIOS;
-  SConfig::GetInstance().m_strName = volume.GetInternalName();
-  SConfig::GetInstance().m_strGameID = volume.GetGameID();
-  SConfig::GetInstance().m_revision = volume.GetRevision();
-
-  g_symbolDB.Clear();
-  CBoot::LoadMapFromFilename();
-  ::HLE::Clear();
-  ::HLE::PatchFunctions();
-
-  NOTICE_LOG(IOS, "Running game: %s (%s)", SConfig::GetInstance().m_strName.c_str(),
-             SConfig::GetInstance().m_strGameID.c_str());
+  SConfig::GetInstance().SetRunningGameMetadata(DVDInterface::GetVolume());
 }
 
 constexpr u32 ADDRESS_INIT_SEMAPHORE = 0x30f8;

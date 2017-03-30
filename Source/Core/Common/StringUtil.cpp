@@ -30,7 +30,7 @@
 #include <locale.h>
 #endif
 
-#if !defined(_WIN32) && !defined(ANDROID) && !defined(__OpenBSD__)
+#if !defined(_WIN32) && !defined(ANDROID) && !defined(__HAIKU__) && !defined(__OpenBSD__)
 static locale_t GetCLocale()
 {
   static locale_t c_locale = newlocale(LC_ALL_MASK, "C", nullptr);
@@ -123,11 +123,11 @@ bool CharArrayFromFormatV(char* out, int outsize, const char* format, va_list ar
     c_locale = _create_locale(LC_ALL, "C");
   writtenCount = _vsnprintf_l(out, outsize, format, c_locale, args);
 #else
-#if !defined(ANDROID) && !defined(__OpenBSD__)
+#if !defined(ANDROID) && !defined(__HAIKU__) && !defined(__OpenBSD__)
   locale_t previousLocale = uselocale(GetCLocale());
 #endif
   writtenCount = vsnprintf(out, outsize, format, args);
-#if !defined(ANDROID) && !defined(__OpenBSD__)
+#if !defined(ANDROID) && !defined(__HAIKU__) && !defined(__OpenBSD__)
   uselocale(previousLocale);
 #endif
 #endif
@@ -164,12 +164,12 @@ std::string StringFromFormatV(const char* format, va_list args)
   std::string temp = buf;
   delete[] buf;
 #else
-#if !defined(ANDROID) && !defined(__OpenBSD__)
+#if !defined(ANDROID) && !defined(__HAIKU__) && !defined(__OpenBSD__)
   locale_t previousLocale = uselocale(GetCLocale());
 #endif
   if (vasprintf(&buf, format, args) < 0)
     ERROR_LOG(COMMON, "Unable to allocate memory for string");
-#if !defined(ANDROID) && !defined(__OpenBSD__)
+#if !defined(ANDROID) && !defined(__HAIKU__) && !defined(__OpenBSD__)
   uselocale(previousLocale);
 #endif
 
@@ -244,6 +244,25 @@ bool TryParse(const std::string& str, u32* const output)
 #endif
 
   *output = static_cast<u32>(value);
+  return true;
+}
+
+bool TryParse(const std::string& str, u64* const output)
+{
+  char* end_ptr = nullptr;
+
+  // Set errno to a clean slate
+  errno = 0;
+
+  u64 value = strtoull(str.c_str(), &end_ptr, 0);
+
+  if (end_ptr == nullptr || *end_ptr != '\0')
+    return false;
+
+  if (errno == ERANGE)
+    return false;
+
+  *output = value;
   return true;
 }
 

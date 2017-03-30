@@ -231,6 +231,7 @@ void CFrame::BindDebuggerMenuBarUpdateEvents()
   Bind(wxEVT_UPDATE_UI, &WxEventUtils::OnEnableIfCoreInitialized, IDM_SEARCH_INSTRUCTION);
   Bind(wxEVT_UPDATE_UI, &WxEventUtils::OnEnableIfCoreInitialized, IDM_CLEAR_SYMBOLS);
   Bind(wxEVT_UPDATE_UI, &WxEventUtils::OnEnableIfCoreInitialized, IDM_SCAN_FUNCTIONS);
+  Bind(wxEVT_UPDATE_UI, &WxEventUtils::OnEnableIfCoreInitialized, IDM_SCAN_SIGNATURES);
   Bind(wxEVT_UPDATE_UI, &WxEventUtils::OnEnableIfCoreInitialized, IDM_LOAD_MAP_FILE);
   Bind(wxEVT_UPDATE_UI, &WxEventUtils::OnEnableIfCoreInitialized, IDM_SAVEMAPFILE);
   Bind(wxEVT_UPDATE_UI, &WxEventUtils::OnEnableIfCoreInitialized, IDM_LOAD_MAP_FILE_AS);
@@ -242,6 +243,7 @@ void CFrame::BindDebuggerMenuBarUpdateEvents()
   Bind(wxEVT_UPDATE_UI, &WxEventUtils::OnEnableIfCoreInitialized, IDM_COMBINE_SIGNATURE_FILES);
   Bind(wxEVT_UPDATE_UI, &WxEventUtils::OnEnableIfCoreInitialized, IDM_RENAME_SYMBOLS);
   Bind(wxEVT_UPDATE_UI, &WxEventUtils::OnEnableIfCoreInitialized, IDM_USE_SIGNATURE_FILE);
+  Bind(wxEVT_UPDATE_UI, &WxEventUtils::OnEnableIfCoreInitialized, IDM_USE_MEGA_SIGNATURE_FILE);
   Bind(wxEVT_UPDATE_UI, &WxEventUtils::OnEnableIfCoreInitialized, IDM_PATCH_HLE_FUNCTIONS);
 
   Bind(wxEVT_UPDATE_UI, &WxEventUtils::OnEnableIfCoreUninitialized, IDM_JIT_NO_BLOCK_CACHE);
@@ -310,13 +312,6 @@ void CFrame::BootGame(const std::string& filename)
   if (!bootfile.empty())
   {
     StartGame(bootfile);
-    if (UseDebugger && g_pCodeWindow)
-    {
-      if (g_pCodeWindow->HasPanel<CWatchWindow>())
-        g_pCodeWindow->GetPanel<CWatchWindow>()->LoadAll();
-      if (g_pCodeWindow->HasPanel<CBreakPointWindow>())
-        g_pCodeWindow->GetPanel<CBreakPointWindow>()->LoadAll();
-    }
   }
 }
 
@@ -371,8 +366,8 @@ void CFrame::OnTASInput(wxCommandEvent& event)
 {
   for (int i = 0; i < 4; ++i)
   {
-    if (SConfig::GetInstance().m_SIDevice[i] != SIDEVICE_NONE &&
-        SConfig::GetInstance().m_SIDevice[i] != SIDEVICE_GC_GBA)
+    if (SConfig::GetInstance().m_SIDevice[i] != SerialInterface::SIDEVICE_NONE &&
+        SConfig::GetInstance().m_SIDevice[i] != SerialInterface::SIDEVICE_GC_GBA)
     {
       g_TASInputDlg[i]->CreateGCLayout();
       g_TASInputDlg[i]->Show();
@@ -464,7 +459,7 @@ void CFrame::OnRecord(wxCommandEvent& WXUNUSED(event))
 
   for (int i = 0; i < 4; i++)
   {
-    if (SIDevice_IsGCController(SConfig::GetInstance().m_SIDevice[i]))
+    if (SerialInterface::SIDevice_IsGCController(SConfig::GetInstance().m_SIDevice[i]))
       controllers |= (1 << i);
 
     if (g_wiimote_sources[i] != WIIMOTE_SRC_NONE)
@@ -506,13 +501,6 @@ void CFrame::OnStopRecording(wxCommandEvent& WXUNUSED(event))
     const bool is_paused = Core::GetState() == Core::State::Paused;
     if (is_paused && !was_paused)
       CPU::EnableStepping(false);
-  }
-
-  if (!Movie::IsReadOnly())
-  {
-    // let's make the read-only flag consistent at the start of a movie.
-    Movie::SetReadOnly(true);
-    GetMenuBar()->FindItem(IDM_RECORD_READ_ONLY)->Check();
   }
 
   Movie::EndPlayInput(false);
@@ -851,11 +839,7 @@ void CFrame::DoStop()
 
     if (UseDebugger && g_pCodeWindow)
     {
-      if (g_pCodeWindow->HasPanel<CWatchWindow>())
-        g_pCodeWindow->GetPanel<CWatchWindow>()->SaveAll();
       PowerPC::watches.Clear();
-      if (g_pCodeWindow->HasPanel<CBreakPointWindow>())
-        g_pCodeWindow->GetPanel<CBreakPointWindow>()->SaveAll();
       PowerPC::breakpoints.Clear();
       PowerPC::memchecks.Clear();
       if (g_pCodeWindow->HasPanel<CBreakPointWindow>())
@@ -1232,23 +1216,7 @@ void CFrame::OnInstallWAD(wxCommandEvent& event)
 
 void CFrame::UpdateLoadWiiMenuItem() const
 {
-  auto* const menu_item = GetMenuBar()->FindItem(IDM_LOAD_WII_MENU);
-
-  const auto& sys_menu_loader = DiscIO::CNANDContentManager::Access().GetNANDLoader(
-      TITLEID_SYSMENU, Common::FROM_CONFIGURED_ROOT);
-
-  if (sys_menu_loader.IsValid())
-  {
-    const int version = sys_menu_loader.GetTitleVersion();
-    const char region = sys_menu_loader.GetCountryChar();
-    menu_item->Enable();
-    menu_item->SetItemLabel(wxString::Format(_("Load Wii System Menu %d%c"), version, region));
-  }
-  else
-  {
-    menu_item->Enable(false);
-    menu_item->SetItemLabel(_("Load Wii System Menu"));
-  }
+  GetMenuBar()->Refresh(true, nullptr);
 }
 
 void CFrame::OnFifoPlayer(wxCommandEvent& WXUNUSED(event))

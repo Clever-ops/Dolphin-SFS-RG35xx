@@ -2,17 +2,19 @@
 // Licensed under GPLv2+
 // Refer to the license.txt file included.
 
+#include "Core/WiiRoot.h"
+
 #include <string>
 
 #include "Common/CommonPaths.h"
 #include "Common/FileUtil.h"
 #include "Common/Logging/Log.h"
 #include "Common/NandPaths.h"
+#include "Common/StringUtil.h"
 #include "Common/SysConf.h"
 #include "Core/ConfigManager.h"
 #include "Core/Movie.h"
 #include "Core/NetPlayClient.h"
-#include "Core/WiiRoot.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -25,9 +27,9 @@ static std::string s_temp_wii_root;
 static void InitializeDeterministicWiiSaves()
 {
   std::string save_path =
-      Common::GetTitleDataPath(SConfig::GetInstance().m_title_id, Common::FROM_SESSION_ROOT);
+      Common::GetTitleDataPath(SConfig::GetInstance().GetTitleID(), Common::FROM_SESSION_ROOT);
   std::string user_save_path =
-      Common::GetTitleDataPath(SConfig::GetInstance().m_title_id, Common::FROM_CONFIGURED_ROOT);
+      Common::GetTitleDataPath(SConfig::GetInstance().GetTitleID(), Common::FROM_CONFIGURED_ROOT);
   if (Movie::IsRecordingInput())
   {
     if (NetPlay::IsNetPlayRunning() && !SConfig::GetInstance().bCopyWiiSaveNetplay)
@@ -77,13 +79,13 @@ void InitializeWiiRoot(bool use_temporary)
     // Generate a SYSCONF with default settings for the temporary Wii NAND.
     SysConf sysconf{Common::FromWhichRoot::FROM_SESSION_ROOT};
     sysconf.Save();
+
+    InitializeDeterministicWiiSaves();
   }
   else
   {
     File::SetUserPath(D_SESSION_WIIROOT_IDX, File::GetUserPath(D_WIIROOT_IDX));
   }
-
-  InitializeDeterministicWiiSaves();
 }
 
 void ShutdownWiiRoot()
@@ -91,13 +93,13 @@ void ShutdownWiiRoot()
   if (!s_temp_wii_root.empty())
   {
     std::string save_path =
-        Common::GetTitleDataPath(SConfig::GetInstance().m_title_id, Common::FROM_SESSION_ROOT);
+        Common::GetTitleDataPath(SConfig::GetInstance().GetTitleID(), Common::FROM_SESSION_ROOT);
     std::string user_save_path =
-        Common::GetTitleDataPath(SConfig::GetInstance().m_title_id, Common::FROM_CONFIGURED_ROOT);
+        Common::GetTitleDataPath(SConfig::GetInstance().GetTitleID(), Common::FROM_CONFIGURED_ROOT);
     std::string user_backup_path =
         File::GetUserPath(D_BACKUP_IDX) +
-        StringFromFormat("%08x/%08x/", static_cast<u32>(SConfig::GetInstance().m_title_id >> 32),
-                         static_cast<u32>(SConfig::GetInstance().m_title_id));
+        StringFromFormat("%08x/%08x/", static_cast<u32>(SConfig::GetInstance().GetTitleID() >> 32),
+                         static_cast<u32>(SConfig::GetInstance().GetTitleID()));
     if (File::Exists(save_path + "banner.bin") && SConfig::GetInstance().bEnableMemcardSdWriting)
     {
       // Backup the existing save just in case it's still needed.

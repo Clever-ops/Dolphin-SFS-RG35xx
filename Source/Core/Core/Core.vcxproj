@@ -89,6 +89,7 @@
     <ClCompile Include="FifoPlayer\FifoPlayer.cpp" />
     <ClCompile Include="FifoPlayer\FifoRecordAnalyzer.cpp" />
     <ClCompile Include="FifoPlayer\FifoRecorder.cpp" />
+    <ClCompile Include="FileMonitor.cpp" />
     <ClCompile Include="GeckoCode.cpp" />
     <ClCompile Include="GeckoCodeConfig.cpp" />
     <ClCompile Include="HLE\HLE.cpp" />
@@ -130,9 +131,9 @@
     <ClCompile Include="HW\EXI\EXI_DeviceMic.cpp" />
     <ClCompile Include="HW\GCKeyboard.cpp" />
     <ClCompile Include="HW\GCKeyboardEmu.cpp" />
-    <ClCompile Include="HW\GCMemcard.cpp" />
-    <ClCompile Include="HW\GCMemcardDirectory.cpp" />
-    <ClCompile Include="HW\GCMemcardRaw.cpp" />
+    <ClCompile Include="HW\GCMemcard\GCMemcard.cpp" />
+    <ClCompile Include="HW\GCMemcard\GCMemcardDirectory.cpp" />
+    <ClCompile Include="HW\GCMemcard\GCMemcardRaw.cpp" />
     <ClCompile Include="HW\GCPad.cpp" />
     <ClCompile Include="HW\GCPadEmu.cpp" />
     <ClCompile Include="HW\GPFifo.cpp" />
@@ -176,6 +177,12 @@
     <ClCompile Include="IOS\DI\DI.cpp" />
     <ClCompile Include="IOS\ES\ES.cpp" />
     <ClCompile Include="IOS\ES\Formats.cpp" />
+    <ClCompile Include="IOS\ES\Identity.cpp" />
+    <ClCompile Include="IOS\ES\NandUtils.cpp" />
+    <ClCompile Include="IOS\ES\TitleContents.cpp" />
+    <ClCompile Include="IOS\ES\TitleInformation.cpp" />
+    <ClCompile Include="IOS\ES\TitleManagement.cpp" />
+    <ClCompile Include="IOS\ES\Views.cpp" />
     <ClCompile Include="IOS\FS\FileIO.cpp" />
     <ClCompile Include="IOS\FS\FS.cpp" />
     <ClCompile Include="IOS\Network\ICMPLin.cpp" />
@@ -220,6 +227,10 @@
     <ClCompile Include="Movie.cpp" />
     <ClCompile Include="NetPlayClient.cpp" />
     <ClCompile Include="NetPlayServer.cpp" />
+    <ClCompile Include="ConfigLoaders\BaseConfigLoader.cpp" />
+    <ClCompile Include="ConfigLoaders\GameConfigLoader.cpp" />
+    <ClCompile Include="ConfigLoaders\MovieConfigLoader.cpp" />
+    <ClCompile Include="ConfigLoaders\NetPlayConfigLoader.cpp" />
     <ClCompile Include="PatchEngine.cpp" />
     <ClCompile Include="PowerPC\BreakPoints.cpp" />
     <ClCompile Include="PowerPC\CachedInterpreter\CachedInterpreter.cpp" />
@@ -233,6 +244,7 @@
     <ClCompile Include="PowerPC\Interpreter\Interpreter_Paired.cpp" />
     <ClCompile Include="PowerPC\Interpreter\Interpreter_SystemRegisters.cpp" />
     <ClCompile Include="PowerPC\Interpreter\Interpreter_Tables.cpp" />
+    <ClCompile Include="PowerPC\Jit64Common\ConstantPool.cpp" />
     <ClCompile Include="PowerPC\JitILCommon\IR.cpp" />
     <ClCompile Include="PowerPC\JitILCommon\JitILBase_Branch.cpp" />
     <ClCompile Include="PowerPC\JitILCommon\JitILBase_FloatingPoint.cpp" />
@@ -270,6 +282,7 @@
     <ClCompile Include="PowerPC\JitCommon\JitCache.cpp" />
     <ClCompile Include="PowerPC\SignatureDB\CSVSignatureDB.cpp" />
     <ClCompile Include="PowerPC\SignatureDB\DSYSignatureDB.cpp" />
+    <ClCompile Include="PowerPC\SignatureDB\MEGASignatureDB.cpp" />
     <ClCompile Include="PowerPC\SignatureDB\SignatureDB.cpp" />
     <ClCompile Include="PowerPC\JitInterface.cpp" />
     <ClCompile Include="PowerPC\MMU.cpp" />
@@ -328,6 +341,7 @@
     <ClInclude Include="FifoPlayer\FifoPlayer.h" />
     <ClInclude Include="FifoPlayer\FifoRecordAnalyzer.h" />
     <ClInclude Include="FifoPlayer\FifoRecorder.h" />
+    <ClInclude Include="FileMonitor.h" />
     <ClInclude Include="GeckoCode.h" />
     <ClInclude Include="GeckoCodeConfig.h" />
     <ClInclude Include="HLE\HLE.h" />
@@ -371,9 +385,9 @@
     <ClInclude Include="HW\EXI\EXI_DeviceMic.h" />
     <ClInclude Include="HW\GCKeyboard.h" />
     <ClInclude Include="HW\GCKeyboardEmu.h" />
-    <ClInclude Include="HW\GCMemcard.h" />
-    <ClInclude Include="HW\GCMemcardDirectory.h" />
-    <ClInclude Include="HW\GCMemcardRaw.h" />
+    <ClInclude Include="HW\GCMemcard\GCMemcard.h" />
+    <ClInclude Include="HW\GCMemcard\GCMemcardDirectory.h" />
+    <ClInclude Include="HW\GCMemcard\GCMemcardRaw.h" />
     <ClInclude Include="HW\GCPad.h" />
     <ClInclude Include="HW\GCPadEmu.h" />
     <ClInclude Include="HW\GPFifo.h" />
@@ -418,6 +432,7 @@
     <ClInclude Include="IOS\DI\DI.h" />
     <ClInclude Include="IOS\ES\ES.h" />
     <ClInclude Include="IOS\ES\Formats.h" />
+    <ClInclude Include="IOS\ES\NandUtils.h" />
     <ClInclude Include="IOS\FS\FileIO.h" />
     <ClInclude Include="IOS\FS\FS.h" />
     <ClInclude Include="IOS\Network\ICMPLin.h" />
@@ -461,6 +476,10 @@
     <ClInclude Include="NetPlayClient.h" />
     <ClInclude Include="NetPlayProto.h" />
     <ClInclude Include="NetPlayServer.h" />
+    <ClInclude Include="ConfigLoaders\BaseConfigLoader.h" />
+    <ClInclude Include="ConfigLoaders\GameConfigLoader.h" />
+    <ClInclude Include="ConfigLoaders\MovieConfigLoader.h" />
+    <ClInclude Include="ConfigLoaders\NetPlayConfigLoader.h" />
     <ClInclude Include="PatchEngine.h" />
     <ClInclude Include="PowerPC\BreakPoints.h" />
     <ClInclude Include="PowerPC\CPUCoreBase.h" />
@@ -469,6 +488,7 @@
     <ClInclude Include="PowerPC\CachedInterpreter\InterpreterBlockCache.h" />
     <ClInclude Include="PowerPC\Interpreter\Interpreter.h" />
     <ClInclude Include="PowerPC\Interpreter\Interpreter_FPUtils.h" />
+    <ClInclude Include="PowerPC\Jit64Common\ConstantPool.h" />
     <ClInclude Include="PowerPC\Jit64IL\JitIL.h" />
     <ClInclude Include="PowerPC\Jit64\FPURegCache.h" />
     <ClInclude Include="PowerPC\Jit64\GPRRegCache.h" />
@@ -490,6 +510,7 @@
     <ClInclude Include="PowerPC\JitCommon\JitCache.h" />
     <ClInclude Include="PowerPC\SignatureDB\CSVSignatureDB.h" />
     <ClInclude Include="PowerPC\SignatureDB\DSYSignatureDB.h" />
+    <ClInclude Include="PowerPC\SignatureDB\MEGASignatureDB.h" />
     <ClInclude Include="PowerPC\SignatureDB\SignatureDB.h" />
     <ClInclude Include="PowerPC\JitInterface.h" />
     <ClInclude Include="PowerPC\PowerPC.h" />

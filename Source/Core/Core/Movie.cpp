@@ -158,7 +158,7 @@ std::string GetInputDisplay()
     s_controllers = 0;
     for (int i = 0; i < 4; ++i)
     {
-      if (SerialInterface::GetDeviceType(i) != SIDEVICE_NONE)
+      if (SerialInterface::GetDeviceType(i) != SerialInterface::SIDEVICE_NONE)
         s_controllers |= (1 << i);
       if (g_wiimote_sources[i] != WIIMOTE_SRC_NONE)
         s_controllers |= (1 << (i + 4));
@@ -465,6 +465,7 @@ bool IsUsingMemcard(int memcard)
 {
   return (s_memcards & (1 << memcard)) != 0;
 }
+
 bool IsSyncGPU()
 {
   return s_bSyncGPU;
@@ -483,22 +484,29 @@ void ChangePads(bool instantly)
 
   int controllers = 0;
 
-  for (int i = 0; i < MAX_SI_CHANNELS; ++i)
-    if (SIDevice_IsGCController(SConfig::GetInstance().m_SIDevice[i]))
+  for (int i = 0; i < SerialInterface::MAX_SI_CHANNELS; ++i)
+  {
+    if (SerialInterface::SIDevice_IsGCController(SConfig::GetInstance().m_SIDevice[i]))
       controllers |= (1 << i);
+  }
 
   if (instantly && (s_controllers & 0x0F) == controllers)
     return;
 
-  for (int i = 0; i < MAX_SI_CHANNELS; ++i)
+  for (int i = 0; i < SerialInterface::MAX_SI_CHANNELS; ++i)
   {
-    SIDevices device = SIDEVICE_NONE;
+    SerialInterface::SIDevices device = SerialInterface::SIDEVICE_NONE;
     if (IsUsingPad(i))
     {
-      if (SIDevice_IsGCController(SConfig::GetInstance().m_SIDevice[i]))
+      if (SerialInterface::SIDevice_IsGCController(SConfig::GetInstance().m_SIDevice[i]))
+      {
         device = SConfig::GetInstance().m_SIDevice[i];
+      }
       else
-        device = IsUsingBongo(i) ? SIDEVICE_GC_TARUKONGA : SIDEVICE_GC_CONTROLLER;
+      {
+        device = IsUsingBongo(i) ? SerialInterface::SIDEVICE_GC_TARUKONGA :
+                                   SerialInterface::SIDEVICE_GC_CONTROLLER;
+      }
     }
 
     if (instantly)  // Changes from savestates need to be instantaneous
@@ -562,9 +570,11 @@ bool BeginRecordingInput(int controllers)
 
   s_rerecords = 0;
 
-  for (int i = 0; i < MAX_SI_CHANNELS; ++i)
-    if (SConfig::GetInstance().m_SIDevice[i] == SIDEVICE_GC_TARUKONGA)
+  for (int i = 0; i < SerialInterface::MAX_SI_CHANNELS; ++i)
+  {
+    if (SConfig::GetInstance().m_SIDevice[i] == SerialInterface::SIDEVICE_GC_TARUKONGA)
       s_bongos |= (1 << i);
+  }
 
   if (Core::IsRunningAndStarted())
   {
@@ -1476,7 +1486,7 @@ void GetSettings()
   s_bNetPlay = NetPlay::IsNetPlayRunning();
   if (SConfig::GetInstance().bWii)
   {
-    u64 title_id = SConfig::GetInstance().m_title_id;
+    u64 title_id = SConfig::GetInstance().GetTitleID();
     s_bClearSave =
         !File::Exists(Common::GetTitleDataPath(title_id, Common::FROM_SESSION_ROOT) + "banner.bin");
     s_language = SConfig::GetInstance().m_wii_language;
@@ -1486,8 +1496,12 @@ void GetSettings()
     s_bClearSave = !File::Exists(SConfig::GetInstance().m_strMemoryCardA);
     s_language = SConfig::GetInstance().SelectedLanguage;
   }
-  s_memcards |= (SConfig::GetInstance().m_EXIDevice[0] == EXIDEVICE_MEMORYCARD) << 0;
-  s_memcards |= (SConfig::GetInstance().m_EXIDevice[1] == EXIDEVICE_MEMORYCARD) << 1;
+  s_memcards |= (SConfig::GetInstance().m_EXIDevice[0] == EXIDEVICE_MEMORYCARD ||
+                 SConfig::GetInstance().m_EXIDevice[0] == EXIDEVICE_MEMORYCARDFOLDER)
+                << 0;
+  s_memcards |= (SConfig::GetInstance().m_EXIDevice[1] == EXIDEVICE_MEMORYCARD ||
+                 SConfig::GetInstance().m_EXIDevice[1] == EXIDEVICE_MEMORYCARDFOLDER)
+                << 1;
 
   std::array<u8, 20> revision = ConvertGitRevisionToBytes(scm_rev_git_str);
   std::copy(std::begin(revision), std::end(revision), std::begin(s_revision));

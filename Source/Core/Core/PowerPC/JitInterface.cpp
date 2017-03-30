@@ -2,8 +2,11 @@
 // Licensed under GPLv2+
 // Refer to the license.txt file included.
 
+#include "Core/PowerPC/JitInterface.h"
+
 #include <algorithm>
 #include <cinttypes>
+#include <cstdio>
 #include <string>
 
 #ifdef _WIN32
@@ -12,10 +15,15 @@
 #include "Common/PerformanceCounter.h"
 #endif
 
+#include "Common/ChunkFile.h"
+#include "Common/CommonTypes.h"
+#include "Common/FileUtil.h"
+#include "Common/MsgHandler.h"
+
 #include "Core/Core.h"
+#include "Core/PowerPC/CPUCoreBase.h"
 #include "Core/PowerPC/CachedInterpreter/CachedInterpreter.h"
 #include "Core/PowerPC/JitCommon/JitBase.h"
-#include "Core/PowerPC/JitInterface.h"
 #include "Core/PowerPC/PPCSymbolDB.h"
 #include "Core/PowerPC/PowerPC.h"
 #include "Core/PowerPC/Profiler.h"
@@ -220,20 +228,20 @@ void CompileExceptionCheck(ExceptionType type)
 
   switch (type)
   {
-  case ExceptionType::EXCEPTIONS_FIFO_WRITE:
+  case ExceptionType::FIFOWrite:
     exception_addresses = &g_jit->js.fifoWriteAddresses;
     break;
-  case ExceptionType::EXCEPTIONS_PAIRED_QUANTIZE:
+  case ExceptionType::PairedQuantize:
     exception_addresses = &g_jit->js.pairedQuantizeAddresses;
     break;
-  case ExceptionType::EXCEPTIONS_SPECULATIVE_CONSTANTS:
+  case ExceptionType::SpeculativeConstants:
     exception_addresses = &g_jit->js.noSpeculativeConstantsAddresses;
     break;
   }
 
   if (PC != 0 && (exception_addresses->find(PC)) == (exception_addresses->end()))
   {
-    if (type == ExceptionType::EXCEPTIONS_FIFO_WRITE)
+    if (type == ExceptionType::FIFOWrite)
     {
       // Check in case the code has been replaced since: do we need to do this?
       int optype = GetOpInfo(PowerPC::HostRead_U32(PC))->type;

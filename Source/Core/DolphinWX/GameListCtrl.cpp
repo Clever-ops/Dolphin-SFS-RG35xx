@@ -463,11 +463,7 @@ void CGameListCtrl::ReloadList()
 
     // add all items
     for (int i = 0; i < (int)m_ISOFiles.size(); i++)
-    {
       InsertItemInReportView(i);
-      if (SConfig::GetInstance().m_ColorCompressed && m_ISOFiles[i]->IsCompressed())
-        SetItemTextColour(i, wxColour(0xFF0000));
-    }
 
     // Sort items by Title
     if (!sorted)
@@ -628,8 +624,8 @@ void CGameListCtrl::InsertItemInReportView(long index)
       UpdateItemAtColumn(item_index, i);
   }
 
-  // Background color
-  SetBackgroundColor();
+  // List colors
+  SetColors();
 }
 
 static wxColour blend50(const wxColour& c1, const wxColour& c2)
@@ -642,7 +638,15 @@ static wxColour blend50(const wxColour& c1, const wxColour& c2)
   return a << 24 | b << 16 | g << 8 | r;
 }
 
-void CGameListCtrl::SetBackgroundColor()
+static wxColour ContrastText(const wxColour& bgc)
+{
+  // Luminance threshold to determine whether to use black text on light background
+  static constexpr int LUM_THRESHOLD = 186;
+  int lum = 0.299 * bgc.Red() + 0.587 * bgc.Green() + 0.114 * bgc.Blue();
+  return (lum > LUM_THRESHOLD) ? *wxBLACK : *wxWHITE;
+}
+
+void CGameListCtrl::SetColors()
 {
   for (long i = 0; i < GetItemCount(); i++)
   {
@@ -650,6 +654,7 @@ void CGameListCtrl::SetBackgroundColor()
                                        wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW)) :
                                wxSystemSettings::GetColour(wxSYS_COLOUR_WINDOW);
     CGameListCtrl::SetItemBackgroundColour(i, color);
+    SetItemTextColour(i, ContrastText(color));
   }
 }
 
@@ -800,7 +805,7 @@ void CGameListCtrl::OnColumnClick(wxListEvent& event)
     SortItems(wxListCompare, last_sort);
   }
 
-  SetBackgroundColor();
+  SetColors();
 
   event.Skip();
 }
@@ -1219,7 +1224,8 @@ void CGameListCtrl::CompressSelection(bool _compress)
     items_to_compress.push_back(iso);
 
     // Show the Wii compression warning if it's relevant and it hasn't been shown already
-    if (!wii_compression_warning_accepted && _compress && !iso->IsCompressed() &&
+    if (!wii_compression_warning_accepted && _compress &&
+        iso->GetBlobType() != DiscIO::BlobType::GCZ &&
         iso->GetPlatform() == DiscIO::Platform::WII_DISC)
     {
       if (WiiCompressWarning())
@@ -1250,7 +1256,7 @@ void CGameListCtrl::CompressSelection(bool _compress)
 
     for (const GameListItem* iso : items_to_compress)
     {
-      if (!iso->IsCompressed() && _compress)
+      if (iso->GetBlobType() != DiscIO::BlobType::GCZ && _compress)
       {
         std::string FileName;
         SplitPath(iso->GetFileName(), nullptr, &FileName, nullptr);
@@ -1272,7 +1278,7 @@ void CGameListCtrl::CompressSelection(bool _compress)
                                        (iso->GetPlatform() == DiscIO::Platform::WII_DISC) ? 1 : 0,
                                        16384, &MultiCompressCB, &progress);
       }
-      else if (iso->IsCompressed() && !_compress)
+      else if (iso->GetBlobType() == DiscIO::BlobType::GCZ && !_compress)
       {
         std::string FileName;
         SplitPath(iso->GetFileName(), nullptr, &FileName, nullptr);

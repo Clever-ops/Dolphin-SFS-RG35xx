@@ -37,6 +37,7 @@ VideoConfig::VideoConfig()
 
   // disable all features by default
   backend_info.api_type = APIType::Nothing;
+  backend_info.MaxTextureSize = 16384;
   backend_info.bSupportsExclusiveFullscreen = false;
   backend_info.bSupportsMultithreading = false;
   backend_info.bSupportsInternalResolutionFrameDumps = false;
@@ -75,6 +76,10 @@ void VideoConfig::Load(const std::string& ini_file)
   settings->Get("DumpFramesAsImages", &bDumpFramesAsImages, false);
   settings->Get("FreeLook", &bFreeLook, false);
   settings->Get("UseFFV1", &bUseFFV1, false);
+  settings->Get("DumpFormat", &sDumpFormat, "avi");
+  settings->Get("DumpCodec", &sDumpCodec, "");
+  settings->Get("DumpPath", &sDumpPath, "");
+  settings->Get("BitrateKbps", &iBitrateKbps, 2500);
   settings->Get("InternalResolutionFrameDumps", &bInternalResolutionFrameDumps, false);
   settings->Get("EnablePixelLighting", &bEnablePixelLighting, false);
   settings->Get("FastDepthCalc", &bFastDepthCalc, true);
@@ -89,6 +94,7 @@ void VideoConfig::Load(const std::string& ini_file)
   settings->Get("EnableValidationLayer", &bEnableValidationLayer, false);
   settings->Get("BackendMultithreading", &bBackendMultithreading, true);
   settings->Get("CommandBufferExecuteInterval", &iCommandBufferExecuteInterval, 100);
+  settings->Get("ShaderCache", &bShaderCache, true);
 
   settings->Get("SWZComploc", &bZComploc, true);
   settings->Get("SWZFreeze", &bZFreeze, true);
@@ -113,6 +119,7 @@ void VideoConfig::Load(const std::string& ini_file)
   IniFile::Section* hacks = iniFile.GetOrCreateSection("Hacks");
   hacks->Get("EFBAccessEnable", &bEFBAccessEnable, true);
   hacks->Get("BBoxEnable", &bBBoxEnable, false);
+  hacks->Get("BBoxPreferStencilImplementation", &bBBoxPreferStencilImplementation, false);
   hacks->Get("ForceProgressive", &bForceProgressive, true);
   hacks->Get("EFBToTextureEnable", &bSkipEFBCopyToRam, true);
   hacks->Get("EFBScaledCopy", &bCopyEFBScaled, true);
@@ -293,6 +300,10 @@ void VideoConfig::Save(const std::string& ini_file)
   settings->Set("DumpFramesAsImages", bDumpFramesAsImages);
   settings->Set("FreeLook", bFreeLook);
   settings->Set("UseFFV1", bUseFFV1);
+  settings->Set("DumpFormat", sDumpFormat);
+  settings->Set("DumpCodec", sDumpCodec);
+  settings->Set("DumpPath", sDumpPath);
+  settings->Set("BitrateKbps", iBitrateKbps);
   settings->Set("InternalResolutionFrameDumps", bInternalResolutionFrameDumps);
   settings->Set("EnablePixelLighting", bEnablePixelLighting);
   settings->Set("FastDepthCalc", bFastDepthCalc);
@@ -307,6 +318,7 @@ void VideoConfig::Save(const std::string& ini_file)
   settings->Set("EnableValidationLayer", bEnableValidationLayer);
   settings->Set("BackendMultithreading", bBackendMultithreading);
   settings->Set("CommandBufferExecuteInterval", iCommandBufferExecuteInterval);
+  settings->Set("ShaderCache", bShaderCache);
 
   settings->Set("SWZComploc", bZComploc);
   settings->Set("SWZFreeze", bZFreeze);
@@ -331,6 +343,7 @@ void VideoConfig::Save(const std::string& ini_file)
   IniFile::Section* hacks = iniFile.GetOrCreateSection("Hacks");
   hacks->Set("EFBAccessEnable", bEFBAccessEnable);
   hacks->Set("BBoxEnable", bBBoxEnable);
+  hacks->Set("BBoxPreferStencilImplementation", bBBoxPreferStencilImplementation);
   hacks->Set("ForceProgressive", bForceProgressive);
   hacks->Set("EFBToTextureEnable", bSkipEFBCopyToRam);
   hacks->Set("EFBScaledCopy", bCopyEFBScaled);

@@ -21,17 +21,20 @@
 #include "Common/CommonTypes.h"
 #include "Common/FileUtil.h"
 #include "Common/IniFile.h"
+#include "Common/MsgHandler.h"
 #include "Common/SymbolDB.h"
 
 #include "Core/Boot/Boot.h"
+#include "Core/ConfigManager.h"
 #include "Core/Core.h"
 #include "Core/HLE/HLE.h"
 #include "Core/Host.h"
-#include "Core/PowerPC/JitCommon/JitBase.h"
+#include "Core/PowerPC/JitInterface.h"
 #include "Core/PowerPC/PPCAnalyst.h"
 #include "Core/PowerPC/PPCSymbolDB.h"
 #include "Core/PowerPC/PowerPC.h"
 #include "Core/PowerPC/Profiler.h"
+#include "Core/PowerPC/SignatureDB/MEGASignatureDB.h"
 #include "Core/PowerPC/SignatureDB/SignatureDB.h"
 
 #include "DolphinWX/Debugger/BreakpointWindow.h"
@@ -124,8 +127,7 @@ void CCodeWindow::OnProfilerMenu(wxCommandEvent& event)
   {
   case IDM_PROFILE_BLOCKS:
     Core::SetState(Core::State::Paused);
-    if (g_jit != nullptr)
-      g_jit->ClearCache();
+    JitInterface::ClearCache();
     Profiler::g_ProfileBlocks = GetParentMenuBar()->IsChecked(IDM_PROFILE_BLOCKS);
     Core::SetState(Core::State::Running);
     break;
@@ -135,25 +137,21 @@ void CCodeWindow::OnProfilerMenu(wxCommandEvent& event)
 
     if (Core::GetState() == Core::State::Paused && PowerPC::GetMode() == PowerPC::CoreMode::JIT)
     {
-      if (g_jit != nullptr)
-      {
-        std::string filename = File::GetUserPath(D_DUMP_IDX) + "Debug/profiler.txt";
-        File::CreateFullPath(filename);
-        Profiler::WriteProfileResults(filename);
+      std::string filename = File::GetUserPath(D_DUMP_IDX) + "Debug/profiler.txt";
+      File::CreateFullPath(filename);
+      Profiler::WriteProfileResults(filename);
 
-        wxFileType* filetype = nullptr;
-        if (!(filetype = wxTheMimeTypesManager->GetFileTypeFromExtension("txt")))
-        {
-          // From extension failed, trying with MIME type now
-          if (!(filetype = wxTheMimeTypesManager->GetFileTypeFromMimeType("text/plain")))
-            // MIME type failed, aborting mission
-            break;
-        }
-        wxString OpenCommand;
-        OpenCommand = filetype->GetOpenCommand(StrToWxStr(filename));
-        if (!OpenCommand.IsEmpty())
-          wxExecute(OpenCommand, wxEXEC_SYNC);
+      wxFileType* filetype = nullptr;
+      if (!(filetype = wxTheMimeTypesManager->GetFileTypeFromExtension("txt")))
+      {
+        // From extension failed, trying with MIME type now
+        if (!(filetype = wxTheMimeTypesManager->GetFileTypeFromMimeType("text/plain")))
+          // MIME type failed, aborting mission
+          break;
       }
+      wxString OpenCommand = filetype->GetOpenCommand(StrToWxStr(filename));
+      if (!OpenCommand.IsEmpty())
+        wxExecute(OpenCommand, wxEXEC_SYNC);
     }
     break;
   }
@@ -180,6 +178,11 @@ void CCodeWindow::OnSymbolsMenu(wxCommandEvent& event)
     Host_NotifyMapLoaded();
     break;
   case IDM_SCAN_FUNCTIONS:
+    PPCAnalyst::FindFunctions(0x80000000, 0x81800000, &g_symbolDB);
+    // Update GUI
+    NotifyMapLoaded();
+    break;
+  case IDM_SCAN_SIGNATURES:
   {
     PPCAnalyst::FindFunctions(0x80000000, 0x81800000, &g_symbolDB);
     SignatureDB db;
@@ -193,7 +196,6 @@ void CCodeWindow::OnSymbolsMenu(wxCommandEvent& event)
     {
       Parent->StatusBarMessage("'%s' not found, no symbol names generated", TOTALDB);
     }
-    // HLE::PatchFunctions();
     // Update GUI
     NotifyMapLoaded();
     break;
@@ -386,6 +388,22 @@ void CCodeWindow::OnSymbolsMenu(wxCommandEvent& event)
         db.Save(WxStrToStr(path2));
         db.List();
       }
+    }
+  }
+  break;
+  case IDM_USE_MEGA_SIGNATURE_FILE:
+  {
+    wxString path = wxFileSelector(
+        _("Apply MEGA signature file"), File::GetSysDirectory(), wxEmptyString, wxEmptyString,
+        _("MEGA Signature File (*.mega)") + "|*.mega|" + wxGetTranslation(wxALL_FILES),
+        wxFD_OPEN | wxFD_FILE_MUST_EXIST, this);
+    if (!path.IsEmpty())
+    {
+      MEGASignatureDB db;
+      db.Load(WxStrToStr(path));
+      db.Apply(&g_symbolDB);
+      db.List();
+      NotifyMapLoaded();
     }
   }
   break;

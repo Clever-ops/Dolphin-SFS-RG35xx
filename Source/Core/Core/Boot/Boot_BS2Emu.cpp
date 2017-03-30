@@ -21,6 +21,7 @@
 #include "Core/HW/DVDInterface.h"
 #include "Core/HW/EXI/EXI_DeviceIPL.h"
 #include "Core/HW/Memmap.h"
+#include "Core/IOS/ES/ES.h"
 #include "Core/IOS/ES/Formats.h"
 #include "Core/IOS/IPC.h"
 #include "Core/PatchEngine.h"
@@ -29,9 +30,9 @@
 #include "DiscIO/Enums.h"
 #include "DiscIO/Volume.h"
 
-void CBoot::RunFunction(u32 _iAddr)
+void CBoot::RunFunction(u32 address)
 {
-  PC = _iAddr;
+  PC = address;
   LR = 0x00;
 
   while (PC != 0x00)
@@ -42,7 +43,7 @@ void CBoot::RunFunction(u32 _iAddr)
 // GameCube Bootstrap 2 HLE:
 // copy the apploader to 0x81200000
 // execute the apploader, function by function, using the above utility.
-bool CBoot::EmulatedBS2_GC(bool skipAppLoader)
+bool CBoot::EmulatedBS2_GC(bool skip_app_loader)
 {
   INFO_LOG(BOOT, "Faking GC BS2...");
 
@@ -66,7 +67,7 @@ bool CBoot::EmulatedBS2_GC(bool skipAppLoader)
   // to 0x80000000 according to YAGCD 4.2.
 
   // It's possible to boot DOL and ELF files without a disc inserted
-  if (DVDInterface::VolumeIsValid())
+  if (DVDInterface::IsDiscInside())
     DVDRead(/*offset*/ 0x00000000, /*address*/ 0x00000000, 0x20, false);  // write disc info
 
   PowerPC::HostWrite_U32(0x0D15EA5E,
@@ -99,7 +100,7 @@ bool CBoot::EmulatedBS2_GC(bool skipAppLoader)
 
   HLE::Patch(0x81300000, "OSReport");  // HLE OSReport for Apploader
 
-  if (!DVDInterface::VolumeIsValid())
+  if (!DVDInterface::IsDiscInside())
     return false;
 
   // Load Apploader to Memory - The apploader is hardcoded to begin at 0x2440 on the disc,
@@ -107,7 +108,7 @@ bool CBoot::EmulatedBS2_GC(bool skipAppLoader)
   const DiscIO::IVolume& volume = DVDInterface::GetVolume();
   const u32 apploader_offset = 0x2440;
   u32 apploader_entry, apploader_size, apploader_trailer;
-  if (skipAppLoader || !volume.ReadSwapped(apploader_offset + 0x10, &apploader_entry, false) ||
+  if (skip_app_loader || !volume.ReadSwapped(apploader_offset + 0x10, &apploader_entry, false) ||
       !volume.ReadSwapped(apploader_offset + 0x14, &apploader_size, false) ||
       !volume.ReadSwapped(apploader_offset + 0x18, &apploader_trailer, false) ||
       apploader_entry == (u32)-1 || apploader_size + apploader_trailer == (u32)-1)
@@ -181,9 +182,6 @@ bool CBoot::EmulatedBS2_GC(bool skipAppLoader)
   // return
   PC = PowerPC::ppcState.gpr[3];
 
-  // Load patches
-  PatchEngine::LoadPatches();
-
   return true;
 }
 
@@ -254,7 +252,7 @@ bool CBoot::SetupWiiMemory(u64 ios_title_id)
   */
 
   // When booting a WAD or the system menu, there will probably not be a disc inserted
-  if (DVDInterface::VolumeIsValid())
+  if (DVDInterface::IsDiscInside())
     DVDRead(0x00000000, 0x00000000, 0x20, false);  // Game Code
 
   Memory::Write_U32(0x0D15EA5E, 0x00000020);            // Another magic word
@@ -305,10 +303,15 @@ bool CBoot::SetupWiiMemory(u64 ios_title_id)
 bool CBoot::EmulatedBS2_Wii()
 {
   INFO_LOG(BOOT, "Faking Wii BS2...");
-  if (!DVDInterface::VolumeIsValid())
+  if (!DVDInterface::IsDiscInside())
     return false;
 
   if (DVDInterface::GetVolume().GetVolumeType() != DiscIO::Platform::WII_DISC)
+    return false;
+
+  const IOS::ES::TMDReader tmd = DVDInterface::GetVolume().GetTMD();
+
+  if (!SetupWiiMemory(tmd.GetIOSId()))
     return false;
 
   // This is some kind of consistency check that is compared to the 0x00
@@ -346,13 +349,6 @@ bool CBoot::EmulatedBS2_Wii()
 
   PowerPC::ppcState.gpr[1] = 0x816ffff0;  // StackPointer
 
-  std::vector<u8> tmd = DVDInterface::GetVolume().GetTMD();
-
-  IOS::HLE::TMDReader tmd_reader{std::move(tmd)};
-
-  if (!SetupWiiMemory(tmd_reader.GetIOSId()))
-    return false;
-
   // Execute the apploader
   const u32 apploader_offset = 0x2440;  // 0x1c40;
 
@@ -385,11 +381,7 @@ bool CBoot::EmulatedBS2_Wii()
   PowerPC::ppcState.gpr[3] = 0x81300000;
   RunFunction(iAppLoaderInit);
 
-  // Let the apploader load the exe to memory. At this point I get an unknown IPC command
-  // (command zero) when I load Wii Sports or other games a second time. I don't notice
-  // any side effects however. It's a little disconcerting however that Start after Stop
-  // behaves differently than the first Start after starting Dolphin. It means something
-  // was not reset correctly.
+  // Let the apploader load the exe to memory
   DEBUG_LOG(BOOT, "Run iAppLoaderMain");
   do
   {
@@ -412,8 +404,7 @@ bool CBoot::EmulatedBS2_Wii()
   DEBUG_LOG(BOOT, "Run iAppLoaderClose");
   RunFunction(iAppLoaderClose);
 
-  // Load patches and run startup patches
-  PatchEngine::LoadPatches();
+  IOS::HLE::Device::ES::DIVerify(tmd, DVDInterface::GetVolume().GetTicket());
 
   // return
   PC = PowerPC::ppcState.gpr[3];
@@ -421,7 +412,7 @@ bool CBoot::EmulatedBS2_Wii()
 }
 
 // Returns true if apploader has run successfully
-bool CBoot::EmulatedBS2(bool _bIsWii)
+bool CBoot::EmulatedBS2(bool is_wii)
 {
-  return _bIsWii ? EmulatedBS2_Wii() : EmulatedBS2_GC();
+  return is_wii ? EmulatedBS2_Wii() : EmulatedBS2_GC();
 }
