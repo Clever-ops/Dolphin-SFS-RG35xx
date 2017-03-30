@@ -100,9 +100,7 @@ public:
   static void ReinterpretPixelData(unsigned int convtype);
 
   static void PokeEFB(EFBAccessType type, const EfbPokeData* points, size_t num_points);
-#ifdef __LIBRETRO__
-  static std::vector<GLuint>& get_efbFramebuffer() {return m_efbFramebuffer;}
-#endif
+
 private:
   std::unique_ptr<XFBSourceBase> CreateXFBSource(unsigned int target_width,
                                                  unsigned int target_height,

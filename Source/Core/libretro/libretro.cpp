@@ -153,13 +153,6 @@ void retro_run(void)
 
    poll_cb();
 
-   //   if(hw_render.context_type != RETRO_HW_CONTEXT_NONE)
-   //   {
-   //      OGL::FramebufferManager::SetXFBFramebuffer(hw_render.get_current_framebuffer());
-   //      if(!OGL::FramebufferManager::get_efbFramebuffer().empty())
-   //         OGL::FramebufferManager::get_efbFramebuffer()[0] = hw_render.get_current_framebuffer();
-   //   }
-
    RETRO_PERFORMANCE_INIT(dolphin_main_func);
    RETRO_PERFORMANCE_START(dolphin_main_func);
 
