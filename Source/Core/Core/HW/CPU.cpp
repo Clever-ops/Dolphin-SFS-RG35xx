@@ -22,7 +22,7 @@ namespace CPU
 // CPU Thread execution state.
 // Requires s_state_change_lock to modify the value.
 // Read access is unsynchronized.
-#define s_state PowerPC::jit_data.rw->s_state
+static State s_state = CPU_POWERDOWN;
 
 // Synchronizes EnableStepping and PauseAndLock so only one instance can be
 // active at a time. Simplifies code by eliminating several edge cases where

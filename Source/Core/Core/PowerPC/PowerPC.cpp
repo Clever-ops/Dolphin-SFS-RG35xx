@@ -2,8 +2,6 @@
 // Licensed under GPLv2+
 // Refer to the license.txt file included.
 
-#include <cstring>
-
 #include "Core/PowerPC/PowerPC.h"
 
 #include "Common/Assert.h"
@@ -12,7 +10,6 @@
 #include "Common/FPURoundMode.h"
 #include "Common/Logging/Log.h"
 #include "Common/MathUtil.h"
-#include "Common/MemoryUtil.h"
 
 #include "Core/ConfigManager.h"
 #include "Core/CoreTiming.h"
@@ -22,7 +19,6 @@
 #include "Core/Host.h"
 #include "Core/PowerPC/CPUCoreBase.h"
 #include "Core/PowerPC/Interpreter/Interpreter.h"
-#include "Core/PowerPC/JitCommon/JitAsmCommon.h"
 #include "Core/PowerPC/JitInterface.h"
 
 namespace PowerPC
@@ -527,41 +523,6 @@ void CheckBreakPoints()
       PowerPC::breakpoints.Remove(PC);
   }
 }
-
-JitData jit_data;
-
-JitData::ROData::ROData()
-{
-   memcpy((void*)pbswapShuffle1x4, ::pbswapShuffle1x4 , sizeof(pbswapShuffle1x4));
-   memcpy((void*)pbswapShuffle2x4, ::pbswapShuffle2x4 , sizeof(pbswapShuffle2x4));
-   memcpy((void*)m_one, ::m_one , sizeof(m_one));
-   memcpy((void*)m_quantizeTableS, ::m_quantizeTableS , sizeof(m_quantizeTableS));
-   memcpy((void*)m_dequantizeTableS, ::m_dequantizeTableS , sizeof(m_dequantizeTableS));
-
-   memcpy((void*)frsqrte_expected_base, MathUtil::frsqrte_expected_base , sizeof(frsqrte_expected_base));
-   memcpy((void*)frsqrte_expected_dec, MathUtil::frsqrte_expected_dec , sizeof(frsqrte_expected_dec));
-   memcpy((void*)fres_expected_base, MathUtil::fres_expected_base , sizeof(fres_expected_base));
-   memcpy((void*)fres_expected_dec, MathUtil::fres_expected_dec , sizeof(fres_expected_dec));
-}
-
-JitData::JitData()
-{
-   ro = new(Common::AllocateExecutableMemory(sizeof(ROData), true)) ROData;
-   Common::WriteProtectMemory(ro, sizeof(ROData)); /* map as RO */
-
-   rw = new(Common::AllocateExecutableMemory(sizeof(RWData), true)) RWData;
-   Common::UnWriteProtectMemory(rw, sizeof(RWData)); /* map as RW */
-}
-
-JitData::~JitData()
-{
-   Common::FreeMemoryPages(ro, sizeof(*ro));
-   ro = nullptr;
-
-   Common::FreeMemoryPages(rw, sizeof(*rw));
-   rw = nullptr;
-}
-
 
 }  // namespace
 

@@ -11,7 +11,6 @@
 #include "Core/HW/Memmap.h"
 #include "Core/HW/ProcessorInterface.h"
 #include "Core/PowerPC/JitInterface.h"
-#include "Core/PowerPC/PowerPC.h"
 #include "VideoCommon/CommandProcessor.h"
 
 namespace GPFifo
@@ -28,10 +27,10 @@ namespace GPFifo
 // the same function could use both methods. Compile 2 different versions of each such block?
 
 // More room for the fastmodes
-#define m_gatherPipe PowerPC::jit_data.rw->m_gatherPipe
+alignas(32) u8 m_gatherPipe[GATHER_PIPE_SIZE * 16];
 
 // pipe counter
-#define m_gatherPipeCount PowerPC::jit_data.rw->m_gatherPipeCount
+u32 m_gatherPipeCount = 0;
 
 void DoState(PointerWrap& p)
 {

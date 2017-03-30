@@ -9,14 +9,11 @@
 #include <tuple>
 
 #include "Common/CommonTypes.h"
-#include "Common/Intrinsics.h"
 
 #include "Core/Debugger/PPCDebugInterface.h"
 #include "Core/PowerPC/BreakPoints.h"
 #include "Core/PowerPC/Gekko.h"
 #include "Core/PowerPC/PPCCache.h"
-#include "Core/HW/CPU.h"
-#include "Core/HW/GPFifo.h"
 
 class CPUCoreBase;
 class PointerWrap;
@@ -293,6 +290,8 @@ TranslateResult JitCache_TranslateAddress(u32 address);
 
 static const int BAT_INDEX_SHIFT = 17;
 using BatTable = std::array<u32, 1 << (32 - BAT_INDEX_SHIFT)>;  // 128 KB
+extern BatTable ibat_table;
+extern BatTable dbat_table;
 inline bool TranslateBatAddess(const BatTable& bat_table, u32* address)
 {
   u32 bat_result = bat_table[*address >> BAT_INDEX_SHIFT];
@@ -301,113 +300,6 @@ inline bool TranslateBatAddess(const BatTable& bat_table, u32* address)
   *address = (bat_result & ~3) | (*address & 0x0001FFFF);
   return true;
 }
-
-struct JitData
-{
-   struct ROData
-   {
-      /* maybe it is best to just move the initializers for those arrays here */
-      alignas(16) const u8 pbswapShuffle1x4[16] = {};
-      alignas(16) const u8 pbswapShuffle2x4[16] = {};
-      alignas(16) const float m_one[4] = {};
-      alignas(16) const float m_quantizeTableS[128] = {};
-      alignas(16) const float m_dequantizeTableS[128] = {};
-
-      const int frsqrte_expected_base[32] = {};
-      const int frsqrte_expected_dec[32] = {};
-      const int fres_expected_base[32] = {};
-      const int fres_expected_dec[32] = {};
-
-      const u32 m_flagTable[8] = {0x0, 0x1, 0x8, 0x9, 0x0, 0x1, 0x8, 0x9};
-
-      // Safe + Fast Quantizers, originally from JITIL by magumagu
-      alignas(16) const float m_65535[4] = {65535.0f, 65535.0f, 65535.0f, 65535.0f};
-      alignas(16) const float m_32767 = 32767.0f;
-      alignas(16) const float m_m32768 = -32768.0f;
-      alignas(16) const float m_255 = 255.0f;
-      alignas(16) const float m_127 = 127.0f;
-      alignas(16) const float m_m128 = -128.0f;
-
-
-      // MXCSR = s_fpscr_to_mxcsr[FPSCR & 7]
-      const u32 s_fpscr_to_mxcsr[8] = {
-          0x1F80, 0x7F80, 0x5F80, 0x3F80, 0x9F80, 0xFF80, 0xDF80, 0xBF80,
-      };
-
-#ifdef _M_X86
-//#define MORE_ACCURATE_DOUBLETOSINGLE
-#ifdef MORE_ACCURATE_DOUBLETOSINGLE
-      alignas(16) const __m128i double_exponent = _mm_set_epi64x(0, 0x7ff0000000000000);
-      alignas(16) const __m128i double_fraction = _mm_set_epi64x(0, 0x000fffffffffffff);
-      alignas(16) const __m128i double_sign_bit = _mm_set_epi64x(0, 0x8000000000000000);
-      alignas(16) const __m128i double_explicit_top_bit = _mm_set_epi64x(0, 0x0010000000000000);
-      alignas(16) const __m128i double_top_two_bits = _mm_set_epi64x(0, 0xc000000000000000);
-      alignas(16) const __m128i double_bottom_bits = _mm_set_epi64x(0, 0x07ffffffe0000000);
-#else
-      alignas(16) const __m128i double_sign_bit = _mm_set_epi64x(0xffffffffffffffff,
-                                                                 0x7fffffffffffffff);
-      alignas(16) const __m128i single_qnan_bit = _mm_set_epi64x(0xffffffffffffffff,
-                                                                 0xffffffffffbfffff);
-      alignas(16) const __m128i double_qnan_bit = _mm_set_epi64x(0xffffffffffffffff,
-                                                                 0xfff7ffffffffffff);
-      // Smallest positive double that results in a normalized single.
-      alignas(16) const double min_norm_single = std::numeric_limits<float>::min();
-#endif
-#endif
-
-      alignas(16) const u64 psSignBits[2] = {0x8000000000000000ULL, 0x0000000000000000ULL};
-      alignas(16) const u64 psSignBits2[2] = {0x8000000000000000ULL, 0x8000000000000000ULL};
-      alignas(16) const u64 psAbsMask[2] = {0x7FFFFFFFFFFFFFFFULL, 0xFFFFFFFFFFFFFFFFULL};
-      alignas(16) const u64 psAbsMask2[2] = {0x7FFFFFFFFFFFFFFFULL, 0x7FFFFFFFFFFFFFFFULL};
-      alignas(16) const u64 psGeneratedQNaN[2] = {0x7FF8000000000000ULL, 0x7FF8000000000000ULL};
-      alignas(16) const double half_qnan_and_s32_max[2] = {0x7FFFFFFF, -0x80000};
-
-      alignas(16) const u64 psMantissaTruncate[2] = {0xFFFFFFFFF8000000ULL, 0xFFFFFFFFF8000000ULL};
-      alignas(16) const u64 psRoundBit[2] = {0x8000000, 0x8000000};
-
-
-      ROData();
-   };
-
-   struct RWData
-   {
-      /* CoreTiming.cpp */
-      s64 g_global_timer = 0;
-      u64 g_fake_TB_start_value = 0;
-      u64 g_fake_TB_start_ticks = 0;
-      int g_slice_length = 0;
-      float g_last_OC_factor_inverted = 0.0f;
-
-      // (from jit64/jitAsm.cpp)
-      // Not PowerPC state.  Can't put in 'this' because it's out of range...
-      void* s_saved_rsp = nullptr;
-
-      // CPU Thread execution state.
-      // Requires s_state_change_lock to modify the value.
-      // Read access is unsynchronized.
-      CPU::State s_state = CPU::CPU_POWERDOWN;
-
-      alignas(16) u32 temp32 = 0;
-      alignas(16) u64 temp64 = 0;
-
-      alignas(32) u8 m_gatherPipe[GPFifo::GATHER_PIPE_SIZE * 16] = {};
-      u32 m_gatherPipeCount = 0;
-
-      /* ProcessorInterface.cpp */
-      u32 m_InterruptCause = 0;
-
-      BatTable ibat_table = {};
-      BatTable dbat_table = {};
-   };
-
-   ROData* ro;
-   RWData* rw;
-   JitData();
-   ~JitData();
-};
-
-extern JitData jit_data;
-
 }  // namespace
 
 enum CRBits

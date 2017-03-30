@@ -2285,7 +2285,7 @@ static void DoWriteCode(IRBuilder* ibuild, JitIL* Jit, u32 exitAddress)
       FixupBranch noExtException = Jit->J_CC(CC_Z);
       Jit->TEST(32, PPCSTATE(msr), Imm32(0x0008000));
       FixupBranch noExtIntEnable = Jit->J_CC(CC_Z);
-      Jit->TEST(32, M(&PowerPC::jit_data.rw->m_InterruptCause),
+      Jit->TEST(32, M(&ProcessorInterface::m_InterruptCause),
                 Imm32(ProcessorInterface::INT_CAUSE_CP | ProcessorInterface::INT_CAUSE_PE_TOKEN |
                       ProcessorInterface::INT_CAUSE_PE_FINISH));
       FixupBranch noCPInt = Jit->J_CC(CC_Z);

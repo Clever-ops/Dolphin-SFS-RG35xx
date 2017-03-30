@@ -5,7 +5,6 @@
 #pragma once
 
 #include "Common/CommonTypes.h"
-#include "Core/PowerPC/PowerPC.h"
 class PointerWrap;
 
 namespace MMIO
@@ -53,6 +52,7 @@ enum
   PI_FLIPPER_UNK = 0x30  // BS1 writes 0x0245248A to it - prolly some bootstrap thing
 };
 
+extern u32 m_InterruptCause;
 extern u32 m_InterruptMask;
 extern u32 Fifo_CPUBase;
 extern u32 Fifo_CPUEnd;
@@ -69,7 +69,7 @@ inline u32 GetMask()
 }
 inline u32 GetCause()
 {
-  return PowerPC::jit_data.rw->m_InterruptCause;
+  return m_InterruptCause;
 }
 
 void SetInterrupt(u32 _causemask, bool _bSet = true);

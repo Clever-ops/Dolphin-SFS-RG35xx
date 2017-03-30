@@ -15,6 +15,12 @@ enum
   GATHER_PIPE_SIZE = 32
 };
 
+// More room for the fastmodes
+alignas(32) extern u8 m_gatherPipe[GATHER_PIPE_SIZE * 16];
+
+// pipe counter
+extern u32 m_gatherPipeCount;
+
 // Init
 void Init();
 void DoState(PointerWrap& p);

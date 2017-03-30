@@ -17,6 +17,9 @@
 
 using namespace Gen;
 
+// Not PowerPC state.  Can't put in 'this' because it's out of range...
+static void* s_saved_rsp;
+
 // PLAN: no more block numbers - crazy opcodes just contain offset within
 // dynarec buffer
 // At this offset - 4, there is an int specifying the block number.
@@ -37,7 +40,7 @@ void Jit64AsmRoutineManager::Generate()
   }
   else
   {
-    MOV(64, M(&PowerPC::jit_data.rw->s_saved_rsp), R(RSP));
+    MOV(64, M(&s_saved_rsp), R(RSP));
   }
   // something that can't pass the BLR test
   MOV(64, MDisp(RSP, 8), Imm32((u32)-1));
@@ -204,7 +207,7 @@ void Jit64AsmRoutineManager::ResetStack(X64CodeBlock& emitter)
   if (m_stack_top)
     emitter.MOV(64, R(RSP), Imm64((u64)m_stack_top - 0x20));
   else
-    emitter.MOV(64, R(RSP), M(&PowerPC::jit_data.rw->s_saved_rsp));
+    emitter.MOV(64, R(RSP), M(&s_saved_rsp));
 }
 
 void Jit64AsmRoutineManager::GenerateCommon()
