@@ -42,6 +42,8 @@ void GCAdapter::Shutdown()
 
 #include "Core/HW/SI/SI_DeviceGCAdapter.h"
 
+namespace SerialInterface
+{
 CSIDevice_GCAdapter::CSIDevice_GCAdapter(SIDevices device, int _iDeviceNumber)
     : CSIDevice_GCController(device, _iDeviceNumber)
 {
@@ -57,6 +59,7 @@ GCPadStatus CSIDevice_GCAdapter::GetPadStatus()
 int CSIDevice_GCAdapter::RunBuffer(u8* buffer, int length)
 {
   return CSIDevice_GCController::RunBuffer(buffer, length);
+}
 }
 
 #include "Core/NetPlayProto.h"
@@ -83,6 +86,8 @@ u64 CEXIIPL::NetPlay_GetEmulatedTime()
 #include "Core/HW/SI/SI_DeviceGCController.h"
 #include "Core/ConfigManager.h"
 
+namespace SerialInterface
+{
 int CSIDevice_GCController::NetPlay_InGamePadToLocalPad(int numPAD)
 {
     return numPAD;
@@ -100,7 +105,7 @@ void CSIDevice_GCController::Rumble(int numPad, ControlState strength)
   if (SIDevice_IsGCController(device))
     Pad::Rumble(numPad, strength);
 }
-
+}
 
 #include "Core/HW/WiimoteEmu/WiimoteEmu.h"
 

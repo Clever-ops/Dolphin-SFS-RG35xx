@@ -42,7 +42,7 @@ void Libretro::init_video()
    {
       printf("SConfig::GetInstance().m_strVideoBackend == \"OGL\"\n");
       fflush(stdout);
-#ifdef CORE
+#ifdef HAVE_HW_CONTEXT_OPENGL_CORE
       Libretro::hw_render.context_type = RETRO_HW_CONTEXT_OPENGL_CORE;
       Libretro::hw_render.version_major = 3;
       Libretro::hw_render.version_minor = 1;
@@ -70,7 +70,7 @@ void Libretro::init_video()
 namespace Null
 {
 // Init functions
-Renderer::Renderer()
+Renderer::Renderer() : ::Renderer(1, 1)
 {
   g_Config.bRunning = true;
   UpdateActiveConfig();
@@ -117,8 +117,8 @@ void cInterfaceRGL::Swap()
 
    video_cb(RETRO_HW_FRAME_BUFFER_VALID, s_backbuffer_width, s_backbuffer_height, 0);
    co_switch(Libretro::mainthread);
-   s_backbuffer_width = Renderer::GetTargetWidth();
-   s_backbuffer_height = Renderer::GetTargetHeight();
+   s_backbuffer_width = g_renderer->GetTargetWidth();
+   s_backbuffer_height = g_renderer->GetTargetHeight();
 }
 
 void cInterfaceRGL::SwapInterval(int Interval)
