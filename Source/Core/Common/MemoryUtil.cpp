@@ -29,46 +29,106 @@
 #endif
 #endif
 
-// Valgrind doesn't support MAP_32BIT.
-// Uncomment the following line to be able to run Dolphin in Valgrind.
-//#undef MAP_32BIT
-
 namespace Common
 {
-#if !defined(_WIN32) && defined(_M_X86_64) && !defined(MAP_32BIT)
+#if defined(_M_X86_64)
+#if defined(_WIN32)
+static SYSTEM_INFO sys_info;
+#define MEM_PAGE_SIZE (uintptr_t)(sys_info.dwPageSize)
+#else
 #include <unistd.h>
+#define MEM_PAGE_SIZE (getpagesize())
+#endif
+
 static uintptr_t RoundPage(uintptr_t addr)
 {
-  uintptr_t mask = getpagesize() - 1;
+  uintptr_t mask = MEM_PAGE_SIZE - 1;
   return (addr + mask) & ~mask;
+}
+#endif
+
+static int hint_location;
+
+#if defined(_WIN32) && defined(_M_X64)
+static uintptr_t last_executable_addr;
+static void *SearchForFreeMem(size_t size)
+{
+  if (!last_executable_addr)
+    last_executable_addr = (uintptr_t) &hint_location - sys_info.dwPageSize;
+  last_executable_addr -= size;
+
+  MEMORY_BASIC_INFORMATION info;
+  while (VirtualQuery((void *)last_executable_addr, &info, sizeof(info)) == sizeof(info))
+  {
+    // went too far, unusable for executable memory
+    if (last_executable_addr + 0x80000000 < (uintptr_t) &hint_location)
+      return NULL;
+
+    uintptr_t end = last_executable_addr + size;
+    if (info.State != MEM_FREE)
+    {
+      last_executable_addr = (uintptr_t) info.AllocationBase - size;
+      continue;
+    }
+
+    if ((uintptr_t)info.BaseAddress + (uintptr_t)info.RegionSize >= end &&
+      (uintptr_t)info.BaseAddress <= last_executable_addr)
+      return (void *)last_executable_addr;
+
+    last_executable_addr -= size;
+  }
+
+  return NULL;
 }
 #endif
 
 // This is purposely not a full wrapper for virtualalloc/mmap, but it
 // provides exactly the primitive operations that Dolphin needs.
 
-void* AllocateExecutableMemory(size_t size, bool low)
+void* AllocateExecutableMemory(size_t size)
 {
 #if defined(_WIN32)
-  void* ptr = VirtualAlloc(0, size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+  void* ptr;
+#if defined(_M_X86_64)
+  if (sys_info.dwPageSize == 0)
+    GetSystemInfo(&sys_info);
+
+  if ((uintptr_t) &hint_location > 0xFFFFFFFFULL)
+  {
+    size_t aligned_size = RoundPage(size);
+    ptr = SearchForFreeMem(aligned_size);
+    if (!ptr) {
+      // Let's try again, from the top.
+      // When we deallocate, this doesn't change, so we eventually run out of space.
+      last_executable_addr = 0;
+      ptr = SearchForFreeMem(aligned_size);
+    }
+    if (ptr)
+      ptr = VirtualAlloc(ptr, aligned_size, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+    else
+      ERROR_LOG(MEMMAP, "Unable to find nearby executable memory for jit");
+  }
+  else
+#endif
+    ptr = VirtualAlloc(0, size, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
 #else
   static char* map_hint = nullptr;
-#if defined(_M_X86_64) && !defined(MAP_32BIT)
-  // This OS has no flag to enforce allocation below the 4 GB boundary,
-  // but if we hint that we want a low address it is very likely we will
-  // get one.
-  // An older version of this code used MAP_FIXED, but that has the side
-  // effect of discarding already mapped pages that happen to be in the
-  // requested virtual memory range (such as the emulated RAM, sometimes).
-  if (low && (!map_hint))
-    map_hint = (char*)RoundPage(512 * 1024 * 1024); /* 0.5 GB rounded up to the next page */
+#if defined(_M_X86_64)
+  // Try to request one that is close to our memory location if we're in high memory.
+  // We use a dummy global variable to give us a good location to start from.
+  if (!map_hint)
+  {
+    if ((uintptr_t) &hint_location > 0xFFFFFFFFULL)
+      map_hint = (char*)RoundPage((uintptr_t)&hint_location) - 0x20000000; // 0.5gb lower than our approximate location
+    else
+      map_hint = (char*)0x20000000; // 0.5GB mark in memory
+  }
+  else if ((uintptr_t) map_hint > 0xFFFFFFFFULL)
+  {
+    map_hint -= RoundPage(size); /* round down to the next page if we're in high memory */
+  }
 #endif
-  void* ptr = mmap(map_hint, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON | MAP_PRIVATE
-#if defined(_M_X86_64) && defined(MAP_32BIT)
-                                                                           | (low ? MAP_32BIT : 0)
-#endif
-                                                                           ,
-                   -1, 0);
+  void* ptr = mmap(map_hint, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON | MAP_PRIVATE, -1, 0);
 #endif /* defined(_WIN32) */
 
 #ifdef _WIN32
@@ -79,23 +139,23 @@ void* AllocateExecutableMemory(size_t size, bool low)
   {
     ptr = nullptr;
 #endif
-    PanicAlert("Failed to allocate executable memory. If you are running Dolphin in Valgrind, try "
-               "'#undef MAP_32BIT'.");
+    PanicAlert("Failed to allocate executable memory.");
   }
-#if !defined(_WIN32) && defined(_M_X86_64) && !defined(MAP_32BIT)
+#if !defined(_WIN32) && defined(_M_X86_64)
   else
   {
-    if (low)
+    if ((uintptr_t) map_hint <= 0xFFFFFFFF)
     {
-      map_hint += size;
-      map_hint = (char*)RoundPage((uintptr_t)map_hint); /* round up to the next page */
+      // Round up if we're below 32-bit mark, probably allocating sequentially.
+      map_hint += RoundPage(size);
+
+      // If we moved ahead too far, skip backwards and recalculate.
+      // When we free, we keep moving forward and eventually move too far.
+      if ((uintptr_t)map_hint - (uintptr_t) &hint_location >= 0x70000000) {
+        map_hint = 0;
+      }
     }
   }
-#endif
-
-#if _M_X86_64
-  if ((u64)ptr >= 0x80000000 && low == true)
-    PanicAlert("Executable memory ended up above 2GB!");
 #endif
 
   return ptr;
