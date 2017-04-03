@@ -191,7 +191,7 @@ static std::string DoState(PointerWrap& p)
   Gecko::DoState(p);
   p.DoMarker("Gecko");
 
-#if defined(HAVE_LIBAV) || defined(_WIN32)
+#ifdef HAVE_LIBAV
   AVIDump::DoState();
 #endif
 

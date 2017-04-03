@@ -241,7 +241,7 @@ static wxString internal_resolution_frame_dumping_desc = wxTRANSLATE(
     "the size of the window it is displayed within. If the aspect ratio is widescreen, the output "
     "image will be scaled horizontally to preserve the vertical resolution.\n\nIf unsure, leave "
     "this unchecked.");
-#if defined(HAVE_LIBAV) || defined(_WIN32)
+#ifdef HAVE_LIBAV
 static wxString use_ffv1_desc =
     wxTRANSLATE("Encode frame dumps using the FFV1 codec.\n\nIf unsure, leave this unchecked.");
 #endif
@@ -875,7 +875,7 @@ VideoConfigDiag::VideoConfigDiag(wxWindow* parent, const std::string& title)
                                       wxGetTranslation(dump_efb_desc), vconfig.bDumpEFBTarget));
       szr_utility->Add(CreateCheckBox(page_advanced, _("Free Look"),
                                       wxGetTranslation(free_look_desc), vconfig.bFreeLook));
-#if defined(HAVE_LIBAV) || defined(_WIN32)
+#ifdef HAVE_LIBAV
       szr_utility->Add(CreateCheckBox(page_advanced, _("Frame Dumps Use FFV1"),
                                       wxGetTranslation(use_ffv1_desc), vconfig.bUseFFV1));
 #endif

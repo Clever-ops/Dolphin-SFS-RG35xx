@@ -735,7 +735,7 @@ bool Renderer::IsFrameDumping()
   if (m_screenshot_request.IsSet())
     return true;
 
-#if defined(HAVE_LIBAV) || defined(_WIN32)
+#ifdef HAVE_LIBAV
   if (SConfig::GetInstance().m_DumpFrames)
     return true;
 #endif
@@ -789,7 +789,7 @@ void Renderer::RunFrameDumps()
   bool frame_dump_started = false;
 
 // If Dolphin was compiled without libav, we only support dumping to images.
-#if !defined(HAVE_LIBAV) && !defined(_WIN32)
+#ifndef HAVE_LIBAV
   if (dump_to_avi)
   {
     WARN_LOG(VIDEO, "AVI frame dump requested, but Dolphin was compiled without libav. "
@@ -861,7 +861,7 @@ void Renderer::RunFrameDumps()
   }
 }
 
-#if defined(HAVE_LIBAV) || defined(_WIN32)
+#ifdef HAVE_LIBAV
 
 bool Renderer::StartFrameDumpToAVI(const FrameDumpConfig& config)
 {
@@ -893,7 +893,7 @@ void Renderer::StopFrameDumpToAVI()
 {
 }
 
-#endif  // defined(HAVE_LIBAV) || defined(WIN32)
+#endif  // defined(HAVE_LIBAV)
 
 std::string Renderer::GetFrameDumpNextImageFileName() const
 {
