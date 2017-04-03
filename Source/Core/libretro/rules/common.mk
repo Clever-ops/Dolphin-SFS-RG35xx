@@ -39,7 +39,11 @@ COMMON_OBJECTS += $(COMMON_DIR)/Crypto/AES.o
 COMMON_OBJECTS += $(COMMON_DIR)/Crypto/bn.o
 COMMON_OBJECTS += $(COMMON_DIR)/Crypto/ec.o
 COMMON_OBJECTS += $(COMMON_DIR)/Logging/LogManager.o
+ifeq ($(platform),win)
+COMMON_OBJECTS += $(COMMON_DIR)/Logging/ConsoleListenerWin.o
+else
 COMMON_OBJECTS += $(COMMON_DIR)/Logging/ConsoleListenerNix.o
+endif
 COMMON_OBJECTS += $(COMMON_DIR)/x64FPURoundMode.o
 COMMON_OBJECTS += $(COMMON_DIR)/x64CPUDetect.o
 COMMON_OBJECTS += $(COMMON_DIR)/GL/GLUtil.o
@@ -50,13 +54,12 @@ $(COMMON_DIR)/GL/GLExtensions/GLExtensions.o : DEFINES += -U__linux__ -U__APPLE_
 #override:
 #COMMON_OBJECTS += $(COMMON_DIR)/GL/GLInterface/GLInterface.o
 
-OBJECTS += $(COMMON_OBJECTS)
-
+$(call add_lib,common,$(COMMON_OBJECTS))
 
 DISTRIBUTOR          = None
-DOLPHIN_WC_BRANCH    = $(shell git rev-parse --abbrev-ref HEAD)
-DOLPHIN_WC_REVISION  = $(shell git rev-parse HEAD)
-DOLPHIN_WC_DESCRIBE  = $(shell git describe --always --long --dirty)
+DOLPHIN_WC_BRANCH    = $(shell git$(EXE_EXT) rev-parse --abbrev-ref HEAD)
+DOLPHIN_WC_REVISION  = $(shell git$(EXE_EXT) rev-parse HEAD)
+DOLPHIN_WC_DESCRIBE  = $(shell git$(EXE_EXT) describe --always --long --dirty)
 DOLPHIN_WC_IS_STABLE = 0
 ifeq ($(DOLPHIN_WC_BRANCH), master)
    DOLPHIN_WC_IS_STABLE=1
@@ -64,7 +67,6 @@ endif
 ifeq ($(DOLPHIN_WC_BRANCH), stable)
    DOLPHIN_WC_IS_STABLE=1
 endif
-
 
 $(COMMON_DIR)/scmrev.h:
 	echo -e '#define SCM_REV_STR "$(DOLPHIN_WC_REVISION)"\n#define SCM_DESC_STR "$(DOLPHIN_WC_DESCRIBE)"\n#define SCM_BRANCH_STR "$(DOLPHIN_WC_BRANCH)"\n#define SCM_IS_MASTER $(DOLPHIN_WC_IS_STABLE)\n#define SCM_DISTRIBUTOR_STR "$(DISTRIBUTOR)"\n' > $@

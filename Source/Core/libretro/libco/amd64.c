@@ -137,7 +137,7 @@ cothread_t co_create(unsigned int size, void (*entrypoint)(void))
    if(!co_swap)
    {
       co_init();
-      co_swap = (void (*)(cothread_t, cothread_t))co_swap_function;
+      co_swap = (void (*)(cothread_t, cothread_t))(void*)co_swap_function;
    }
 #endif
 

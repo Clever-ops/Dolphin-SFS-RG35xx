@@ -341,7 +341,7 @@ void Pad::Rumble(const int pad_num, const ControlState strength)
    else if (strength > 1.0)
       str = 0xFFFF;
    else
-      str = 0xFFFF * strength;
+      str = (uint16_t)(0xFFFF * strength);
 
    rumble.set_rumble_state(pad_num, RETRO_RUMBLE_WEAK, str);
    rumble.set_rumble_state(pad_num, RETRO_RUMBLE_STRONG, str);

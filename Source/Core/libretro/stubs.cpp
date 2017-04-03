@@ -3,11 +3,11 @@
 
 size_t retro_get_memory_size(unsigned id)
 {
-   switch (id & RETRO_MEMORY_MASK)
-   {
+//   switch (id & RETRO_MEMORY_MASK)
+//   {
 //   case RETRO_MEMORY_SAVE_RAM:
 //      return 0;
-   }
+//   }
 
    return 0;
 }

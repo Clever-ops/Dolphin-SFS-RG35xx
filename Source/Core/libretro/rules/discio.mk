@@ -20,4 +20,4 @@ DISCIO_OBJECTS += $(DISCIO_DIR)/VolumeWad.o
 DISCIO_OBJECTS += $(DISCIO_DIR)/VolumeWiiCrypted.o
 DISCIO_OBJECTS += $(DISCIO_DIR)/WiiWad.o
 
-OBJECTS += $(DISCIO_OBJECTS)
+$(call add_lib,discio,$(DISCIO_OBJECTS))

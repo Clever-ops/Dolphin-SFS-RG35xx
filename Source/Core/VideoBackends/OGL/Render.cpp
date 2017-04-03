@@ -51,7 +51,7 @@
 namespace Libretro {
 extern struct retro_hw_render_callback hw_render;
 }
-#define DEFAULT_FRAMEBUFFER Libretro::hw_render.get_current_framebuffer()
+#define DEFAULT_FRAMEBUFFER (GLuint)Libretro::hw_render.get_current_framebuffer()
 #else
 #define DEFAULT_FRAMEBUFFER 0
 #endif

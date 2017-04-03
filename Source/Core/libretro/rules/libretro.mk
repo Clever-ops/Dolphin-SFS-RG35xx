@@ -1,62 +1,130 @@
 
 fpic := -fpic
-STATIC_LINKING ?= 0
+TARGET_SUFFIX :=
 
-ifeq ($(platform), unix)
-   SHARED_EXT := so
-   TARGET_SUFFIX :=
+ifeq ($(platform),unix)
    LDFLAGS += -shared -lm
+else ifeq ($(platform),win)
+
 else
    $(error unsupported platform : $(platform))
 endif
 
 
 ifeq ($(DEBUG),1)
-FLAGS += -O0 -g -DDEBUG
+   DEFINES += -DDEBUG -D_DEBUG
 else
-FLAGS += -g -O3 -DNDEBUG
+   DEFINES += -DNDEBUG
 endif
 
-ifeq ($(PERF_TEST),1)
-FLAGS += -DPERF_TEST
+DEFINES += -D__LIBRETRO__
+
+ifeq ($(compiler),msvc)
+   fpic :=
+   FLAGS_debug   = -GS -Gy -Od -RTC1 -D_SECURE_SCL=1
+   FLAGS_release = -GS- -Gy- -O2 -Ob2 -GF -GT -Oy -Ot -D_SECURE_SCL=0
+
+   ifeq ($(STATIC_LINKING), 1)
+      FLAGS_debug   += -MDd
+      FLAGS_release += -MD
+   else
+      FLAGS_debug   += -LDd
+      FLAGS_release += -LD
+   endif
+
+   ifeq ($(DEBUG),1)
+      FLAGS   += $(FLAGS_debug)
+      LDFLAGS += -DEBUG
+   else
+      FLAGS   += $(FLAGS_release)
+   endif
+else
+   ifeq ($(DEBUG),1)
+      FLAGS += -O0 -g
+   else
+      FLAGS += -g -O3
+   endif
+   FLAGS	 += -Werror=implicit-function-declaration
 endif
 
 ifeq ($(STATIC_LINKING), 1)
-TARGET := $(TARGET_NAME)_libretro$(TARGET_SUFFIX).a
+   TARGET := $(TARGET_NAME)_libretro$(TARGET_SUFFIX)$(STATIC_EXT)
 else
-TARGET := $(TARGET_NAME)_libretro$(TARGET_SUFFIX).$(SHARED_EXT)
-FLAGS += $(fpic)
+   TARGET := $(TARGET_NAME)_libretro$(TARGET_SUFFIX)$(SHARED_EXT)
+   FLAGS  += $(fpic)
 endif
 
-DEFINES  += -D__LIBRETRO__
-FLAGS	 += -Werror=implicit-function-declaration
+ifeq ($(compiler),msvc)
+   LIBS += kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib
+   LIBS += uuid.lib odbc32.lib odbccp32.lib iphlpapi.lib winmm.lib setupapi.lib opengl32.lib glu32.lib rpcrt4.lib comctl32.lib
 
-CFLAGS   += $(FLAGS) $(DEFINES) $(INCLUDES) $(C_FLAGS)   $(C_DEFINES)   $(C_INCLUDES)
-CXXFLAGS += $(FLAGS) $(DEFINES) $(INCLUDES) $(CXX_FLAGS) $(CXX_DEFINES) $(CXX_INCLUDES)
-LDFLAGS  += $(FLAGS) $(C_FLAGS) $(CXX_FLAGS) -Wl,--no-undefined
-# version script was causing a link error : investigate / fix.
-# LDFLAGS += -Wl,--version-script=link.T
+   LDFLAGS  += -nologo -wx -dynamicbase -dll -nxcompat -machine:x64
+   #LDFLAGS  += -DEF:"libretro.def"
+   #LDFLAGS  += -MANIFEST
+   #LDFLAGS  += -INCLUDE:"ucrtFreadWorkaround"
+   #LDFLAGS  += -OPT:REF
+   #LDFLAGS  += uiAccess='false'"
+   #LDFLAGS  += -OPT:ICF
+   #LDFLAGS  += -TLBID:1
+   #LDFLAGS  += -LTCG:incremental
+   #LDFLAGS  += -INCREMENTAL
+   #LDFLAGS  += -MANIFESTUAC:"level='asInvoker'
+   #LDFLAGS  += -ManifestFile:"Release\msvc-2010.dll.intermediate.manifest"
+   #LDFLAGS  += -manifest:embed
+   #LDFLAGS  += -SUBSYSTEM:WINDOWS
+   #LDFLAGS  += -SAFESEH
 
+   OBJECTS := $(OBJECTS:.o=.obj)
+else
+   LDFLAGS  += $(FLAGS) $(CFLAGS) $(CXXFLAGS) -Wl,--no-undefined -L.
+   # version script was causing a link error : investigate / fix.
+   # LDFLAGS += -Wl,--version-script=link.T
+endif
+
+CFLAGS   += $(FLAGS) $(WARNINGS) $(DEFINES) $(CDEFINES) $(INCLUDES) $(CINCLUDES)
+CXXFLAGS += $(FLAGS) $(WARNINGS) $(DEFINES) $(CXXDEFINES) $(INCLUDES) $(CXXINCLUDES)
 
 build: $(TARGET)
-$(TARGET): $(OBJECTS)
-ifeq ($(STATIC_LINKING), 1)
-	$(AR) rcs $@ $(OBJECTS)
+$(TARGET): $(TARGET_DEPS) $(OBJECTS)
+
+ifeq ($(compiler),msvc)
+
+%.lib:
+	$(AR) -nologo -wx -machine:x64 -out:$@ $^
+
+%.dll:
+	$(LD) -out:$@ $(OBJECTS) $(LIBS) $(LDFLAGS)
+
+%.obj: %.cpp
+	$(CXX) $< -c -Fo$@ $(CXXFLAGS)
+
+%.obj: %.cc
+	$(CXX) $< -c -Fo$@ $(CXXFLAGS)
+
+%.obj: %.c
+	$(CC) $< -c -Fo$@ $(CFLAGS)
+
 else
-	$(CXX) -o $@ $^ $(LDFLAGS)
-endif
+
+%.a:
+	$(AR) rcs $@ $^
+
+%.so:
+	$(CXX) -o $@ $(OBJECTS) $(LIBS) $(LDFLAGS)
 
 %.o: %.cpp
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
+	$(CXX) $< -c -o $@ $(CXXFLAGS)
 
 %.o: %.cc
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
+	$(CXX) $< -c -o $@ $(CXXFLAGS)
 
 %.o: %.c
-	$(CC) -c -o $@ $< $(CFLAGS)
+	$(CC) $< -c -o $@ $(CFLAGS)
+
+endif
 
 clean:
-	rm -f $(TARGET) $(OBJECTS)
+	$(call delete, $(TARGET) $(OBJECTS))
 
 
 .PHONY: clean test

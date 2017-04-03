@@ -27,4 +27,4 @@ INPUTCOMMON_OBJECTS += $(INPUTCOMMON_DIR)/ControlReference/ExpressionParser.o
 #INPUTCOMMON_OBJECTS += $(INPUTCOMMON_DIR)/ControllerInterface/evdev/evdev.o
 #INPUTCOMMON_OBJECTS += $(INPUTCOMMON_DIR)/ControllerInterface/Pipes/Pipes.o
 
-OBJECTS += $(INPUTCOMMON_OBJECTS)
+$(call add_lib,inputcommon,$(INPUTCOMMON_OBJECTS))

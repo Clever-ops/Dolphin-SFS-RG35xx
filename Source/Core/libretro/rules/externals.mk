@@ -15,7 +15,6 @@ $(DEPS_DIR)/enet/protocol.o \
 $(DEPS_DIR)/enet/unix.o \
 $(DEPS_DIR)/enet/win32.o
 
-#glslang_FLAGS = -Wno-shadow -Wno-reorder -Wno-sign-compare -Wno-parentheses -Wno-unused-variable -fomit-frame-pointer
 glslang_OBJECTS = \
 $(DEPS_DIR)/glslang/glslang/GenericCodeGen/CodeGen.o \
 $(DEPS_DIR)/glslang/glslang/GenericCodeGen/Link.o \
@@ -58,21 +57,21 @@ $(DEPS_DIR)/glslang/SPIRV/GlslangToSpv.o \
 $(DEPS_DIR)/glslang/SPIRV/InReadableOrder.o \
 $(DEPS_DIR)/glslang/SPIRV/Logger.o \
 $(DEPS_DIR)/glslang/SPIRV/SpvBuilder.o \
-$(DEPS_DIR)/glslang/SPIRV/SPVRemapper.o \
-$(DEPS_DIR)/glslang/glslang/OSDependent/Unix/ossource.o
-
-$(glslang_OBJECTS) : CXX_FLAGS += -Wno-shadow -Wno-reorder -Wno-sign-compare -Wno-parentheses -Wno-unused-variable -fomit-frame-pointer
+$(DEPS_DIR)/glslang/SPIRV/SPVRemapper.o
+ifneq ($(findstring win,$(platform)),)
+glslang_OBJECTS = $(DEPS_DIR)/glslang/glslang/OSDependent/Windows/ossource.o
+else
+glslang_OBJECTS += $(DEPS_DIR)/glslang/glslang/OSDependent/Unix/ossource.o
+endif
 
 # maybe $(DEPS_DIR)/hidapi/libusb can be used as a fallback here ?
-ifeq ($(platform), win)
+ifneq ($(findstring win,$(platform)),)
    hidapi__hidraw_OBJECTS = $(DEPS_DIR)/hidapi/windows/hid.o
 else ifeq ($(platform), osx)
    hidapi__hidraw_OBJECTS = $(DEPS_DIR)/hidapi/mac/hid.o
 else
    hidapi__hidraw_OBJECTS = $(DEPS_DIR)/hidapi/linux/hid.o
 endif
-
-$(hidapi__hidraw_OBJECTS): INCLUDES += -I$(DEPS_DIR)/hidapi/hidapi
 
 mbedcrypto_OBJECTS = \
 $(DEPS_DIR)/mbedtls/library/aes.o \
@@ -174,7 +173,7 @@ $(DEPS_DIR)/SFML/src/SFML/Network/SocketSelector.o \
 $(DEPS_DIR)/SFML/src/SFML/Network/TcpListener.o \
 $(DEPS_DIR)/SFML/src/SFML/Network/TcpSocket.o \
 $(DEPS_DIR)/SFML/src/SFML/Network/UdpSocket.o
-ifeq ($(platform), win)
+ifneq ($(findstring win,$(platform)),)
    sfml__network_OBJECTS += $(DEPS_DIR)/SFML/src/SFML/Network/Win32/SocketImpl.o
 else
    sfml__network_OBJECTS += $(DEPS_DIR)/SFML/src/SFML/Network/Unix/SocketImpl.o
@@ -194,17 +193,69 @@ $(DEPS_DIR)/SOIL/stb_image_aug.o
 xxhash_OBJECTS = \
 $(DEPS_DIR)/xxhash/xxhash.o
 
+libpng_OBJECTS = \
+$(DEPS_DIR)/libpng/png.o \
+$(DEPS_DIR)/libpng/pngerror.o \
+$(DEPS_DIR)/libpng/pngget.o \
+$(DEPS_DIR)/libpng/pngmem.o \
+$(DEPS_DIR)/libpng/pngpread.o \
+$(DEPS_DIR)/libpng/pngread.o \
+$(DEPS_DIR)/libpng/pngrio.o \
+$(DEPS_DIR)/libpng/pngrtran.o \
+$(DEPS_DIR)/libpng/pngrutil.o \
+$(DEPS_DIR)/libpng/pngset.o \
+$(DEPS_DIR)/libpng/pngtrans.o \
+$(DEPS_DIR)/libpng/pngwio.o \
+$(DEPS_DIR)/libpng/pngwrite.o \
+$(DEPS_DIR)/libpng/pngwtran.o \
+$(DEPS_DIR)/libpng/pngwutil.o
+
+LZO_OBJECTS = \
+$(DEPS_DIR)/LZO/minilzo.o
+
+zlib_OBJECTS = \
+$(DEPS_DIR)/zlib/adler32.o \
+$(DEPS_DIR)/zlib/compress.o \
+$(DEPS_DIR)/zlib/crc32.o \
+$(DEPS_DIR)/zlib/deflate.o \
+$(DEPS_DIR)/zlib/gzclose.o \
+$(DEPS_DIR)/zlib/gzlib.o \
+$(DEPS_DIR)/zlib/gzread.o \
+$(DEPS_DIR)/zlib/gzwrite.o \
+$(DEPS_DIR)/zlib/inflate.o \
+$(DEPS_DIR)/zlib/infback.o \
+$(DEPS_DIR)/zlib/inftrees.o \
+$(DEPS_DIR)/zlib/inffast.o \
+$(DEPS_DIR)/zlib/trees.o \
+$(DEPS_DIR)/zlib/uncompr.o \
+$(DEPS_DIR)/zlib/zutil.o
+
 
 #Deps :
-OBJECTS += $(bdisasm_OBJECTS)
-OBJECTS += $(enet_OBJECTS)
-OBJECTS += $(glslang_OBJECTS)
-#OBJECTS += $(hidapi__hidraw_OBJECTS)
-OBJECTS += $(mbedcrypto_OBJECTS)
-OBJECTS += $(mbedtls_OBJECTS)
-OBJECTS += $(mbedx509_OBJECTS)
-OBJECTS += $(miniupnpc_OBJECTS)
-OBJECTS += $(sfml__network_OBJECTS)
-OBJECTS += $(sfml__system_OBJECTS)
-OBJECTS += $(SOIL_OBJECTS)
-OBJECTS += $(xxhash_OBJECTS)
+EXTERNALS_OBJECTS += $(bdisasm_OBJECTS)
+EXTERNALS_OBJECTS += $(enet_OBJECTS)
+EXTERNALS_OBJECTS += $(glslang_OBJECTS)
+#EXTERNALS_OBJECTS += $(hidapi__hidraw_OBJECTS)
+EXTERNALS_OBJECTS += $(mbedcrypto_OBJECTS)
+EXTERNALS_OBJECTS += $(mbedtls_OBJECTS)
+EXTERNALS_OBJECTS += $(mbedx509_OBJECTS)
+EXTERNALS_OBJECTS += $(miniupnpc_OBJECTS)
+EXTERNALS_OBJECTS += $(sfml__network_OBJECTS)
+EXTERNALS_OBJECTS += $(sfml__system_OBJECTS)
+EXTERNALS_OBJECTS += $(SOIL_OBJECTS)
+EXTERNALS_OBJECTS += $(xxhash_OBJECTS)
+#ifeq ($(compiler),msvc)
+   EXTERNALS_OBJECTS += $(libpng_OBJECTS)
+   EXTERNALS_OBJECTS += $(LZO_OBJECTS)
+   EXTERNALS_OBJECTS += $(zlib_OBJECTS)
+#endif
+
+#$(hidapi__hidraw_OBJECTS.o=$(OBJ_EXT)): INCLUDES += -I$(DEPS_DIR)/hidapi/hidapi
+
+$(glslang_OBJECTS)        : WARNINGS += -Wno-shadow -Wno-reorder -Wno-sign-compare -Wno-parentheses -Wno-unused-variable
+$(glslang_OBJECTS:.o=.obj): DEFINES := $(filter-out -D_CRT_SECURE_NO_WARNINGS,$(DEFINES))
+
+libexternals.lib: WARNINGS := -W0
+
+$(call add_lib,externals,$(EXTERNALS_OBJECTS))
+
