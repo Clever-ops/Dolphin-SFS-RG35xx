@@ -50,9 +50,9 @@ ifeq ($(STATIC_LINKING), 1)
    OBJECTS += $(2)
 else
    ifeq ($(compiler),msvc)
-      LIBS += lib$(1).lib
+      LOCALLIBS += lib$(1).lib
    else
-      LIBS += -l$(1)
+      LOCALLIBS += -l$(1)
    endif
 TARGET_DEPS += lib$(1)$(STATIC_EXT)
 lib$(1)$(STATIC_EXT): $(2)

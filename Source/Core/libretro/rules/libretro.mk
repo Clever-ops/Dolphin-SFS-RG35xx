@@ -42,9 +42,9 @@ else
    ifeq ($(DEBUG),1)
       FLAGS += -O0 -g
    else
-      FLAGS += -g -O3
+      FLAGS += -O3
+      LDFLAGS += -s
    endif
-   FLAGS	 += -Werror=implicit-function-declaration
 endif
 
 ifeq ($(STATIC_LINKING), 1)
@@ -79,14 +79,13 @@ ifeq ($(compiler),msvc)
       CXXPCHFLAGS = -Yu"pch.h" -Fp$(CXXPCH) -FIpch.h
    endif
 else
-   LDFLAGS  += $(FLAGS) $(CFLAGS) $(CXXFLAGS) -Wl,--no-undefined -L.
+   LDFLAGS  += $(FLAGS) -Wl,--no-undefined -L.
    # version script was causing a link error : investigate / fix.
    # LDFLAGS += -Wl,--version-script=link.T
 endif
 
 CFLAGS   += $(FLAGS) $(WARNINGS) $(CWARNINGS) $(DEFINES) $(CDEFINES) $(INCLUDES) $(CINCLUDES)
 CXXFLAGS += $(FLAGS) $(WARNINGS) $(CXXWARNINGS) $(DEFINES) $(CXXDEFINES) $(INCLUDES) $(CXXINCLUDES)
-
 
 build: $(TARGET)
 $(TARGET): $(TARGET_DEPS) $(OBJECTS)
@@ -97,7 +96,7 @@ ifeq ($(compiler),msvc)
 	$(AR) -nologo -wx -machine:x64 -out:$@ $^
 
 %.dll:
-	$(LD) -out:$@ $(CXXPCH:.pch=.obj) $(OBJECTS) $(LIBS) $(LDFLAGS)
+	$(LD) -out:$@ $(CXXPCH:.pch=.obj) $(OBJECTS) $(LOCALLIBS) $(LIBS) $(LDFLAGS)
 
 %.cpp: $(CXXPCH)
 %.obj: %.cpp $(CXXPCH)
@@ -118,7 +117,7 @@ else
 	$(AR) rcs $@ $^
 
 %.so:
-	$(CXX) -o $@ $(OBJECTS) $(LIBS) $(LDFLAGS)
+	$(CXX) -o $@ $(OBJECTS) -Wl,--start-group $(LOCALLIBS) -Wl,--end-group $(LIBS) $(LDFLAGS)
 
 %.o: %.cpp
 	$(CXX) $< -c -o $@ $(CXXFLAGS)

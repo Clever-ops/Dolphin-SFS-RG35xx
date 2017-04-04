@@ -30,8 +30,10 @@ CXXWARNINGS += -wd4530 -wd4577
 CXXPCH = $(ROOT_DIR)/Source/PCH/pch.pch
 else
 WARNINGS += -Wall -Wtype-limits -Wsign-compare -Wignored-qualifiers -Wuninitialized -Wlogical-op -Wshadow -Winit-self
+WARNINGS += -Werror=implicit-function-declaration
 FLAGS += -msse2 -fno-strict-aliasing -fno-exceptions -fvisibility=hidden -fomit-frame-pointer
 CXXFLAGS += -Wmissing-declarations -fvisibility-inlines-hidden -std=c++14
+LIBS += -lpthread -lrt
 endif
 
 INCLUDES += -I$(CORE_DIR)
