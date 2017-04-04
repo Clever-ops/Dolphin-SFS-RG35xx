@@ -58,7 +58,7 @@ TARGET_DEPS += lib$(1)$(STATIC_EXT)
 lib$(1)$(STATIC_EXT): $(2)
 endif
 clean_$(1):
-	$(call delete,$(2) $(1)$(STATIC_EXT))
+	$(call delete,$(2) lib$(1)$(STATIC_EXT))
 clean: clean_$(1)
 .PHONY: clean_$(1)
 endef
