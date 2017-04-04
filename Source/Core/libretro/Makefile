@@ -1,9 +1,10 @@
 
 include rules/base.mk
 
-TARGET_NAME   := dolphin
-DEBUG          = 0
-STATIC_LINKING = 0
+TARGET_NAME    := dolphin
+DEBUG           = 0
+STATIC_LINKING  = 0
+LTO             = 0
 
 PERF_TEST                   = 1
 DEBUGFAST                   = 0
@@ -19,22 +20,23 @@ DEPS_DIR       = $(ROOT_DIR)/Externals
 
 INCLUDES += -I$(LIBRETRO_DIR)
 
-ifeq ($(compiler),msvc)
-FLAGS       += -nologo -MP -Zc:wchar_t -Z7 -Gm- -Zc:inline -fp:precise -Zp16 -Zc:forScope -GR- -Gd -Oi -volatile:iso
-CFLAGS      += -TC
-CXXFLAGS    += -TP
-WARNINGS    += -wd4996 -wd4351 -WX -W3
-CXXWARNINGS += -wd4530 -wd4577
-#FLAGS += -showIncludes
-#CXXFLAGS += -Zo -Zc:rvalueCast
-CXXPCH = $(ROOT_DIR)/Source/PCH/pch.pch
-else
-WARNINGS += -Wall -Wtype-limits -Wsign-compare -Wignored-qualifiers -Wuninitialized -Wlogical-op -Wshadow -Winit-self
-WARNINGS += -Werror=implicit-function-declaration
-FLAGS += -msse2 -fno-strict-aliasing -fno-exceptions -fvisibility=hidden -fomit-frame-pointer
-CXXFLAGS += -Wmissing-declarations -fvisibility-inlines-hidden -std=c++14
-LIBS += -lpthread -lrt
-endif
+# msvc
+FLAGS_msvc       += -nologo -MP -Zc:wchar_t -Z7 -Gm- -Zc:inline -fp:precise -Zp16 -Zc:forScope -GR- -Gd -Oi -volatile:iso
+CFLAGS_msvc      += -TC
+CXXFLAGS_msvc    += -TP
+WARNINGS_msvc    += -wd4996 -wd4351 -WX -W3
+CXXWARNINGS_msvc += -wd4530 -wd4577
+#FLAGS_msvc += -showIncludes
+#CXXFLAGS_msvc += -Zo -Zc:rvalueCast
+CXXPCH_msvc = $(ROOT_DIR)/Source/PCH/pch.pch
+
+# gcc
+FLAGS_gcc    += -msse2 -fno-strict-aliasing -fvisibility=hidden -fomit-frame-pointer
+CXXFLAGS_gcc += -Wmissing-declarations -fvisibility-inlines-hidden
+CXXFLAGS_gcc += -fno-exceptions -fno-rtti -std=c++14
+WARNINGS_gcc += -Wall -Wtype-limits -Wsign-compare -Wignored-qualifiers -Wuninitialized -Wlogical-op -Wshadow -Winit-self
+WARNINGS_gcc += -Werror=implicit-function-declaration
+LIBS_gcc     += -lpthread -lrt
 
 INCLUDES += -I$(CORE_DIR)
 INCLUDES += -I$(DEPS_DIR)/Bochs_disasm

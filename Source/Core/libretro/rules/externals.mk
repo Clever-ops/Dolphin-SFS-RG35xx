@@ -65,9 +65,9 @@ glslang_OBJECTS += $(DEPS_DIR)/glslang/glslang/OSDependent/Unix/ossource.o
 endif
 
 # maybe $(DEPS_DIR)/hidapi/libusb can be used as a fallback here ?
-ifneq ($(findstring win,$(platform)),)
+ifeq ($(platform),win)
    hidapi__hidraw_OBJECTS = $(DEPS_DIR)/hidapi/windows/hid.o
-else ifeq ($(platform), osx)
+else ifeq ($(platform),osx)
    hidapi__hidraw_OBJECTS = $(DEPS_DIR)/hidapi/mac/hid.o
 else
    hidapi__hidraw_OBJECTS = $(DEPS_DIR)/hidapi/linux/hid.o
@@ -173,7 +173,7 @@ $(DEPS_DIR)/SFML/src/SFML/Network/SocketSelector.o \
 $(DEPS_DIR)/SFML/src/SFML/Network/TcpListener.o \
 $(DEPS_DIR)/SFML/src/SFML/Network/TcpSocket.o \
 $(DEPS_DIR)/SFML/src/SFML/Network/UdpSocket.o
-ifneq ($(findstring win,$(platform)),)
+ifeq ($(platform),win)
    sfml__network_OBJECTS += $(DEPS_DIR)/SFML/src/SFML/Network/Win32/SocketImpl.o
 else
    sfml__network_OBJECTS += $(DEPS_DIR)/SFML/src/SFML/Network/Unix/SocketImpl.o
@@ -244,18 +244,16 @@ EXTERNALS_OBJECTS += $(sfml__network_OBJECTS)
 EXTERNALS_OBJECTS += $(sfml__system_OBJECTS)
 EXTERNALS_OBJECTS += $(SOIL_OBJECTS)
 EXTERNALS_OBJECTS += $(xxhash_OBJECTS)
-#ifeq ($(compiler),msvc)
-   EXTERNALS_OBJECTS += $(libpng_OBJECTS)
-   EXTERNALS_OBJECTS += $(LZO_OBJECTS)
-   EXTERNALS_OBJECTS += $(zlib_OBJECTS)
-#endif
+EXTERNALS_OBJECTS += $(libpng_OBJECTS)
+EXTERNALS_OBJECTS += $(LZO_OBJECTS)
+EXTERNALS_OBJECTS += $(zlib_OBJECTS)
 
 #$(hidapi__hidraw_OBJECTS.o=$(OBJ_EXT)): INCLUDES += -I$(DEPS_DIR)/hidapi/hidapi
 
 #$(glslang_OBJECTS)        : WARNINGS += -Wno-shadow -Wno-reorder -Wno-sign-compare -Wno-parentheses -Wno-unused-variable
 
-libexternals.a:   WARNINGS :=
-libexternals.lib: WARNINGS := -W0
+libexternals.a:   WARNINGS_gcc  := -w
+libexternals.lib: WARNINGS_msvc := -W0
 
 $(call add_lib,externals,$(EXTERNALS_OBJECTS))
 

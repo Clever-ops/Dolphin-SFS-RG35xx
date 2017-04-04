@@ -1,104 +1,109 @@
 
-fpic := -fpic
 TARGET_SUFFIX :=
 
 ifeq ($(platform),unix)
-   LDFLAGS += -shared -lm
+
 else ifeq ($(platform),win)
 
 else
    $(error unsupported platform : $(platform))
 endif
 
-
 ifeq ($(DEBUG),1)
-   DEFINES += -DDEBUG -D_DEBUG
+   build = debug
 else
-   DEFINES += -DNDEBUG
-endif
-
-DEFINES += -D__LIBRETRO__
-
-ifeq ($(compiler),msvc)
-   fpic :=
-   FLAGS_debug   = -GS -Gy -Od -RTC1 -D_SECURE_SCL=1
-   FLAGS_release = -GS- -Gy- -O2 -Ob2 -GF -GT -Oy -Ot -D_SECURE_SCL=0
-
-   ifeq ($(STATIC_LINKING), 1)
-      FLAGS_debug   += -MDd
-      FLAGS_release += -MD
-   else
-      FLAGS_debug   += -LDd
-      FLAGS_release += -LD
-   endif
-
-   ifeq ($(DEBUG),1)
-      FLAGS   += $(FLAGS_debug)
-      LDFLAGS += -DEBUG
-   else
-      FLAGS   += $(FLAGS_release)
-   endif
-else
-   ifeq ($(DEBUG),1)
-      FLAGS += -O0 -g
-   else
-      FLAGS += -O3
-      LDFLAGS += -s
-   endif
+   build = release
 endif
 
 ifeq ($(STATIC_LINKING), 1)
-   TARGET := $(TARGET_NAME)_libretro$(TARGET_SUFFIX)$(STATIC_EXT)
+   libtype = static
 else
-   TARGET := $(TARGET_NAME)_libretro$(TARGET_SUFFIX)$(SHARED_EXT)
-   FLAGS  += $(fpic)
+   libtype = shared
 endif
 
-ifeq ($(compiler),msvc)
-   LIBS += kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib
-   LIBS += uuid.lib odbc32.lib odbccp32.lib iphlpapi.lib winmm.lib setupapi.lib opengl32.lib glu32.lib rpcrt4.lib comctl32.lib
+ifeq ($(LTO), 1)
+ FLAGS_gcc_release += -flto
+endif
 
-   LDFLAGS  += -nologo -wx -dynamicbase -dll -nxcompat -machine:x64
-   #LDFLAGS  += -DEF:"libretro.def"
-   #LDFLAGS  += -MANIFEST
-   #LDFLAGS  += -INCLUDE:"ucrtFreadWorkaround"
-   #LDFLAGS  += -OPT:REF
-   #LDFLAGS  += uiAccess='false'"
-   #LDFLAGS  += -OPT:ICF
-   #LDFLAGS  += -TLBID:1
-   #LDFLAGS  += -LTCG:incremental
-   #LDFLAGS  += -INCREMENTAL
-   #LDFLAGS  += -MANIFESTUAC:"level='asInvoker'
-   #LDFLAGS  += -ManifestFile:"Release\msvc-2010.dll.intermediate.manifest"
-   #LDFLAGS  += -manifest:embed
-   #LDFLAGS  += -SUBSYSTEM:WINDOWS
-   #LDFLAGS  += -SAFESEH
+DEFINES                    += -D__LIBRETRO__
+DEFINES_debug              += -DDEBUG -D_DEBUG
+DEFINES_release            += -DNDEBUG
 
-   OBJECTS := $(OBJECTS:.o=.obj)
+# msvc
+FLAGS_msvc_debug           += -GS -Gy -Od -RTC1 -D_SECURE_SCL=1
+FLAGS_msvc_release         += -GS- -Gy- -O2 -Ob2 -GF -GT -Oy -Ot -D_SECURE_SCL=0
+FLAGS_msvc_debug_static    += -MDd
+FLAGS_msvc_debug_shared    += -LDd
+FLAGS_msvc_release_static  += -MD
+FLAGS_msvc_release_shared  += -LD
+
+LDFLAGS_msvc_debug         += -DEBUG
+
+# gcc
+FLAGS_gcc_debug            += -O0 -g
+FLAGS_gcc_release          += -O3
+FLAGS_gcc_shared           += -fpic
+
+# version script was causing a link error : investigate / fix.
+# LDFLAGS_gcc += -Wl,--version-script=link.T
+LDFLAGS_gcc                += -Wl,--no-undefined -L.
+LDFLAGS_gcc_release        += -s
+LDFLAGS_gcc_shared         += -shared -lm
+
+TARGET_static := $(TARGET_NAME)_libretro$(TARGET_SUFFIX)$(STATIC_EXT)
+TARGET_shared := $(TARGET_NAME)_libretro$(TARGET_SUFFIX)$(SHARED_EXT)
+
+LIBS_msvc += kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib
+LIBS_msvc += uuid.lib odbc32.lib odbccp32.lib iphlpapi.lib winmm.lib setupapi.lib opengl32.lib glu32.lib rpcrt4.lib comctl32.lib
+
+LDFLAGS_msvc  += -nologo -wx -dynamicbase -dll -nxcompat -machine:x64
+#LDFLAGS_msvc  += -DEF:"libretro.def"
+#LDFLAGS_msvc  += -MANIFEST
+#LDFLAGS_msvc  += -INCLUDE:"ucrtFreadWorkaround"
+#LDFLAGS_msvc  += -OPT:REF
+#LDFLAGS_msvc  += uiAccess='false'"
+#LDFLAGS_msvc  += -OPT:ICF
+#LDFLAGS_msvc  += -TLBID:1
+#LDFLAGS_msvc  += -LTCG:incremental
+#LDFLAGS_msvc  += -INCREMENTAL
+#LDFLAGS_msvc  += -MANIFESTUAC:"level='asInvoker'
+#LDFLAGS_msvc  += -ManifestFile:"Release\msvc-2010.dll.intermediate.manifest"
+#LDFLAGS_msvc  += -manifest:embed
+#LDFLAGS_msvc  += -SUBSYSTEM:WINDOWS
+#LDFLAGS_msvc  += -SAFESEH
+
+CXXPCH ?= $(CXXPCH_$(compiler))
+
+ifeq ($(compiler), msvc)
+   OBJECTS := $(OBJECTS:.o=.obj)   
    ifneq ($(CXXPCH),)
       CXXPCHFLAGS = -Yu"pch.h" -Fp$(CXXPCH) -FIpch.h
    endif
-else
-   LDFLAGS  += $(FLAGS) -Wl,--no-undefined -L.
-   # version script was causing a link error : investigate / fix.
-   # LDFLAGS += -Wl,--version-script=link.T
 endif
 
-CFLAGS   += $(FLAGS) $(WARNINGS) $(CWARNINGS) $(DEFINES) $(CDEFINES) $(INCLUDES) $(CINCLUDES)
-CXXFLAGS += $(FLAGS) $(WARNINGS) $(CXXWARNINGS) $(DEFINES) $(CXXDEFINES) $(INCLUDES) $(CXXINCLUDES)
+CFLAGS      += $(FLAGS) $(WARNINGS) $(CWARNINGS) $(DEFINES) $(CDEFINES) $(INCLUDES) $(CINCLUDES)
+CFLAGS      += $(call get_current,FLAGS CFLAGS WARNINGS CWARNINGS DEFINES CDEFINES INCLUDES CINCLUDES)
+CXXFLAGS    += $(FLAGS) $(WARNINGS) $(CXXWARNINGS) $(DEFINES) $(CXXDEFINES) $(INCLUDES) $(CXXINCLUDES)
+CXXFLAGS    += $(call get_current,FLAGS CXXFLAGS WARNINGS CXXWARNINGS DEFINES CXXDEFINES INCLUDES CXXINCLUDES)
+
+LDFLAGS_gcc += $(call get_current,FLAGS)
+LDFLAGS     += $(call get_current,LDFLAGS)
+LIBS        += $(call get_current,LIBS)
+
+TARGET = $(TARGET_$(libtype))
 
 build: $(TARGET)
 $(TARGET): $(TARGET_DEPS) $(OBJECTS)
 
-ifeq ($(compiler),msvc)
+%.cpp: $(CXXPCH)
 
+# msvc
 %.lib:
 	$(AR) -nologo -wx -machine:x64 -out:$@ $^
 
 %.dll:
 	$(LD) -out:$@ $(CXXPCH:.pch=.obj) $(OBJECTS) $(LOCALLIBS) $(LIBS) $(LDFLAGS)
 
-%.cpp: $(CXXPCH)
 %.obj: %.cpp $(CXXPCH)
 	$(CXX) $< -c -Fo$@ $(CXXFLAGS) $(CXXPCHFLAGS)
 
@@ -111,8 +116,7 @@ ifeq ($(compiler),msvc)
 %.pch: %.cpp
 	$(CXX) $< -Fp$@ -Fo$*.obj -Yc"pch.h" $(CXXFLAGS)
 
-else
-
+# gcc
 %.a:
 	$(AR) rcs $@ $^
 
@@ -127,8 +131,6 @@ else
 
 %.o: %.c
 	$(CC) $< -c -o $@ $(CFLAGS)
-
-endif
 
 clean:
 	$(call delete, $(TARGET) $(OBJECTS) $(CXXPCH) $(CXXPCH:.pch=$(OBJ_EXT)))

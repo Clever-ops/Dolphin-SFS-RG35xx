@@ -80,6 +80,11 @@ add_defines = $(foreach define,$(1),$(eval $(call add_def,$(define))))
 $(info platform : $(platform))
 $(info compiler : $(compiler))
 $(info OS       : $(OS))
+
+remove_occurences = $(strip $(if $(firstword $2),$(call remove_occurences,$(subst _$(firstword $2),,$1),$(filter-out $(firstword $2),$2)),$1))
+vars_get_match    = $(foreach var,$(filter $1_%,$(.VARIABLES)),$(if $(call remove_occurences,$(var:$1%=%),$2),,$($(var))))
+get_current       = $(strip $(foreach var,$1,$(call vars_get_match,$(var),$(platform) $(compiler) $(build) $(libtype))))
+
 #$(error done)
 
 .PHONY: all
