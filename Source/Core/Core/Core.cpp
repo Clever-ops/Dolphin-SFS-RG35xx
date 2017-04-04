@@ -972,13 +972,13 @@ void UpdateTitle()
 
 void Shutdown()
 {
-// During shutdown DXGI expects us to handle some messages on the UI thread.
-// Therefore we can't immediately block and wait for the emu thread to shut
-// down, so we join the emu thread as late as possible when the UI has already
-// shut down.
-// For more info read "DirectX Graphics Infrastructure (DXGI): Best Practices"
-// on MSDN.
 #ifndef __LIBRETRO__
+  // During shutdown DXGI expects us to handle some messages on the UI thread.
+  // Therefore we can't immediately block and wait for the emu thread to shut
+  // down, so we join the emu thread as late as possible when the UI has already
+  // shut down.
+  // For more info read "DirectX Graphics Infrastructure (DXGI): Best Practices"
+  // on MSDN.
   if (s_emu_thread.joinable())
     s_emu_thread.join();
 #endif
