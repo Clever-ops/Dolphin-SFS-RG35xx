@@ -75,14 +75,18 @@ ifeq ($(compiler),msvc)
    #LDFLAGS  += -SAFESEH
 
    OBJECTS := $(OBJECTS:.o=.obj)
+   ifneq ($(CXXPCH),)
+      CXXPCHFLAGS = -Yu"pch.h" -Fp$(CXXPCH) -FIpch.h
+   endif
 else
    LDFLAGS  += $(FLAGS) $(CFLAGS) $(CXXFLAGS) -Wl,--no-undefined -L.
    # version script was causing a link error : investigate / fix.
    # LDFLAGS += -Wl,--version-script=link.T
 endif
 
-CFLAGS   += $(FLAGS) $(WARNINGS) $(DEFINES) $(CDEFINES) $(INCLUDES) $(CINCLUDES)
-CXXFLAGS += $(FLAGS) $(WARNINGS) $(DEFINES) $(CXXDEFINES) $(INCLUDES) $(CXXINCLUDES)
+CFLAGS   += $(FLAGS) $(WARNINGS) $(CWARNINGS) $(DEFINES) $(CDEFINES) $(INCLUDES) $(CINCLUDES)
+CXXFLAGS += $(FLAGS) $(WARNINGS) $(CXXWARNINGS) $(DEFINES) $(CXXDEFINES) $(INCLUDES) $(CXXINCLUDES)
+
 
 build: $(TARGET)
 $(TARGET): $(TARGET_DEPS) $(OBJECTS)
@@ -93,16 +97,20 @@ ifeq ($(compiler),msvc)
 	$(AR) -nologo -wx -machine:x64 -out:$@ $^
 
 %.dll:
-	$(LD) -out:$@ $(OBJECTS) $(LIBS) $(LDFLAGS)
+	$(LD) -out:$@ pch.obj $(CXXPCH:.pch=.obj) $(OBJECTS) $(LIBS) $(LDFLAGS)
 
-%.obj: %.cpp
-	$(CXX) $< -c -Fo$@ $(CXXFLAGS)
+%.cpp: $(CXXPCH)
+%.obj: %.cpp $(CXXPCH)
+	$(CXX) $< -c -Fo$@ $(CXXFLAGS) $(CXXPCHFLAGS)
 
 %.obj: %.cc
 	$(CXX) $< -c -Fo$@ $(CXXFLAGS)
 
 %.obj: %.c
 	$(CC) $< -c -Fo$@ $(CFLAGS)
+
+%.pch: %.cpp
+	$(CXX) $< -Fp$@ -Fo$*.obj -Yc"pch.h" $(CXXFLAGS)
 
 else
 
@@ -124,7 +132,7 @@ else
 endif
 
 clean:
-	$(call delete, $(TARGET) $(OBJECTS))
+	$(call delete, $(TARGET) $(OBJECTS) $(CXXPCH) $(CXXPCH:.pch=$(OBJ_EXT)))
 
 
 .PHONY: clean test

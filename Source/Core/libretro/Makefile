@@ -20,14 +20,14 @@ DEPS_DIR       = $(ROOT_DIR)/Externals
 INCLUDES += -I$(LIBRETRO_DIR)
 
 ifeq ($(compiler),msvc)
-#FLAGS += -MP
-FLAGS += -nologo -Zc:wchar_t -Z7 -Gm- -Zc:inline -fp:precise -Zp16 -Zc:forScope -GR- -Gd -Oi -volatile:iso
-WARNINGS += -wd4996 -wd4351 -WX -W3
+FLAGS       += -nologo -MP -Zc:wchar_t -Z7 -Gm- -Zc:inline -fp:precise -Zp16 -Zc:forScope -GR- -Gd -Oi -volatile:iso
+CFLAGS      += -TC
+CXXFLAGS    += -TP
+WARNINGS    += -wd4996 -wd4351 -WX -W3
+CXXWARNINGS += -wd4530 -wd4577
 #FLAGS += -showIncludes
-CFLAGS += -TC
-CXXFLAGS += -TP -EHsc
 #CXXFLAGS += -Zo -Zc:rvalueCast
-#CXXFLAGS += /Yu"pch.h" /Fp"pch.pch" /FIpch.h
+CXXPCH = $(ROOT_DIR)/Source/PCH/pch.pch
 else
 WARNINGS += -Wall -Wtype-limits -Wsign-compare -Wignored-qualifiers -Wuninitialized -Wlogical-op -Wshadow -Winit-self
 FLAGS += -msse2 -fno-strict-aliasing -fno-exceptions -fvisibility=hidden -fomit-frame-pointer

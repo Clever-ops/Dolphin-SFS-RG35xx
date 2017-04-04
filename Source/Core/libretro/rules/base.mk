@@ -34,7 +34,7 @@ ifeq ($(platform),win)
       $(error msvc environment not set)
    endif
    EXE_EXT    := .exe
-   OBJ_EXT    := .o
+   OBJ_EXT    := .obj
    STATIC_EXT := .lib
    SHARED_EXT := .dll
    ifneq ($(findstring ;,$(PATH)),)

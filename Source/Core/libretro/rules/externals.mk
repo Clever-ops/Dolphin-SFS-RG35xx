@@ -253,7 +253,6 @@ EXTERNALS_OBJECTS += $(xxhash_OBJECTS)
 #$(hidapi__hidraw_OBJECTS.o=$(OBJ_EXT)): INCLUDES += -I$(DEPS_DIR)/hidapi/hidapi
 
 $(glslang_OBJECTS)        : WARNINGS += -Wno-shadow -Wno-reorder -Wno-sign-compare -Wno-parentheses -Wno-unused-variable
-$(glslang_OBJECTS:.o=.obj): DEFINES := $(filter-out -D_CRT_SECURE_NO_WARNINGS,$(DEFINES))
 
 libexternals.lib: WARNINGS := -W0
 
