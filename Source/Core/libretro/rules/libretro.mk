@@ -97,7 +97,7 @@ ifeq ($(compiler),msvc)
 	$(AR) -nologo -wx -machine:x64 -out:$@ $^
 
 %.dll:
-	$(LD) -out:$@ pch.obj $(CXXPCH:.pch=.obj) $(OBJECTS) $(LIBS) $(LDFLAGS)
+	$(LD) -out:$@ $(CXXPCH:.pch=.obj) $(OBJECTS) $(LIBS) $(LDFLAGS)
 
 %.cpp: $(CXXPCH)
 %.obj: %.cpp $(CXXPCH)

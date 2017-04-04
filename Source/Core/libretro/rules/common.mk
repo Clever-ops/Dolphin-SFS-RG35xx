@@ -21,7 +21,6 @@ COMMON_OBJECTS += $(COMMON_DIR)/MsgHandler.o
 COMMON_OBJECTS += $(COMMON_DIR)/NandPaths.o
 COMMON_OBJECTS += $(COMMON_DIR)/Network.o
 COMMON_OBJECTS += $(COMMON_DIR)/PcapFile.o
-COMMON_OBJECTS += $(COMMON_DIR)/PerformanceCounter.o
 COMMON_OBJECTS += $(COMMON_DIR)/Profiler.o
 COMMON_OBJECTS += $(COMMON_DIR)/SettingsHandler.o
 COMMON_OBJECTS += $(COMMON_DIR)/SDCardUtil.o
@@ -39,15 +38,18 @@ COMMON_OBJECTS += $(COMMON_DIR)/Crypto/AES.o
 COMMON_OBJECTS += $(COMMON_DIR)/Crypto/bn.o
 COMMON_OBJECTS += $(COMMON_DIR)/Crypto/ec.o
 COMMON_OBJECTS += $(COMMON_DIR)/Logging/LogManager.o
-ifeq ($(platform),win)
-COMMON_OBJECTS += $(COMMON_DIR)/Logging/ConsoleListenerWin.o
-else
-COMMON_OBJECTS += $(COMMON_DIR)/Logging/ConsoleListenerNix.o
-endif
 COMMON_OBJECTS += $(COMMON_DIR)/x64FPURoundMode.o
 COMMON_OBJECTS += $(COMMON_DIR)/x64CPUDetect.o
 COMMON_OBJECTS += $(COMMON_DIR)/GL/GLUtil.o
 COMMON_OBJECTS += $(COMMON_DIR)/GL/GLExtensions/GLExtensions.o
+
+ifeq ($(platform),win)
+COMMON_OBJECTS += $(COMMON_DIR)/Logging/ConsoleListenerWin.o
+else
+COMMON_OBJECTS += $(COMMON_DIR)/Logging/ConsoleListenerNix.o
+COMMON_OBJECTS += $(COMMON_DIR)/PerformanceCounter.o
+endif
+
 # disable dlsym() reference in GLExtensions.cpp
 $(COMMON_DIR)/GL/GLExtensions/GLExtensions.o : DEFINES += -U__linux__ -U__APPLE__
 
