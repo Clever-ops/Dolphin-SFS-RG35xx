@@ -18,7 +18,7 @@
 #include "Core/ConfigManager.h"
 #include "Core/Core.h"
 #include "Core/HLE/HLE.h"
-#include "Core/HW/DVDInterface.h"
+#include "Core/HW/DVD/DVDInterface.h"
 #include "Core/HW/EXI/EXI_DeviceIPL.h"
 #include "Core/HW/Memmap.h"
 #include "Core/IOS/ES/ES.h"
@@ -209,7 +209,7 @@ bool CBoot::SetupWiiMemory(u64 ios_title_id)
 
   if (serno.empty() || serno == "000000000")
   {
-    if (Core::g_want_determinism)
+    if (Core::WantsDeterminism())
       serno = "123456789";
     else
       serno = SettingsHandler::GenerateSerialNumber();

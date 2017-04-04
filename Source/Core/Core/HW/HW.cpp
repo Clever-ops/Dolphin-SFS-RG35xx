@@ -11,7 +11,7 @@
 #include "Core/HW/AudioInterface.h"
 #include "Core/HW/CPU.h"
 #include "Core/HW/DSP.h"
-#include "Core/HW/DVDInterface.h"
+#include "Core/HW/DVD/DVDInterface.h"
 #include "Core/HW/EXI/EXI.h"
 #include "Core/HW/GPFifo.h"
 #include "Core/HW/HW.h"
@@ -50,7 +50,7 @@ void Init()
 
   if (SConfig::GetInstance().bWii)
   {
-    Core::InitializeWiiRoot(Core::g_want_determinism);
+    Core::InitializeWiiRoot(Core::WantsDeterminism());
     IOS::Init();
     IOS::HLE::Init();  // Depends on Memory
   }

@@ -82,7 +82,8 @@
 #endif
 #ifdef __LIBRETRO__
 #include <libco.h>
-namespace Libretro {
+namespace Libretro
+{
 extern cothread_t mainthread;
 extern bool core_stop_request;
 }
@@ -92,18 +93,12 @@ namespace Core
 // TODO: ugly, remove
 bool g_aspect_wide;
 
-bool g_want_determinism;
+static bool s_wants_determinism;
 
 // Declarations and definitions
 static Common::Timer s_timer;
 static std::atomic<u32> s_drawn_frame;
 static std::atomic<u32> s_drawn_video;
-
-// Function forwarding
-void Callback_WiimoteInterruptChannel(int _number, u16 _channelID, const void* _pData, u32 _Size);
-
-// Function declarations
-void EmuThread();
 
 static bool s_is_stopping = false;
 static bool s_hardware_initialized = false;
@@ -118,7 +113,7 @@ static std::thread::id s_emu_thread_id;
 #else
 static std::thread s_emu_thread;
 #endif
-static StoppedCallbackFunc s_on_stopped_callback = nullptr;
+static StoppedCallbackFunc s_on_stopped_callback;
 
 static std::thread s_cpu_thread;
 static bool s_request_refresh_info = false;
@@ -143,6 +138,8 @@ static void InitIsCPUKey()
   pthread_key_create(&s_tls_is_cpu_key, nullptr);
 }
 #endif
+
+void EmuThread();
 
 bool GetIsThrottlerTempDisabled()
 {
@@ -238,6 +235,11 @@ bool IsGPUThread()
   }
 }
 
+bool WantsDeterminism()
+{
+  return s_wants_determinism;
+}
+
 // This is called from the GUI thread. See the booting call schedule in
 // BootManager.cpp
 bool Init()
@@ -268,7 +270,7 @@ bool Init()
   s_window_handle = Host_GetRenderHandle();
 
 #ifdef __LIBRETRO__
-  s_emu_thread_id =  std::this_thread::get_id();
+  s_emu_thread_id = std::this_thread::get_id();
   s_job_dispatch_thread = std::thread(JobDispatchThread);
 #else
   // Start the emu thread
@@ -376,7 +378,7 @@ static void CpuThread()
   if (!s_state_filename.empty())
   {
     // Needs to PauseAndLock the Core
-    // NOTE: EmuThread should have left us in CPU_STEPPING so nothing will happen
+    // NOTE: EmuThread should have left us in State::Stepping so nothing will happen
     //   until after the job is serviced.
     QueueHostJob([] {
       // Recheck in case Movie cleared it since.
@@ -455,11 +457,11 @@ static void FifoPlayerThread()
 
   // If we did not enter the CPU Run Loop above then run a fake one instead.
   // We need to be IsRunningAndStarted() for DolphinWX to stop us.
-  if (CPU::GetState() != CPU::CPU_POWERDOWN)
+  if (CPU::GetState() != CPU::State::PowerDown)
   {
     s_is_started = true;
     Host_Message(WM_USER_STOP);
-    while (CPU::GetState() != CPU::CPU_POWERDOWN)
+    while (CPU::GetState() != CPU::State::PowerDown)
     {
       if (!_CoreParameter.bCPUThread)
         g_video_backend->PeekMessages();
@@ -618,7 +620,7 @@ void EmuThread()
     // Spawn the CPU+GPU thread
     s_cpu_thread = std::thread(cpuThreadFunc);
 
-    while (CPU::GetState() != CPU::CPU_POWERDOWN)
+    while (CPU::GetState() != CPU::State::PowerDown)
     {
       g_video_backend->PeekMessages();
       Common::SleepCurrentThread(20);
@@ -679,26 +681,26 @@ void EmuThread()
     s_on_stopped_callback();
 #ifdef __LIBRETRO__
   if (s_job_dispatch_thread.joinable())
-     s_job_dispatch_thread.join();
+    s_job_dispatch_thread.join();
 
   co_switch(Libretro::mainthread);
 }
 
 void JobDispatchThread()
 {
-   while (!Core::IsRunning())
-   {
-      Core::HostDispatchJobs();
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-   }
+  while (!Core::IsRunning())
+  {
+    Core::HostDispatchJobs();
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
 
-   while (!Libretro::core_stop_request)
-   {
-      Core::HostDispatchJobs();
-      std::this_thread::sleep_for(std::chrono::milliseconds(10));
-   }
-   Core::Stop();
-   Core::Shutdown();
+  while (!Libretro::core_stop_request)
+  {
+    Core::HostDispatchJobs();
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+  Core::Stop();
+  Core::Shutdown();
 #endif
 }
 
@@ -970,12 +972,12 @@ void UpdateTitle()
 
 void Shutdown()
 {
-  // During shutdown DXGI expects us to handle some messages on the UI thread.
-  // Therefore we can't immediately block and wait for the emu thread to shut
-  // down, so we join the emu thread as late as possible when the UI has already
-  // shut down.
-  // For more info read "DirectX Graphics Infrastructure (DXGI): Best Practices"
-  // on MSDN.
+// During shutdown DXGI expects us to handle some messages on the UI thread.
+// Therefore we can't immediately block and wait for the emu thread to shut
+// down, so we join the emu thread as late as possible when the UI has already
+// shut down.
+// For more info read "DirectX Graphics Infrastructure (DXGI): Best Practices"
+// on MSDN.
 #ifndef __LIBRETRO__
   if (s_emu_thread.joinable())
     s_emu_thread.join();
@@ -986,7 +988,7 @@ void Shutdown()
 
 void SetOnStoppedCallback(StoppedCallbackFunc callback)
 {
-  s_on_stopped_callback = callback;
+  s_on_stopped_callback = std::move(callback);
 }
 
 void UpdateWantDeterminism(bool initial)
@@ -995,19 +997,19 @@ void UpdateWantDeterminism(bool initial)
   // settings that depend on it, such as GPU determinism mode. should have
   // override options for testing,
   bool new_want_determinism = Movie::IsMovieActive() || NetPlay::IsNetPlayRunning();
-  if (new_want_determinism != g_want_determinism || initial)
+  if (new_want_determinism != s_wants_determinism || initial)
   {
     NOTICE_LOG(COMMON, "Want determinism <- %s", new_want_determinism ? "true" : "false");
 
     bool was_unpaused = Core::PauseAndLock(true);
 
-    g_want_determinism = new_want_determinism;
+    s_wants_determinism = new_want_determinism;
     IOS::HLE::UpdateWantDeterminism(new_want_determinism);
     Fifo::UpdateWantDeterminism(new_want_determinism);
     // We need to clear the cache because some parts of the JIT depend on want_determinism, e.g. use
     // of FMA.
     JitInterface::ClearCache();
-    Core::InitializeWiiRoot(g_want_determinism);
+    Core::InitializeWiiRoot(s_wants_determinism);
 
     Core::PauseAndLock(false, was_unpaused);
   }

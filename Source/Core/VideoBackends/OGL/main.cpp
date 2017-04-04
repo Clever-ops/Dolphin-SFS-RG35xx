@@ -101,12 +101,18 @@ void VideoBackend::InitBackendInfo()
   g_Config.backend_info.bSupportsExclusiveFullscreen = false;
   g_Config.backend_info.bSupportsOversizedViewports = true;
   g_Config.backend_info.bSupportsGeometryShaders = true;
+  g_Config.backend_info.bSupportsComputeShaders = false;
   g_Config.backend_info.bSupports3DVision = false;
   g_Config.backend_info.bSupportsPostProcessing = true;
   g_Config.backend_info.bSupportsSSAA = true;
   g_Config.backend_info.bSupportsReversedDepthRange = true;
   g_Config.backend_info.bSupportsMultithreading = false;
   g_Config.backend_info.bSupportsInternalResolutionFrameDumps = true;
+
+  // TODO: There is a bug here, if texel buffers are not supported the graphics options
+  // will show the option when it is not supported. The only way around this would be
+  // creating a context when calling this function to determine what is available.
+  g_Config.backend_info.bSupportsGPUTextureDecoding = true;
 
   // Overwritten in Render.cpp later
   g_Config.backend_info.bSupportsDualSourceBlend = true;
@@ -169,10 +175,6 @@ bool VideoBackend::FillBackendInfo()
     PanicAlert("GL_MAX_TEXTURE_SIZE too small at %i - must be at least 1024.", max_texture_size);
     return false;
   }
-
-  glGetIntegerv(GL_MAX_SAMPLES, &g_ogl_config.max_samples);
-  if (g_ogl_config.max_samples < 1 || !g_ogl_config.bSupportsMSAA)
-    g_ogl_config.max_samples = 1;
 
   // TODO: Move the remaining fields from the Renderer constructor here.
   return true;

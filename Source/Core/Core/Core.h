@@ -21,8 +21,6 @@ namespace Core
 // TODO: ugly, remove
 extern bool g_aspect_wide;
 
-extern bool g_want_determinism;
-
 bool GetIsThrottlerTempDisabled();
 void SetIsThrottlerTempDisabled(bool disable);
 
@@ -51,6 +49,8 @@ bool IsRunningInCurrentThread();  // this tells us whether we are running in the
 bool IsCPUThread();               // this tells us whether we are the CPU thread.
 bool IsGPUThread();
 
+bool WantsDeterminism();
+
 // [NOT THREADSAFE] For use by Host only
 void SetState(State state);
 State GetState();
@@ -65,8 +65,6 @@ void DisplayMessage(const std::string& message, int time_in_ms);
 
 std::string GetStateFileName();
 void SetStateFileName(const std::string& val);
-
-void SetBlockStart(u32 addr);
 
 void FrameUpdateOnCPUThread();
 
@@ -84,7 +82,7 @@ void UpdateTitle();
 bool PauseAndLock(bool doLock, bool unpauseOnUnlock = true);
 
 // for calling back into UI code without introducing a dependency on it in core
-typedef void (*StoppedCallbackFunc)(void);
+using StoppedCallbackFunc = std::function<void()>;
 void SetOnStoppedCallback(StoppedCallbackFunc callback);
 
 // Run on the Host thread when the factors change. [NOT THREADSAFE]

@@ -2,7 +2,6 @@
 // Licensed under GPLv2+
 // Refer to the license.txt file included.
 
-#include "Core/PowerPC/JitArm64/Jit.h"
 #include "Common/Arm64Emitter.h"
 #include "Common/CommonTypes.h"
 #include "Common/JitRegister.h"
@@ -10,6 +9,7 @@
 #include "Core/CoreTiming.h"
 #include "Core/HW/CPU.h"
 #include "Core/HW/Memmap.h"
+#include "Core/PowerPC/JitArm64/Jit.h"
 #include "Core/PowerPC/JitCommon/JitAsmCommon.h"
 #include "Core/PowerPC/JitCommon/JitCache.h"
 #include "Core/PowerPC/PowerPC.h"
@@ -66,7 +66,7 @@ void JitArm64::GenerateAsm()
   //   } while (PowerPC::ppcState.downcount > 0);
   // doTiming:
   //   NPC = PC = DISPATCHER_PC;
-  // } while (CPU::GetState() == CPU::CPU_RUNNING);
+  // } while (CPU::GetState() == CPU::State::Running);
   AlignCodePage();
   dispatcher = GetCodePtr();
   WARN_LOG(DYNA_REC, "Dispatcher is %p", dispatcher);
