@@ -1,8 +1,8 @@
 
 #pragma once
 
-#include <libretro.h>
 #include <libco.h>
+#include <libretro.h>
 
 namespace Libretro
 {

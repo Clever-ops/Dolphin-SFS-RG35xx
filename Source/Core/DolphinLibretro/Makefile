@@ -1,6 +1,14 @@
 
 include rules/base.mk
 
+ifeq ($(platform),win)
+   ifeq ($(compiler),gcc)
+      $(error mingw build not supported)
+   else ifeq ($(findstring amd64,$(LIB)),)
+      $(error x86 32-bit build not supported)
+   endif
+endif
+
 TARGET_NAME    := dolphin
 DEBUG           = 0
 STATIC_LINKING  = 0
@@ -75,13 +83,5 @@ include rules/inputcommon.mk
 include rules/videocommon.mk
 include rules/videobackends.mk
 include rules/externals.mk
-
-ifeq ($(platform),win)
-   ifeq ($(compiler),gcc)
-      $(error mingw build not supported)
-   else ifeq ($(findstring amd64,$(LIB)),)
-      $(error x86 32-bit build not supported)
-   endif
-endif
 
 include rules/libretro.mk

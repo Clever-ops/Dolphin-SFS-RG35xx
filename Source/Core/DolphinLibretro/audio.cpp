@@ -5,10 +5,10 @@
 #include "AudioCommon/AudioCommon.h"
 #include "AudioCommon/Mixer.h"
 #include "Common/Common.h"
-#include "Common/FileUtil.h"
-#include "Common/Logging/Log.h"
 #include "Common/CommonFuncs.h"
 #include "Common/CommonTypes.h"
+#include "Common/FileUtil.h"
+#include "Common/Logging/Log.h"
 #include "Common/MathUtil.h"
 #include "Common/Swap.h"
 #include "Core/ConfigManager.h"
@@ -22,20 +22,18 @@ static retro_audio_sample_batch_t audio_batch_cb;
 
 void retro_set_audio_sample_batch(retro_audio_sample_batch_t cb)
 {
-   audio_batch_cb = cb;
+  audio_batch_cb = cb;
 }
 void retro_set_audio_sample(retro_audio_sample_t cb)
-{}
-
+{
+}
 
 WaveFileWriter::WaveFileWriter()
 {
-
 }
 
 WaveFileWriter::~WaveFileWriter()
 {
-
 }
 
 CMixer::CMixer(unsigned int BackendSampleRate) : m_sampleRate(BackendSampleRate)
@@ -50,12 +48,12 @@ CMixer::~CMixer()
 unsigned int CMixer::MixerFifo::Mix(short* samples, unsigned int numSamples,
                                     bool consider_framelimit)
 {
-   return 0;
+  return 0;
 }
 
 unsigned int CMixer::Mix(short* samples, unsigned int num_samples, bool consider_framelimit)
 {
-   return 0;
+  return 0;
 }
 
 void CMixer::MixerFifo::PushSamples(const short* samples, unsigned int num_samples)
@@ -64,18 +62,18 @@ void CMixer::MixerFifo::PushSamples(const short* samples, unsigned int num_sampl
 
 void CMixer::PushSamples(const short* samples, unsigned int num_samples)
 {
-   /* not needed, called by the original SendAIBuffer in AudioCommon/AudioCommon.cpp */
+  /* not needed, called by the original SendAIBuffer in AudioCommon/AudioCommon.cpp */
 }
 
 void CMixer::PushStreamingSamples(const short* samples, unsigned int num_samples)
 {
-   /* todo */
+  /* todo */
 }
 
 void CMixer::PushWiimoteSpeakerSamples(const short* samples, unsigned int num_samples,
                                        unsigned int sample_rate)
 {
-   /* todo */
+  /* todo */
 }
 
 void CMixer::SetDMAInputSampleRate(unsigned int rate)
@@ -112,12 +110,12 @@ void CMixer::StopLogDSPAudio()
 
 void CMixer::MixerFifo::SetInputSampleRate(unsigned int rate)
 {
-   m_input_sample_rate = rate;
+  m_input_sample_rate = rate;
 }
 
 unsigned int CMixer::MixerFifo::GetInputSampleRate() const
 {
-   return m_input_sample_rate;
+  return m_input_sample_rate;
 }
 
 void CMixer::MixerFifo::SetVolume(unsigned int lvolume, unsigned int rvolume)
@@ -132,10 +130,9 @@ public:
 
 namespace AudioCommon
 {
-
 void InitSoundStream()
 {
-   g_sound_stream = std::make_unique<LibretroSound>();
+  g_sound_stream = std::make_unique<LibretroSound>();
 }
 
 void ShutdownSoundStream()
@@ -188,7 +185,7 @@ void ClearAudioBuffer(bool mute)
 void SendAIBuffer(const short* samples, unsigned int num_samples)
 {
   for (u32 i = 0; i < num_samples; i++)
-     ((u32*)samples)[i] = Common::swap32(((u32*)samples)[i]);
+    ((u32*)samples)[i] = Common::swap32(((u32*)samples)[i]);
 
   audio_batch_cb(samples, num_samples);
 }

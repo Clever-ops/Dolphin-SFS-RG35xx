@@ -3,31 +3,31 @@
 
 size_t retro_get_memory_size(unsigned id)
 {
-//   switch (id & RETRO_MEMORY_MASK)
-//   {
-//   case RETRO_MEMORY_SAVE_RAM:
-//      return 0;
-//   }
+  //   switch (id & RETRO_MEMORY_MASK)
+  //   {
+  //   case RETRO_MEMORY_SAVE_RAM:
+  //      return 0;
+  //   }
 
-   return 0;
+  return 0;
 }
 
-void *retro_get_memory_data(unsigned id)
+void* retro_get_memory_data(unsigned id)
 {
-   //   switch (id & RETRO_MEMORY_MASK)
-   //   {
-   //   case RETRO_MEMORY_SAVE_RAM:
-   //      return NULL;
-   //   }
+  //   switch (id & RETRO_MEMORY_MASK)
+  //   {
+  //   case RETRO_MEMORY_SAVE_RAM:
+  //      return NULL;
+  //   }
 
-   return NULL;
+  return NULL;
 }
 
 void retro_cheat_reset(void)
 {
 }
 
-void retro_cheat_set(unsigned index, bool enabled, const char *code)
+void retro_cheat_set(unsigned index, bool enabled, const char* code)
 {
 }
 
@@ -80,22 +80,22 @@ void NetPlayClient::SendTimeBase()
 
 u64 CEXIIPL::NetPlay_GetEmulatedTime()
 {
-    return 0;
+  return 0;
 }
 
-#include "Core/HW/SI/SI_DeviceGCController.h"
 #include "Core/ConfigManager.h"
+#include "Core/HW/SI/SI_DeviceGCController.h"
 
 namespace SerialInterface
 {
 int CSIDevice_GCController::NetPlay_InGamePadToLocalPad(int numPAD)
 {
-    return numPAD;
+  return numPAD;
 }
 
 bool CSIDevice_GCController::NetPlay_GetInput(int numPAD, GCPadStatus* PadStatus)
 {
-    return false;
+  return false;
 }
 
 void CSIDevice_GCController::Rumble(int numPad, ControlState strength)
@@ -111,5 +111,5 @@ void CSIDevice_GCController::Rumble(int numPad, ControlState strength)
 
 bool WiimoteEmu::Wiimote::NetPlay_GetWiimoteData(int wiimote, u8* data, u8 size, u8 reporting_mode)
 {
-    return false;
+  return false;
 }
