@@ -6,6 +6,7 @@
 
 #define VK_NO_PROTOTYPES
 
+#ifndef __LIBRETRO__
 #if defined(WIN32)
 #define VK_USE_PLATFORM_WIN32_KHR
 #elif defined(HAVE_X11)
@@ -17,6 +18,7 @@
 #define VK_USE_PLATFORM_ANDROID_KHR
 #else
 //#warning Unknown platform
+#endif
 #endif
 
 #include "vulkan/vulkan.h"

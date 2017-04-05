@@ -16,6 +16,13 @@
 #elif defined(VK_USE_PLATFORM_XLIB_KHR) || defined(VK_USE_PLATFORM_XCB_KHR) ||                     \
     defined(VK_USE_PLATFORM_ANDROID_KHR)
 #include <dlfcn.h>
+#elif defined(__LIBRETRO__)
+#include <libretro.h>
+#include "libretro_vulkan.h"
+namespace Libretro
+{
+extern const struct retro_hw_render_interface_vulkan* vulkan;
+}
 #endif
 
 #define VULKAN_MODULE_ENTRY_POINT(name, required) PFN_##name name;
@@ -163,6 +170,54 @@ void UnloadVulkanLibrary()
   ResetVulkanLibraryFunctionPointers();
   dlclose(vulkan_module);
   vulkan_module = nullptr;
+}
+#elif defined(__LIBRETRO__)
+static std::atomic_int vulkan_module_ref_count = {0};
+
+bool LoadVulkanLibrary()
+{
+  // Not thread safe if a second thread calls the loader whilst the first is still in-progress.
+  if (vulkan_module_ref_count)
+  {
+    vulkan_module_ref_count++;
+    return true;
+  }
+
+  vkGetInstanceProcAddr = Libretro::vulkan->get_instance_proc_addr;
+  vkGetDeviceProcAddr = Libretro::vulkan->get_device_proc_addr;
+  bool required_functions_missing = false;
+  auto LoadFunction = [&](void** func_ptr, const char* name, bool is_required) {
+    *func_ptr = (void*)vkGetInstanceProcAddr(nullptr, name);
+    if (!(*func_ptr) && is_required)
+    {
+      ERROR_LOG(VIDEO, "Vulkan: Failed to load required module function %s", name);
+      required_functions_missing = true;
+    }
+  };
+
+#define VULKAN_MODULE_ENTRY_POINT(name, required)                                                  \
+  LoadFunction(reinterpret_cast<void**>(&name), #name, required);
+  VULKAN_MODULE_ENTRY_POINT(vkCreateInstance, true)
+  VULKAN_MODULE_ENTRY_POINT(vkEnumerateInstanceExtensionProperties, true)
+  VULKAN_MODULE_ENTRY_POINT(vkEnumerateInstanceLayerProperties, true)
+#undef VULKAN_MODULE_ENTRY_POINT
+
+  if (required_functions_missing)
+  {
+    ResetVulkanLibraryFunctionPointers();
+    return false;
+  }
+
+  vulkan_module_ref_count++;
+  return true;
+}
+
+void UnloadVulkanLibrary()
+{
+  if ((--vulkan_module_ref_count) > 0)
+    return;
+
+  ResetVulkanLibraryFunctionPointers();
 }
 #else
 

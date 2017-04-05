@@ -51,6 +51,8 @@ CXXINCLUDES += -I$(DEPS_DIR)/SFML/include
 CXXINCLUDES += -I$(DEPS_DIR)/SFML/src/
 CXXINCLUDES += -I$(DEPS_DIR)/xxhash
 CXXINCLUDES += -I$(DEPS_DIR)/SOIL
+CXXINCLUDES += -I$(DEPS_DIR)/glslang/glslang/Public
+CXXINCLUDES += -I$(DEPS_DIR)/glslang/SPIRV
 
 include rules/defines.mk
 
