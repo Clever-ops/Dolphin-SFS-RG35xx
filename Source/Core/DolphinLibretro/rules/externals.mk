@@ -58,8 +58,8 @@ $(DEPS_DIR)/glslang/SPIRV/InReadableOrder.o \
 $(DEPS_DIR)/glslang/SPIRV/Logger.o \
 $(DEPS_DIR)/glslang/SPIRV/SpvBuilder.o \
 $(DEPS_DIR)/glslang/SPIRV/SPVRemapper.o
-ifneq ($(findstring win,$(platform)),)
-glslang_OBJECTS = $(DEPS_DIR)/glslang/glslang/OSDependent/Windows/ossource.o
+ifeq ($(platform),win)
+glslang_OBJECTS += $(DEPS_DIR)/glslang/glslang/OSDependent/Windows/ossource.o
 else
 glslang_OBJECTS += $(DEPS_DIR)/glslang/glslang/OSDependent/Unix/ossource.o
 endif
@@ -254,6 +254,9 @@ EXTERNALS_OBJECTS += $(zlib_OBJECTS)
 
 libexternals.a:   WARNINGS_gcc  := -w
 libexternals.lib: WARNINGS_msvc := -W0
+
+$(DEPS_DIR)/glslang/glslang/MachineIndependent/glslang_tab.obj: CXXPCHFLAGS :=
+$(DEPS_DIR)/glslang/glslang/MachineIndependent/Scan.obj: CXXPCHFLAGS :=
 
 $(call add_lib,externals,$(EXTERNALS_OBJECTS))
 
