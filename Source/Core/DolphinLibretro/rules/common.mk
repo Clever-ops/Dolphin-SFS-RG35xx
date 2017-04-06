@@ -71,9 +71,18 @@ ifeq ($(DOLPHIN_WC_BRANCH), stable)
 endif
 
 $(COMMON_DIR)/scmrev.h:
-	echo -e '#define SCM_REV_STR "$(DOLPHIN_WC_REVISION)"\n#define SCM_DESC_STR "$(DOLPHIN_WC_DESCRIBE)"\n#define SCM_BRANCH_STR "$(DOLPHIN_WC_BRANCH)"\n#define SCM_IS_MASTER $(DOLPHIN_WC_IS_STABLE)\n#define SCM_DISTRIBUTOR_STR "$(DISTRIBUTOR)"\n' > $@
+	echo $(call format_echo,#define SCM_REV_STR "$(DOLPHIN_WC_REVISION)") > $@
+	echo $(call format_echo,#define SCM_DESC_STR "$(DOLPHIN_WC_DESCRIBE)") >> $@
+	echo $(call format_echo,#define SCM_BRANCH_STR "$(DOLPHIN_WC_BRANCH)") >> $@
+	echo $(call format_echo,#define SCM_IS_MASTER $(DOLPHIN_WC_IS_STABLE)) >> $@
+	echo $(call format_echo,#define SCM_DISTRIBUTOR_STR "$(DISTRIBUTOR)") >> $@
 
-$(COMMON_DIR)/Version.o: $(COMMON_DIR)/scmrev.h
+clean_scmrev_h:
+	$(call delete,$(COMMON_DIR)/scmrev.h)
+
+clean: clean_scmrev_h
+
+$(COMMON_DIR)/Version.cpp: $(COMMON_DIR)/scmrev.h
 
 #.PHONY: $(COMMON_DIR)/scmrev.h
 

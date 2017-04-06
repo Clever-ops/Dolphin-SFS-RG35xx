@@ -85,6 +85,8 @@ remove_occurences = $(strip $(if $(firstword $2),$(call remove_occurences,$(subs
 vars_get_match    = $(foreach var,$(filter $1_%,$(.VARIABLES)),$(if $(call remove_occurences,$(var:$1%=%),$2),,$($(var))))
 get_current       = $(strip $(foreach var,$1,$(call vars_get_match,$(var),$(platform) $(compiler) $(build) $(libtype))))
 
+format_echo = $(if $(strip $(shell echo -e)),$(1),'$(1)')
+
 #$(error done)
 
 .PHONY: all
