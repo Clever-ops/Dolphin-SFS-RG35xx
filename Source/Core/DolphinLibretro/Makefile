@@ -61,6 +61,7 @@ CXXINCLUDES += -I$(DEPS_DIR)/xxhash
 CXXINCLUDES += -I$(DEPS_DIR)/SOIL
 CXXINCLUDES += -I$(DEPS_DIR)/glslang/glslang/Public
 CXXINCLUDES += -I$(DEPS_DIR)/glslang/SPIRV
+CXXINCLUDES += -I$(DEPS_DIR)/Vulkan/include
 
 include rules/defines.mk
 
