@@ -8,6 +8,11 @@ SHARED_EXT  := .so
 
 SPACE :=
 SPACE := $(SPACE) $(SPACE)
+BACKSLASH :=
+BACKSLASH := \$(BACKSLASH)
+filter_out1 = $(filter-out $(firstword $1),$1)
+filter_out2 = $(call filter_out1,$(call filter_out1,$1))
+
 
 pathsearch = $(wildcard $(addsuffix /$(1),$(subst :, ,$(PATH))))
 delete = rm -f $(1)
@@ -24,14 +29,46 @@ ifeq ($(platform),)
 endif
 
 ifeq ($(platform),win)
-   ifneq ($(and $(VCINSTALLDIR),$(LIB)),)
+   ifneq ($(compiler_win),)
+      compiler = $(compiler_win)
+   else ifneq ($(VCINSTALLDIR),)
       compiler = msvc
+   endif
+   ifeq ($(compiler),msvc)
+      ifeq ($(VS140COMNTOOLS),)
+         $(error VS 2015 Build Tools not found)
+      endif
+      reg_query = $(call filter_out2,$(subst $2,,$(shell reg query "$2" -v "$1" 2>nul)))
+      fix_path = $(subst $(SPACE),\ ,$(subst \,/,$1))
+      WindowsSdkDir ?= $(call reg_query,InstallationFolder,HKEY_LOCAL_MACHINE\SOFTWARE\Wow6432Node\Microsoft\Microsoft SDKs\Windows\v10.0)
+      WindowsSdkDir ?= $(call reg_query,InstallationFolder,HKEY_CURRENT_USER\SOFTWARE\Wow6432Node\Microsoft\Microsoft SDKs\Windows\v10.0)
+      WindowsSdkDir ?= $(call reg_query,InstallationFolder,HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v10.0)
+      WindowsSdkDir ?= $(call reg_query,InstallationFolder,HKEY_CURRENT_USER\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v10.0)
+      WindowsSdkDir := $(WindowsSdkDir)
+
+      WindowsSDKVersion ?= $(firstword $(foreach folder,$(subst $(subst \,/,$(WindowsSdkDir)Include/),,$(wildcard $(call fix_path,$(WindowsSdkDir)Include\*))),$(if $(wildcard $(call fix_path,$(WindowsSdkDir)Include/$(folder)/um/Windows.h)),$(folder),)))$(BACKSLASH)
+      WindowsSDKVersion := $(WindowsSDKVersion)
+
+      VSINSTALLDIR ?= $(patsubst %Common7\Tools\,%,$(VS140COMNTOOLS))
+      VCINSTALLDIR ?= $(VSINSTALLDIR)VC$(BACKSLASH)
+      INCLUDE ?=$(VCINSTALLDIR)INCLUDE;$(VCINSTALLDIR)ATLMFC\INCLUDE;$(WindowsSdkDir)include\$(WindowsSDKVersion)ucrt;$(WindowsSdkDir)include\$(WindowsSDKVersion)shared;$(WindowsSdkDir)include\$(WindowsSDKVersion)um;
+      LIB ?=$(VCINSTALLDIR)LIB\amd64;$(VCINSTALLDIR)ATLMFC\LIB\amd64;$(WindowsSdkDir)lib\$(WindowsSDKVersion)ucrt\x64;$(WindowsSdkDir)lib\$(WindowsSDKVersion)um\x64;
+      LIBPATH ?=$(VCINSTALLDIR)LIB\amd64;$(VCINSTALLDIR)ATLMFC\LIB\amd64;
+
+      compiler_path = $(VCINSTALLDIR)bin\amd64
+      ifeq ($(findstring $(compiler_path),$(PATH)),)
+         PATH := $(compiler_path):$(PATH)
+      endif
+
+      export INCLUDE := $(INCLUDE)
+      export LIB     := $(LIB)
+      export LIBPATH := $(LIBPATH)
+      export PATH    := $(PATH)
+
       CC       = cl.exe
       CXX      = cl.exe
       LD       = link.exe
       AR       = lib.exe
-   else ifeq ($(compiler),msvc)
-      $(error msvc environment not set)
    endif
    EXE_EXT    := .exe
    OBJ_EXT    := .obj

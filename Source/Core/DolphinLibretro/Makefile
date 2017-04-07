@@ -1,3 +1,4 @@
+compiler_win = msvc
 
 include rules/base.mk
 
