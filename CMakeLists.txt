@@ -793,6 +793,10 @@ if(NOT ANDROID)
   endif()
 endif()
 
+if(NOT APPLE)
+   add_definitions(-DHAVE_VULKAN)
+endif
+
 if(NOT DISABLE_WX)
   find_package(wxWidgets COMPONENTS core aui adv)
 

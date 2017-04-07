@@ -99,22 +99,24 @@ $(TARGET): $(TARGET_DEPS) $(OBJECTS)
 
 # msvc
 %.lib:
-	$(AR) -nologo -wx -machine:x64 -out:$@ $^
+	$Q$(AR) -nologo -wx -machine:x64 -out:$@ $^
 
 %.dll:
-	$(LD) -out:$@ $(CXXPCH:.pch=.obj) $(OBJECTS) $(LOCALLIBS) $(LIBS) $(LDFLAGS)
+	$Q$(LD) -out:$@ $(CXXPCH:.pch=.obj) $(OBJECTS) $(LOCALLIBS) $(LIBS) $(LDFLAGS)
 
 %.obj: %.cpp $(CXXPCH)
-	$(CXX) $< -c -Fo$@ $(CXXFLAGS) $(CXXPCHFLAGS)
+	$Q$(CXX) $< -c -Fo$@ $(CXXFLAGS) $(CXXPCHFLAGS)
 
 %.obj: %.cc
-	$(CXX) $< -c -Fo$@ $(CXXFLAGS)
+	$Q$(CXX) $< -c -Fo$@ $(CXXFLAGS)
 
 %.obj: %.c
-	$(CC) $< -c -Fo$@ $(CFLAGS)
+	$Q$(CC) $< -c -Fo$@ $(CFLAGS)
 
 %.pch: %.cpp
-	$(CXX) $< -Fp$@ -Fo$*.obj -Yc"pch.h" $(CXXFLAGS)
+	$Q$(CXX) $< -Fp$@ -Fo$*.obj -Yc"pch.h" $(CXXFLAGS)
+
+.SECONDARY: %.pch
 
 # gcc
 %.a:

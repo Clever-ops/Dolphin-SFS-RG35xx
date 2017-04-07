@@ -6,7 +6,6 @@
 
 #include <libco.h>
 #include <libretro.h>
-#include "libretro_vulkan.h"
 
 #include "Common/GL/GLInterfaceBase.h"
 #include "Common/GL/GLUtil.h"
@@ -20,7 +19,9 @@
 
 #include "common.h"
 #include "retroGL.h"
-
+#ifdef HAVE_VULKAN
+#include "libretro_vulkan.h"
+#endif
 namespace Libretro
 {
 struct retro_hw_render_callback hw_render;
@@ -31,7 +32,7 @@ retro_video_refresh_t video_cb;
 static void context_reset(void)
 {
   fprintf(stderr, "Context reset!\n");
-
+#ifdef HAVE_VULKAN
   if (hw_render.context_type == RETRO_HW_CONTEXT_VULKAN)
   {
     if (!environ_cb(RETRO_ENVIRONMENT_GET_HW_RENDER_INTERFACE, (void**)&vulkan) || !vulkan)
@@ -48,6 +49,7 @@ static void context_reset(void)
       return;
     }
   }
+#endif
 }
 
 static void context_destroy(void)
@@ -58,7 +60,7 @@ static void context_destroy(void)
     vulkan = NULL;
   }
 }
-
+#ifdef HAVE_VULKAN
 static const VkApplicationInfo* get_application_info(void)
 {
   static const VkApplicationInfo info = {
@@ -67,7 +69,7 @@ static const VkApplicationInfo* get_application_info(void)
   };
   return &info;
 }
-
+#endif
 void init_video()
 {
   //   SConfig::m_strVideoBackend = "Software Renderer";
@@ -93,6 +95,7 @@ void init_video()
     hw_render.cache_context = true;
     environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render);
   }
+#ifdef HAVE_VULKAN
   else if (SConfig::GetInstance().m_strVideoBackend == "Vulkan")
   {
     hw_render.context_type = RETRO_HW_CONTEXT_VULKAN;
@@ -111,6 +114,7 @@ void init_video()
 
     environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE, (void*)&iface);
   }
+#endif
   else
   {
     hw_render.context_type = RETRO_HW_CONTEXT_NONE;

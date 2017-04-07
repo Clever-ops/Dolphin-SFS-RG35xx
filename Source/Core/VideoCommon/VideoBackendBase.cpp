@@ -15,7 +15,7 @@
 #include "VideoBackends/Null/VideoBackend.h"
 #include "VideoBackends/OGL/VideoBackend.h"
 #include "VideoBackends/Software/VideoBackend.h"
-#if !defined(__APPLE__)
+#if defined(HAVE_VULKAN)
 #include "VideoBackends/Vulkan/VideoBackend.h"
 #endif
 
@@ -51,7 +51,7 @@ void VideoBackendBase::PopulateList()
     g_available_video_backends.push_back(std::make_unique<DX12::VideoBackend>());
   }
 #endif
-#if !defined(__APPLE__)
+#if defined(HAVE_VULKAN)
   g_available_video_backends.push_back(std::make_unique<Vulkan::VideoBackend>());
 #endif
   g_available_video_backends.push_back(std::make_unique<SW::VideoSoftware>());

@@ -1,3 +1,6 @@
+# Verbosity
+V ?= 0
+
 compiler_win = msvc
 
 include rules/base.mk
@@ -19,6 +22,7 @@ PERF_TEST                   = 1
 DEBUGFAST                   = 0
 LOGGING                     = 1
 HAVE_HW_CONTEXT_OPENGL_CORE = 1
+HAVE_VULKAN                 = 0
 
 $(call add_defines, PERF_TEST LOGGING DEBUGFAST HAVE_HW_CONTEXT_OPENGL_CORE)
 
@@ -60,9 +64,11 @@ CXXINCLUDES += -I$(DEPS_DIR)/SFML/include
 CXXINCLUDES += -I$(DEPS_DIR)/SFML/src/
 CXXINCLUDES += -I$(DEPS_DIR)/xxhash
 CXXINCLUDES += -I$(DEPS_DIR)/SOIL
-CXXINCLUDES += -I$(DEPS_DIR)/glslang/glslang/Public
-CXXINCLUDES += -I$(DEPS_DIR)/glslang/SPIRV
-CXXINCLUDES += -I$(DEPS_DIR)/Vulkan/include
+ifeq ($(HAVE_VULKAN),1)
+   CXXINCLUDES += -I$(DEPS_DIR)/glslang/glslang/Public
+   CXXINCLUDES += -I$(DEPS_DIR)/glslang/SPIRV
+   CXXINCLUDES += -I$(DEPS_DIR)/Vulkan/include
+endif
 
 include rules/defines.mk
 

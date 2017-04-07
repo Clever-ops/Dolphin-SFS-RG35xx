@@ -234,7 +234,6 @@ $(DEPS_DIR)/zlib/zutil.o
 #Deps :
 EXTERNALS_OBJECTS += $(bdisasm_OBJECTS)
 EXTERNALS_OBJECTS += $(enet_OBJECTS)
-EXTERNALS_OBJECTS += $(glslang_OBJECTS)
 #EXTERNALS_OBJECTS += $(hidapi__hidraw_OBJECTS)
 EXTERNALS_OBJECTS += $(mbedcrypto_OBJECTS)
 EXTERNALS_OBJECTS += $(mbedtls_OBJECTS)
@@ -247,6 +246,9 @@ EXTERNALS_OBJECTS += $(xxhash_OBJECTS)
 EXTERNALS_OBJECTS += $(libpng_OBJECTS)
 EXTERNALS_OBJECTS += $(LZO_OBJECTS)
 EXTERNALS_OBJECTS += $(zlib_OBJECTS)
+ifeq ($(HAVE_VULKAN),1)
+   EXTERNALS_OBJECTS += $(glslang_OBJECTS)
+endif
 
 #$(hidapi__hidraw_OBJECTS.o=$(OBJ_EXT)): INCLUDES += -I$(DEPS_DIR)/hidapi/hidapi
 

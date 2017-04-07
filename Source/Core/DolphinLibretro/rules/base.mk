@@ -124,6 +124,10 @@ get_current       = $(strip $(foreach var,$1,$(call vars_get_match,$(var),$(plat
 
 format_echo = $(if $(strip $(shell echo -e)),$(1),'$(1)')
 
+ifneq ($V,1)
+   Q=@
+endif
+
 #$(error done)
 
 .PHONY: all
