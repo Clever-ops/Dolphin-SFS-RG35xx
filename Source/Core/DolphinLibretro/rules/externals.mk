@@ -255,6 +255,7 @@ libsfml.a:   WARNINGS_gcc  := -w
 libsfml.lib: WARNINGS_msvc := -W0
 libglslang.a:   WARNINGS_gcc  := -w
 libglslang.lib: WARNINGS_msvc := -W0
+libz.a: WARNINGS_gcc :=
 
 $(DEPS_DIR)/glslang/glslang/MachineIndependent/glslang_tab.obj: CXXPCHFLAGS :=
 $(DEPS_DIR)/glslang/glslang/MachineIndependent/Scan.obj: CXXPCHFLAGS :=
