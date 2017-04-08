@@ -81,9 +81,9 @@ ifeq ($(compiler), msvc)
    endif
 endif
 
-CFLAGS      += $(FLAGS) $(WARNINGS) $(CWARNINGS) $(DEFINES) $(CDEFINES) $(INCLUDES) $(CINCLUDES)
+CFLAGS      += $(strip $(FLAGS) $(WARNINGS) $(CWARNINGS) $(DEFINES) $(CDEFINES) $(INCLUDES) $(CINCLUDES))
 CFLAGS      += $(call get_current,FLAGS CFLAGS WARNINGS CWARNINGS DEFINES CDEFINES INCLUDES CINCLUDES)
-CXXFLAGS    += $(FLAGS) $(WARNINGS) $(CXXWARNINGS) $(DEFINES) $(CXXDEFINES) $(INCLUDES) $(CXXINCLUDES)
+CXXFLAGS    += $(strip $(FLAGS) $(WARNINGS) $(CXXWARNINGS) $(DEFINES) $(CXXDEFINES) $(INCLUDES) $(CXXINCLUDES))
 CXXFLAGS    += $(call get_current,FLAGS CXXFLAGS WARNINGS CXXWARNINGS DEFINES CXXDEFINES INCLUDES CXXINCLUDES)
 
 LDFLAGS_gcc += $(call get_current,FLAGS)
@@ -92,19 +92,20 @@ LIBS        += $(call get_current,LIBS)
 
 TARGET = $(TARGET_$(libtype))
 
-build: $(TARGET)
-$(TARGET): $(TARGET_DEPS) $(OBJECTS)
+build: deps $(TARGET)
+$(TARGET): $(TARGET_DEPS) $(CXXPCH) $(OBJECTS)
 
-%.cpp: $(CXXPCH)
+#%.obj: $(CXXPCH)
+#	echo $(CXXPCH)
 
 # msvc
 %.lib:
 	$Q$(AR) -nologo -wx -machine:x64 -out:$@ $^
 
 %.dll:
-	$Q$(LD) -out:$@ $(CXXPCH:.pch=.obj) $(OBJECTS) $(LOCALLIBS) $(LIBS) $(LDFLAGS)
+	$Q$(LD) -out:$@ $(CXXPCH:.pch=.obj) $(OBJECTS) $(TARGET_LIBS) $(EXTERNAL_LIBS) $(LIBS) $(LDFLAGS)
 
-%.obj: %.cpp $(CXXPCH)
+%.obj: %.cpp
 	$Q$(CXX) $< -c -Fo$@ $(CXXFLAGS) $(CXXPCHFLAGS)
 
 %.obj: %.cc
@@ -113,17 +114,17 @@ $(TARGET): $(TARGET_DEPS) $(OBJECTS)
 %.obj: %.c
 	$Q$(CC) $< -c -Fo$@ $(CFLAGS)
 
-%.pch: %.cpp
+%.pch: %.cpp %.h
 	$Q$(CXX) $< -Fp$@ -Fo$*.obj -Yc"pch.h" $(CXXFLAGS)
 
-.SECONDARY: %.pch
+.PRECIOUS: %.pch
 
 # gcc
 %.a:
 	$(AR) rcs $@ $^
 
 %.so:
-	$(CXX) -o $@ $(OBJECTS) -Wl,--start-group $(LOCALLIBS) -Wl,--end-group $(LIBS) $(LDFLAGS)
+	$(CXX) -o $@ $(OBJECTS) -Wl,--start-group $(TARGET_LIBS) -Wl,--end-group $(EXTERNAL_LIBS) $(LIBS) $(LDFLAGS)
 
 %.o: %.cpp
 	$(CXX) $< -c -o $@ $(CXXFLAGS)
@@ -134,8 +135,9 @@ $(TARGET): $(TARGET_DEPS) $(OBJECTS)
 %.o: %.c
 	$(CC) $< -c -o $@ $(CFLAGS)
 
-clean:
+clean_target:
 	$(call delete, $(TARGET) $(OBJECTS) $(CXXPCH) $(CXXPCH:.pch=$(OBJ_EXT)))
 
+clean: clean_deps clean_target
 
-.PHONY: clean test
+.PHONY: clean test deps

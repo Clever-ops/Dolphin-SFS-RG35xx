@@ -87,23 +87,46 @@ ifeq ($(STATIC_LINKING), 1)
    OBJECTS += $(2)
 else
    ifeq ($(compiler),msvc)
-      LOCALLIBS += lib$(1).lib
+      TARGET_LIBS += lib$(1).lib
    else
-      LOCALLIBS += -l$(1)
+      TARGET_LIBS += -l$(1)
    endif
 TARGET_DEPS += lib$(1)$(STATIC_EXT)
 lib$(1)$(STATIC_EXT): $(2)
 endif
 clean_$(1):
 	$(call delete,$(2) lib$(1)$(STATIC_EXT))
-clean: clean_$(1)
+clean_target: clean_$(1)
+.PHONY: clean_$(1)
+endef
+
+define add_external_lib_ =
+ifeq ($(STATIC_LINKING), 1)
+   OBJECTS += $(2)
+deps: $(2)
+else
+   ifeq ($(compiler),msvc)
+      EXTERNAL_LIBS += lib$(1).lib
+   else
+      EXTERNAL_LIBS += -l$(1)
+   endif
+TARGET_DEPS += lib$(1)$(STATIC_EXT)
+lib$(1)$(STATIC_EXT): $(2)
+deps: lib$(1)$(STATIC_EXT)
+endif
+$(2): CXXPCHFLAGS :=
+clean_$(1):
+	$(call delete,$(2) lib$(1)$(STATIC_EXT))
+clean_deps: clean_$(1)
 .PHONY: clean_$(1)
 endef
 
 ifeq ($(compiler),msvc)
-   add_lib = $(eval $(call add_lib_,$(1), $(2:.o=.obj)))
+   add_lib = $(eval $(call add_lib_,$(1),$(2:.o=.obj)))
+   add_external_lib = $(eval $(call add_external_lib_,$(1),$(2:.o=.obj)))
 else
-   add_lib = $(eval $(call add_lib_,$(1), $(2)))
+   add_lib = $(eval $(call add_lib_,$(1),$(2)))
+   add_external_lib = $(eval $(call add_external_lib_,$(1),$(2)))
 endif
 
 define add_def =

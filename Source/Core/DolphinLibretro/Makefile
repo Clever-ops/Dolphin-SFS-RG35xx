@@ -22,7 +22,7 @@ PERF_TEST                   = 1
 DEBUGFAST                   = 0
 LOGGING                     = 1
 HAVE_HW_CONTEXT_OPENGL_CORE = 1
-HAVE_VULKAN                 = 0
+HAVE_VULKAN                 = 1
 
 $(call add_defines, PERF_TEST LOGGING DEBUGFAST HAVE_HW_CONTEXT_OPENGL_CORE)
 
@@ -38,6 +38,7 @@ FLAGS_msvc       += -nologo -MP -Zc:wchar_t -Z7 -Gm- -Zc:inline -fp:precise -Zp1
 CFLAGS_msvc      += -TC
 CXXFLAGS_msvc    += -TP
 WARNINGS_msvc    += -wd4996 -wd4351 -WX -W3
+CWARNINGS_msvc   += -wd4267 -wd4244
 CXXWARNINGS_msvc += -wd4530 -wd4577
 #FLAGS_msvc += -showIncludes
 #CXXFLAGS_msvc += -Zo -Zc:rvalueCast

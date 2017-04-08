@@ -232,33 +232,33 @@ $(DEPS_DIR)/zlib/zutil.o
 
 
 #Deps :
-EXTERNALS_OBJECTS += $(bdisasm_OBJECTS)
-EXTERNALS_OBJECTS += $(enet_OBJECTS)
-#EXTERNALS_OBJECTS += $(hidapi__hidraw_OBJECTS)
-EXTERNALS_OBJECTS += $(mbedcrypto_OBJECTS)
-EXTERNALS_OBJECTS += $(mbedtls_OBJECTS)
-EXTERNALS_OBJECTS += $(mbedx509_OBJECTS)
-EXTERNALS_OBJECTS += $(miniupnpc_OBJECTS)
-EXTERNALS_OBJECTS += $(sfml__network_OBJECTS)
-EXTERNALS_OBJECTS += $(sfml__system_OBJECTS)
-EXTERNALS_OBJECTS += $(SOIL_OBJECTS)
-EXTERNALS_OBJECTS += $(xxhash_OBJECTS)
-EXTERNALS_OBJECTS += $(libpng_OBJECTS)
-EXTERNALS_OBJECTS += $(LZO_OBJECTS)
-EXTERNALS_OBJECTS += $(zlib_OBJECTS)
+$(call add_external_lib,bdisasm,$(bdisasm_OBJECTS))
+$(call add_external_lib,enet,$(enet_OBJECTS))
+#$(call add_external_lib,hidapi,$(hidapi__hidraw_OBJECTS))
+$(call add_external_lib,mbed,$(mbedcrypto_OBJECTS) $(mbedtls_OBJECTS) $(mbedx509_OBJECTS))
+$(call add_external_lib,miniupnpc,$(miniupnpc_OBJECTS))
+$(call add_external_lib,sfml,$(sfml__network_OBJECTS) $(sfml__system_OBJECTS))
+$(call add_external_lib,SOIl,$(SOIL_OBJECTS))
+$(call add_external_lib,xxhash,$(xxhash_OBJECTS))
+$(call add_external_lib,png,$(libpng_OBJECTS))
+$(call add_external_lib,LZO,$(LZO_OBJECTS))
+$(call add_external_lib,z,$(zlib_OBJECTS))
 ifeq ($(HAVE_VULKAN),1)
-   EXTERNALS_OBJECTS += $(glslang_OBJECTS)
+   $(call add_external_lib,glslang,$(glslang_OBJECTS))
 endif
 
 #$(hidapi__hidraw_OBJECTS.o=$(OBJ_EXT)): INCLUDES += -I$(DEPS_DIR)/hidapi/hidapi
 
 #$(glslang_OBJECTS)        : WARNINGS += -Wno-shadow -Wno-reorder -Wno-sign-compare -Wno-parentheses -Wno-unused-variable
 
-libexternals.a:   WARNINGS_gcc  := -w
-libexternals.lib: WARNINGS_msvc := -W0
+libsfml.a:   WARNINGS_gcc  := -w
+libsfml.lib: WARNINGS_msvc := -W0
+libglslang.a:   WARNINGS_gcc  := -w
+libglslang.lib: WARNINGS_msvc := -W0
 
 $(DEPS_DIR)/glslang/glslang/MachineIndependent/glslang_tab.obj: CXXPCHFLAGS :=
 $(DEPS_DIR)/glslang/glslang/MachineIndependent/Scan.obj: CXXPCHFLAGS :=
 
-$(call add_lib,externals,$(EXTERNALS_OBJECTS))
+#$(info $(TARGET_DEPS))
+#$(error end)
 

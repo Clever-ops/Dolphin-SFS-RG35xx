@@ -58,17 +58,11 @@ $(COMMON_DIR)/GL/GLExtensions/GLExtensions.o : DEFINES += -U__linux__ -U__APPLE_
 
 $(call add_lib,common,$(COMMON_OBJECTS))
 
-DISTRIBUTOR          = None
+DISTRIBUTOR          = Libretro
 DOLPHIN_WC_BRANCH    = $(shell git$(EXE_EXT) rev-parse --abbrev-ref HEAD)
 DOLPHIN_WC_REVISION  = $(shell git$(EXE_EXT) rev-parse HEAD)
 DOLPHIN_WC_DESCRIBE  = $(shell git$(EXE_EXT) describe --always --long --dirty)
-DOLPHIN_WC_IS_STABLE = 0
-ifeq ($(DOLPHIN_WC_BRANCH), master)
-   DOLPHIN_WC_IS_STABLE=1
-endif
-ifeq ($(DOLPHIN_WC_BRANCH), stable)
-   DOLPHIN_WC_IS_STABLE=1
-endif
+DOLPHIN_WC_IS_STABLE = $(if $(filter-out master stable,$(DOLPHIN_WC_BRANCH)),0,1)
 
 $(COMMON_DIR)/scmrev.h:
 	@echo scmrev.h
@@ -78,10 +72,13 @@ $(COMMON_DIR)/scmrev.h:
 	$Qecho $(call format_echo,#define SCM_IS_MASTER $(DOLPHIN_WC_IS_STABLE)) >> $@
 	$Qecho $(call format_echo,#define SCM_DISTRIBUTOR_STR "$(DISTRIBUTOR)") >> $@
 
-clean_scmrev_h:
+clean_scmrev:
 	$(call delete,$(COMMON_DIR)/scmrev.h)
 
-clean: clean_scmrev_h
+#clean: clean_scmrev
+
+clean_deps:
+	@echo scmrev.h
 
 $(COMMON_DIR)/Version.cpp: $(COMMON_DIR)/scmrev.h
 
