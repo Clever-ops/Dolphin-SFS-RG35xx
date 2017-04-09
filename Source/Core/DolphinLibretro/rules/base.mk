@@ -1,5 +1,4 @@
 
-compiler    ?= gcc
 OS          ?= $(shell uname -o)
 EXE_EXT     :=
 OBJ_EXT     := .o
@@ -23,10 +22,25 @@ ifeq ($(platform),)
       platform := win
    else ifneq ($(findstring Msys,$(OS)),)
       platform := win
-   else ifneq ($(findstring Darwin,$(OS)),)
+   else ifneq ($(findstring Darwin,$(OS)),)   
       platform := osx
+      compiler := clang
    endif
 endif
+
+ifeq ($(compiler),gcc)
+   CC  = gcc
+   CXX = g++
+   LD  = ld
+   AR  = ar
+else ifeq ($(compiler),clang)
+   CC  = clang
+   CXX = clang++
+   LD  = clang++
+   AR  = ar
+endif
+
+compiler    ?= gcc
 
 ifeq ($(platform),win)
    ifneq ($(compiler_win),)

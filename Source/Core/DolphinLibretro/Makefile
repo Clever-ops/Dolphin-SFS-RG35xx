@@ -22,11 +22,7 @@ PERF_TEST                   = 1
 DEBUGFAST                   = 0
 LOGGING                     = 1
 HAVE_HW_CONTEXT_OPENGL_CORE = 1
-ifeq ($(platform), osx)
-HAVE_VULKAN                 = 0
-else
 HAVE_VULKAN                 = 1
-endif
 
 $(call add_defines, PERF_TEST LOGGING DEBUGFAST HAVE_HW_CONTEXT_OPENGL_CORE)
 
@@ -36,6 +32,10 @@ LIBRETRO_DIR   = .
 DEPS_DIR       = $(ROOT_DIR)/Externals
 
 INCLUDES += -I$(LIBRETRO_DIR)
+
+ifneq ($(filter osx ios,$(platform)),)
+   HAVE_VULKAN = 0
+endif
 
 # msvc
 FLAGS_msvc       += -nologo -MP -Zc:wchar_t -Z7 -Gm- -Zc:inline -fp:precise -Zp16 -Zc:forScope -GR- -Gd -Oi -volatile:iso
@@ -56,6 +56,14 @@ WARNINGS_gcc += -Wall -Wtype-limits -Wsign-compare -Wignored-qualifiers -Wuninit
 WARNINGS_gcc += -Werror=implicit-function-declaration
 LIBS_gcc     += -lpthread -lrt
 
+# clang
+FLAGS_clang    += -msse2 -fno-strict-aliasing -fvisibility=hidden -fomit-frame-pointer
+CXXFLAGS_clang += -Wmissing-declarations -fvisibility-inlines-hidden
+CXXFLAGS_clang += -fno-exceptions -fno-rtti -std=c++14
+WARNINGS_clang += -Wall -Wtype-limits -Wsign-compare -Wignored-qualifiers -Wuninitialized -Wshadow -Winit-self
+WARNINGS_clang += -Werror=implicit-function-declaration
+LIBS_clang     += -lpthread -lrt
+
 INCLUDES += -I$(CORE_DIR)
 INCLUDES += -I$(DEPS_DIR)/Bochs_disasm
 INCLUDES += -I$(DEPS_DIR)/enet/include
@@ -70,11 +78,13 @@ CXXINCLUDES += -I$(DEPS_DIR)/SFML/src/
 CXXINCLUDES += -I$(DEPS_DIR)/xxhash
 CXXINCLUDES += -I$(DEPS_DIR)/SOIL
 ifeq ($(HAVE_VULKAN),1)
-   CXXINCLUDES += -I$(DEPS_DIR)/Vulkan/Include
-   CXXINCLUDES_msvc += -I$(DEPS_DIR)/glslang/glslang/Public
-   CXXINCLUDES_msvc += -I$(DEPS_DIR)/glslang/SPIRV
-   CXXINCLUDES_gcc  += -isystem$(DEPS_DIR)/glslang/glslang/Public
-   CXXINCLUDES_gcc  += -isystem$(DEPS_DIR)/glslang/SPIRV
+   CXXINCLUDES       += -I$(DEPS_DIR)/Vulkan/Include
+   CXXINCLUDES_msvc  += -I$(DEPS_DIR)/glslang/glslang/Public
+   CXXINCLUDES_msvc  += -I$(DEPS_DIR)/glslang/SPIRV
+   CXXINCLUDES_gcc   += -isystem$(DEPS_DIR)/glslang/glslang/Public
+   CXXINCLUDES_gcc   += -isystem$(DEPS_DIR)/glslang/SPIRV
+   CXXINCLUDES_clang += -isystem$(DEPS_DIR)/glslang/glslang/Public
+   CXXINCLUDES_clang += -isystem$(DEPS_DIR)/glslang/SPIRV
 endif
 
 include rules/defines.mk

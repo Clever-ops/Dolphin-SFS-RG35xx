@@ -255,6 +255,7 @@ libminiupnpc.a: WARNINGS_gcc += -Wno-shadow
 libSOIL.a:      WARNINGS_gcc += -Wno-misleading-indentation
 libglslang.a:   WARNINGS_gcc += -Wno-shadow -Wno-reorder -Wno-sign-compare -Wno-parentheses -Wno-unused-variable -Wno-unused-but-set-variable
 libz.a:         WARNINGS_gcc += -Wno-implicit-function-declaration
+libz.a:         WARNINGS_clang += -Wno-implicit-function-declaration
 libpng.a:       WARNINGS_gcc += -Wno-shadow
 
 libsfml.lib:    WARNINGS_msvc := -W0

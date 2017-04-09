@@ -24,7 +24,8 @@ else
 endif
 
 ifeq ($(LTO), 1)
- FLAGS_gcc_release += -flto
+   FLAGS_gcc_release += -flto
+   FLAGS_clang_release += -flto
 endif
 
 DEFINES                    += -D__LIBRETRO__
@@ -51,6 +52,14 @@ FLAGS_gcc_shared           += -fpic
 LDFLAGS_gcc                += -Wl,--no-undefined -L.
 LDFLAGS_gcc_release        += -s
 LDFLAGS_gcc_shared         += -shared -lm
+
+# gcc
+FLAGS_clang_debug          += -O0 -g
+FLAGS_clang_release        += -O3
+FLAGS_clang_shared         += -fpic
+LDFLAGS_clang              += -Wl,--no-undefined -L.
+LDFLAGS_clang_release      += -s
+LDFLAGS_clang_shared       += -shared -lm
 
 TARGET_static := $(TARGET_NAME)_libretro$(TARGET_SUFFIX)$(STATIC_EXT)
 TARGET_shared := $(TARGET_NAME)_libretro$(TARGET_SUFFIX)$(SHARED_EXT)
@@ -88,9 +97,10 @@ CFLAGS      += $(call get_current,FLAGS CFLAGS WARNINGS CWARNINGS DEFINES CDEFIN
 CXXFLAGS    += $(strip $(FLAGS) $(WARNINGS) $(CXXWARNINGS) $(DEFINES) $(CXXDEFINES) $(INCLUDES) $(CXXINCLUDES))
 CXXFLAGS    += $(call get_current,FLAGS CXXFLAGS WARNINGS CXXWARNINGS DEFINES CXXDEFINES INCLUDES CXXINCLUDES)
 
-LDFLAGS_gcc += $(call get_current,FLAGS)
-LDFLAGS     += $(call get_current,LDFLAGS)
-LIBS        += $(call get_current,LIBS)
+LDFLAGS_gcc   += $(call get_current,FLAGS)
+LDFLAGS_clang += $(call get_current,FLAGS)
+LDFLAGS       += $(call get_current,LDFLAGS)
+LIBS          += $(call get_current,LIBS)
 
 TARGET = $(TARGET_$(libtype))
 
@@ -123,7 +133,7 @@ $(DEPS_DIR)%.obj: $(DEPS_DIR)%.cpp
 
 .PRECIOUS: %.pch
 
-# gcc
+# gcc / clang
 %.a:
 	$(AR) rcs $@ $^
 
