@@ -68,7 +68,7 @@ CXXINCLUDES += -I$(DEPS_DIR)/SOIL
 ifeq ($(HAVE_VULKAN),1)
    CXXINCLUDES += -I$(DEPS_DIR)/glslang/glslang/Public
    CXXINCLUDES += -I$(DEPS_DIR)/glslang/SPIRV
-   CXXINCLUDES += -I$(DEPS_DIR)/Vulkan/include
+   CXXINCLUDES += -I$(DEPS_DIR)/Vulkan/Include
 endif
 
 include rules/defines.mk
