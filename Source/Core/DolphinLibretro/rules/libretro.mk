@@ -5,6 +5,8 @@ ifeq ($(platform),unix)
 
 else ifeq ($(platform),win)
 
+else ifeq ($(platform),osx)
+
 else
    $(error unsupported platform : $(platform))
 endif
