@@ -22,7 +22,11 @@ PERF_TEST                   = 1
 DEBUGFAST                   = 0
 LOGGING                     = 1
 HAVE_HW_CONTEXT_OPENGL_CORE = 1
+ifeq ($(platform), osx)
+HAVE_VULKAN                 = 0
+else
 HAVE_VULKAN                 = 1
+endif
 
 $(call add_defines, PERF_TEST LOGGING DEBUGFAST HAVE_HW_CONTEXT_OPENGL_CORE)
 
