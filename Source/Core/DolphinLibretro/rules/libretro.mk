@@ -93,8 +93,7 @@ LIBS        += $(call get_current,LIBS)
 TARGET = $(TARGET_$(libtype))
 
 build: deps $(TARGET)
-$(TARGET): $(TARGET_DEPS) $(CXXPCH) $(OBJECTS)
-
+$(TARGET): $(TARGET_DEPS) $(OBJECTS)
 #%.obj: $(CXXPCH)
 #	echo $(CXXPCH)
 
@@ -105,7 +104,10 @@ $(TARGET): $(TARGET_DEPS) $(CXXPCH) $(OBJECTS)
 %.dll:
 	$Q$(LD) -out:$@ $(CXXPCH:.pch=.obj) $(OBJECTS) $(TARGET_LIBS) $(EXTERNAL_LIBS) $(LIBS) $(LDFLAGS)
 
-%.obj: %.cpp
+$(DEPS_DIR)%.obj: $(DEPS_DIR)%.cpp
+	$Q$(CXX) $< -c -Fo$@ $(CXXFLAGS)
+
+%.obj: %.cpp $(CXXPCH)
 	$Q$(CXX) $< -c -Fo$@ $(CXXFLAGS) $(CXXPCHFLAGS)
 
 %.obj: %.cc

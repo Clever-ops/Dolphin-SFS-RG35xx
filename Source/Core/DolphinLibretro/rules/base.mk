@@ -114,7 +114,6 @@ TARGET_DEPS += lib$(1)$(STATIC_EXT)
 lib$(1)$(STATIC_EXT): $(2)
 deps: lib$(1)$(STATIC_EXT)
 endif
-$(2): CXXPCHFLAGS :=
 clean_$(1):
 	$(call delete,$(2) lib$(1)$(STATIC_EXT))
 clean_deps: clean_$(1)

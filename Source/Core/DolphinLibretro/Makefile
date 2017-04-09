@@ -1,5 +1,5 @@
 # Verbosity
-V ?= 0
+V ?= 1
 
 compiler_win = msvc
 

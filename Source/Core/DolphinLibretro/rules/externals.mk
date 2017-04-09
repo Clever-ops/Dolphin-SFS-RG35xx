@@ -260,9 +260,6 @@ libpng.a:       WARNINGS_gcc += -Wno-shadow
 libsfml.lib:    WARNINGS_msvc := -W0
 libglslang.lib: WARNINGS_msvc := -W0
 
-$(DEPS_DIR)/glslang/glslang/MachineIndependent/glslang_tab.obj: CXXPCHFLAGS :=
-$(DEPS_DIR)/glslang/glslang/MachineIndependent/Scan.obj: CXXPCHFLAGS :=
-
 #$(info $(TARGET_DEPS))
 #$(error end)
 
