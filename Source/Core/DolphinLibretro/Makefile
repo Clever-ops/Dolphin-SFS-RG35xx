@@ -66,9 +66,11 @@ CXXINCLUDES += -I$(DEPS_DIR)/SFML/src/
 CXXINCLUDES += -I$(DEPS_DIR)/xxhash
 CXXINCLUDES += -I$(DEPS_DIR)/SOIL
 ifeq ($(HAVE_VULKAN),1)
-   CXXINCLUDES += -I$(DEPS_DIR)/glslang/glslang/Public
-   CXXINCLUDES += -I$(DEPS_DIR)/glslang/SPIRV
    CXXINCLUDES += -I$(DEPS_DIR)/Vulkan/Include
+   CXXINCLUDES_msvc += -I$(DEPS_DIR)/glslang/glslang/Public
+   CXXINCLUDES_msvc += -I$(DEPS_DIR)/glslang/SPIRV
+   CXXINCLUDES_gcc  += -isystem$(DEPS_DIR)/glslang/glslang/Public
+   CXXINCLUDES_gcc  += -isystem$(DEPS_DIR)/glslang/SPIRV
 endif
 
 include rules/defines.mk

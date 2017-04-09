@@ -238,7 +238,7 @@ $(call add_external_lib,enet,$(enet_OBJECTS))
 $(call add_external_lib,mbed,$(mbedcrypto_OBJECTS) $(mbedtls_OBJECTS) $(mbedx509_OBJECTS))
 $(call add_external_lib,miniupnpc,$(miniupnpc_OBJECTS))
 $(call add_external_lib,sfml,$(sfml__network_OBJECTS) $(sfml__system_OBJECTS))
-$(call add_external_lib,SOIl,$(SOIL_OBJECTS))
+$(call add_external_lib,SOIL,$(SOIL_OBJECTS))
 $(call add_external_lib,xxhash,$(xxhash_OBJECTS))
 $(call add_external_lib,png,$(libpng_OBJECTS))
 $(call add_external_lib,LZO,$(LZO_OBJECTS))
@@ -251,11 +251,14 @@ endif
 
 #$(glslang_OBJECTS)        : WARNINGS += -Wno-shadow -Wno-reorder -Wno-sign-compare -Wno-parentheses -Wno-unused-variable
 
-libsfml.a:   WARNINGS_gcc  := -w
-libsfml.lib: WARNINGS_msvc := -W0
-libglslang.a:   WARNINGS_gcc  := -w
+libminiupnpc.a: WARNINGS_gcc += -Wno-shadow
+libSOIL.a:      WARNINGS_gcc += -Wno-misleading-indentation
+libglslang.a:   WARNINGS_gcc += -Wno-shadow -Wno-reorder -Wno-sign-compare -Wno-parentheses -Wno-unused-variable -Wno-unused-but-set-variable
+libz.a:         WARNINGS_gcc += -Wno-implicit-function-declaration
+libpng.a:       WARNINGS_gcc += -Wno-shadow
+
+libsfml.lib:    WARNINGS_msvc := -W0
 libglslang.lib: WARNINGS_msvc := -W0
-libz.a: WARNINGS_gcc :=
 
 $(DEPS_DIR)/glslang/glslang/MachineIndependent/glslang_tab.obj: CXXPCHFLAGS :=
 $(DEPS_DIR)/glslang/glslang/MachineIndependent/Scan.obj: CXXPCHFLAGS :=
