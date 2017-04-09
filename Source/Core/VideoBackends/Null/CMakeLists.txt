@@ -1,9 +1,12 @@
 set(SRCS
   NullBackend.cpp
-  Render.cpp
   VertexManager.cpp
   ShaderCache.cpp
 )
+
+if(NOT LIBRETRO)
+  set(SRCS ${SRCS} Render.cpp)
+endif()
 
 set(LIBS
   videocommon

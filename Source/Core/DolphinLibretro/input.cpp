@@ -369,9 +369,12 @@ void Pad::LoadConfig()
 {
 }
 
+#include "InputCommon/InputConfig.h"
 InputConfig* Pad::GetConfig()
 {
-  return nullptr;
+  // return nullptr;
+  static InputConfig s_config("GCPadNew", _trans("Pad"), "GCPad");
+  return &s_config;
 }
 
 /* classic controller */

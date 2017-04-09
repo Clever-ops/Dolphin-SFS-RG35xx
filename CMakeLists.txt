@@ -25,6 +25,7 @@ option(ENABLE_PULSEAUDIO "Enables PulseAudio sound backend" ON)
 option(ENABLE_OPENAL "Enables OpenAL sound backend" ON)
 option(ENABLE_LLVM "Enables LLVM support, for disassembly" ON)
 option(ENABLE_BLUEZ "Enables bluetooth support" ON)
+option(LIBRETRO "Build as a libretro library" OFF)
 
 # Maintainers: if you consider blanket disabling this for your users, please
 # consider the following points:
@@ -253,7 +254,7 @@ else()
   dolphin_compile_definitions(_DEBUG DEBUG_ONLY)
   check_and_add_flag(GGDB -ggdb DEBUG_ONLY)
 
-  if(NOT ANDROID AND _M_X86_64)
+  if(NOT LIBRETRO AND NOT ANDROID AND _M_X86_64)
     # PIE is required on Android, but not supported with the x86_64 jit currently
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -fno-pie")
     check_c_compiler_flag("-no-pie" NO_PIE_UPSTREAM)
@@ -420,6 +421,22 @@ if(ENABLE_HEADLESS)
   add_definitions(-DUSE_HEADLESS)
 endif()
 
+if(LIBRETRO)
+  set(USE_X11 0)
+  set(TRY_X11 0)
+  set(USE_EGL 1)
+  set(DISABLE_WX 1)
+  set(ENABLE_QT2 0)
+  set(USE_UPNP 0)
+  set(ENABLE_ALSA 0)
+  set(ENABLE_PULSEAUDIO 0)
+  set(ENABLE_OPENAL 0)
+  set(ENABLE_LLVM 0)
+  add_definitions(-D__LIBRETRO__)
+  check_and_add_flag(FPIC -fpic)
+  include_directories(Source/Core/DolphinLibretro)
+endif()
+
 # Set file offset size to 64 bits.
 #
 # On modern Unixes, this is typically already the case. The lone exception is
@@ -446,7 +463,7 @@ endif()
 
 set(USE_X11 0)
 
-if(UNIX AND NOT APPLE AND NOT ANDROID AND NOT HAIKU AND NOT ENABLE_HEADLESS)
+if(UNIX AND NOT APPLE AND NOT ANDROID AND NOT HAIKU AND NOT ENABLE_HEADLESS AND NOT LIBRETRO)
   find_package(X11)
   if(TRY_X11 AND X11_FOUND)
     set(USE_X11 1)
@@ -795,7 +812,7 @@ endif()
 
 if(NOT APPLE)
    add_definitions(-DHAVE_VULKAN)
-endif
+endif()
 
 if(NOT DISABLE_WX)
   find_package(wxWidgets COMPONENTS core aui adv)

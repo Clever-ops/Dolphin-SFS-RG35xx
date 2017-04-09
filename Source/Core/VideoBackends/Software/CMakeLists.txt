@@ -4,7 +4,6 @@ set(SRCS
   EfbCopy.cpp
   EfbInterface.cpp
   Rasterizer.cpp
-  SWOGLWindow.cpp
   SWRenderer.cpp
   SWVertexLoader.cpp
   SWmain.cpp
@@ -14,6 +13,10 @@ set(SRCS
   TextureSampler.cpp
   TransformUnit.cpp
 )
+
+if(NOT LIBRETRO)
+  set(SRCS ${SRCS} SWOGLWindow.cpp)
+endif()
 
 set(LIBS
   videocommon

@@ -39,6 +39,13 @@ void GCAdapter::Init()
 void GCAdapter::Shutdown()
 {
 }
+void GCAdapter::ResetRumble()
+{
+}
+bool GCAdapter::IsDetected()
+{
+  return false;
+}
 
 #include "Core/HW/SI/SI_DeviceGCAdapter.h"
 

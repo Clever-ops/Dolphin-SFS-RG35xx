@@ -1,15 +1,17 @@
-set(SRCS
-  CommandLineParse.cpp
-  Disassembler.cpp
-  UICommon.cpp
-  USBUtils.cpp
-)
+set(SRCS  UICommon.cpp)
 
-if(USE_X11)
-  set(SRCS ${SRCS} X11Utils.cpp)
+if(NOT LIBRETRO)
+  set(SRCS
+    CommandLineParse.cpp
+    Disassembler.cpp
+    USBUtils.cpp
+  )
+  if(USE_X11)
+    set(SRCS ${SRCS} X11Utils.cpp)
+  endif()
+
+  set(LIBS common cpp-optparse)
 endif()
-
-set(LIBS common cpp-optparse)
 if(LIBUSB_FOUND)
   set(LIBS ${LIBS} ${LIBUSB_LIBRARIES})
 endif()

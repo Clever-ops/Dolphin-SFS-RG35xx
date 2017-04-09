@@ -109,8 +109,6 @@ set(SRCS
   HW/GCMemcard/GCMemcard.cpp
   HW/GCMemcard/GCMemcardDirectory.cpp
   HW/GCMemcard/GCMemcardRaw.cpp
-  HW/GCPad.cpp
-  HW/GCPadEmu.cpp
   HW/GPFifo.cpp
   HW/HW.cpp
   HW/Memmap.cpp
@@ -121,7 +119,6 @@ set(SRCS
   HW/SI/SI_Device.cpp
   HW/SI/SI_DeviceDanceMat.cpp
   HW/SI/SI_DeviceGBA.cpp
-  HW/SI/SI_DeviceGCAdapter.cpp
   HW/SI/SI_DeviceGCController.cpp
   HW/SI/SI_DeviceGCSteeringWheel.cpp
   HW/SI/SI_DeviceKeyboard.cpp
@@ -133,7 +130,6 @@ set(SRCS
   HW/WII_IPC.cpp
   HW/Wiimote.cpp
   HW/WiimoteEmu/WiimoteEmu.cpp
-  HW/WiimoteEmu/Attachment/Classic.cpp
   HW/WiimoteEmu/Attachment/Attachment.cpp
   HW/WiimoteEmu/Attachment/Nunchuk.cpp
   HW/WiimoteEmu/Attachment/Drums.cpp
@@ -226,6 +222,15 @@ set(SRCS
   PowerPC/JitILCommon/JitILBase_FloatingPoint.cpp
   PowerPC/JitILCommon/JitILBase_Integer.cpp
 )
+
+if(NOT LIBRETRO)
+  set(SRCS ${SRCS}
+    HW/GCPad.cpp
+    HW/GCPadEmu.cpp
+    HW/SI/SI_DeviceGCAdapter.cpp
+    HW/WiimoteEmu/Attachment/Classic.cpp
+  )
+endif()
 
 if(_M_X86)
   set(SRCS ${SRCS}

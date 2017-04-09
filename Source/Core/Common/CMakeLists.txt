@@ -78,8 +78,10 @@ list(APPEND LIBS "${CMAKE_THREAD_LIBS_INIT}" ${VTUNE_LIBRARIES})
 set(SRCS ${SRCS}
   GL/GLUtil.cpp
   GL/GLExtensions/GLExtensions.cpp
-  GL/GLInterface/GLInterface.cpp
 )
+if(NOT LIBRETRO)
+  set(SRCS ${SRCS} GL/GLInterface/GLInterface.cpp)
+endif()
 
 if(USE_EGL)
   set(SRCS ${SRCS} GL/GLInterface/EGL.cpp)

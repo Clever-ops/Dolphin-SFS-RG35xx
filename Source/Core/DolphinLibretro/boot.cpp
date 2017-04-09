@@ -38,7 +38,7 @@ bool retro_load_game(const struct retro_game_info* game)
    LogManager::GetInstance()->SetEnable(LogTypes::VIDEO, true);
 #endif
 
-#ifdef DEBUG
+#ifdef _DEBUG
   /* Fastmem installs a custom exception handler which
    * would prevent a debugger from working correctly */
   SConfig::GetInstance().bFastmem = false;
