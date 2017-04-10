@@ -18,17 +18,17 @@ DEBUG           = 0
 STATIC_LINKING  = 0
 LTO             = 0
 
-PERF_TEST                   = 1
-DEBUGFAST                   = 0
-LOGGING                     = 1
-HAVE_HW_CONTEXT_OPENGL_CORE = 1
-HAVE_VULKAN                 = 1
+PERF_TEST        = 1
+DEBUGFAST        = 0
+LOGGING          = 1
+HAVE_OPENGL_CORE = 1
+HAVE_VULKAN      = 1
 
 ifneq ($(filter osx ios,$(platform)),)
    HAVE_VULKAN = 0
 endif
 
-$(call add_defines, PERF_TEST LOGGING DEBUGFAST HAVE_HW_CONTEXT_OPENGL_CORE HAVE_VULKAN)
+$(call add_defines, PERF_TEST LOGGING DEBUGFAST HAVE_OPENGL_CORE HAVE_VULKAN)
 
 ROOT_DIR       = ../../..
 BASE_DIR       = ..

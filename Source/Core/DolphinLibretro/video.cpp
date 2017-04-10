@@ -72,9 +72,10 @@ static const VkApplicationInfo* get_application_info(void)
 #endif
 void init_video()
 {
+  environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &options.renderer);
   if (options.renderer.value == std::string("Hardware"))
   {
-#ifdef HAVE_HW_CONTEXT_OPENGL_CORE
+#ifdef HAVE_OPENGL_CORE
     hw_render.context_type = RETRO_HW_CONTEXT_OPENGL_CORE;
     hw_render.version_major = 3;
     hw_render.version_minor = 1;
@@ -114,10 +115,10 @@ void init_video()
 #endif
   }
   hw_render.context_type = RETRO_HW_CONTEXT_NONE;
-  if (options.renderer.value == std::string("Null"))
-    SConfig::GetInstance().m_strVideoBackend = "Null";
-  else
+  if (options.renderer.value == std::string("Software"))
     SConfig::GetInstance().m_strVideoBackend = "Software Renderer";
+  else
+    SConfig::GetInstance().m_strVideoBackend = "Null";
 }
 }  // namespace Libretro
 

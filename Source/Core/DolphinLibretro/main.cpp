@@ -15,29 +15,6 @@
 #include "VideoBackends/OGL/FramebufferManager.h"
 #include "VideoCommon/VideoConfig.h"
 
-namespace Libretro
-{
-static Options option_base = {
-    {"dolphin_renderer", "Renderer; Hardware|Software|Null"}, {NULL, NULL},
-};
-
-Options options = {
-    {option_base.renderer.key},
-};
-}
-
-using namespace Libretro;
-
-cothread_t Libretro::emuthread;
-cothread_t Libretro::mainthread;
-
-bool Libretro::core_stop_request = false;
-
-retro_environment_t Libretro::environ_cb;
-retro_log_printf_t Libretro::log_cb;
-
-static retro_input_poll_t poll_cb;
-
 #ifdef PERF_TEST
 static struct retro_perf_callback perf_cb;
 
@@ -57,6 +34,26 @@ static struct retro_perf_callback perf_cb;
 #define RETRO_PERFORMANCE_START(name)
 #define RETRO_PERFORMANCE_STOP(name)
 #endif
+
+namespace Libretro
+{
+bool core_stop_request = false;
+
+cothread_t emuthread;
+cothread_t mainthread;
+retro_environment_t environ_cb;
+retro_log_printf_t log_cb;
+
+Options options = {{"dolphin_renderer", "Renderer; Hardware|Software|Null"}, {NULL, NULL}};
+
+void check_variables(void)
+{
+}
+}  // namespace Libretro
+
+using namespace Libretro;
+
+static retro_input_poll_t poll_cb;
 
 void retro_set_input_poll(retro_input_poll_t cb)
 {
@@ -90,7 +87,7 @@ void retro_init(void)
 
   xrgb888 = RETRO_PIXEL_FORMAT_XRGB8888;
   environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &xrgb888);
-  environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)&option_base);
+  environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)&options);
 
   Libretro::init_input();
 }
@@ -100,11 +97,6 @@ void retro_deinit(void)
 #ifdef PERF_TEST
   perf_cb.perf_log();
 #endif
-}
-
-void Libretro::check_variables(void)
-{
-  environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &options.renderer);
 }
 
 void retro_get_system_info(struct retro_system_info* info)
