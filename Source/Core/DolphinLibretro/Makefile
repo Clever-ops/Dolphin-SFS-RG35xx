@@ -24,7 +24,11 @@ LOGGING                     = 1
 HAVE_HW_CONTEXT_OPENGL_CORE = 1
 HAVE_VULKAN                 = 1
 
-$(call add_defines, PERF_TEST LOGGING DEBUGFAST HAVE_HW_CONTEXT_OPENGL_CORE)
+ifneq ($(filter osx ios,$(platform)),)
+   HAVE_VULKAN = 0
+endif
+
+$(call add_defines, PERF_TEST LOGGING DEBUGFAST HAVE_HW_CONTEXT_OPENGL_CORE HAVE_VULKAN)
 
 ROOT_DIR       = ../../..
 BASE_DIR       = ..
@@ -33,9 +37,6 @@ DEPS_DIR       = $(ROOT_DIR)/Externals
 
 INCLUDES += -I$(LIBRETRO_DIR)
 
-ifneq ($(filter osx ios,$(platform)),)
-   HAVE_VULKAN = 0
-endif
 
 # msvc
 FLAGS_msvc       += -nologo -MP -Zc:wchar_t -Z7 -Gm- -Zc:inline -fp:precise -Zp16 -Zc:forScope -GR- -Gd -Oi -volatile:iso
@@ -54,7 +55,7 @@ CXXFLAGS_gcc += -Wmissing-declarations -fvisibility-inlines-hidden
 CXXFLAGS_gcc += -fno-exceptions -fno-rtti -std=c++14
 WARNINGS_gcc += -Wall -Wtype-limits -Wsign-compare -Wignored-qualifiers -Wuninitialized -Wlogical-op -Wshadow -Winit-self
 WARNINGS_gcc += -Werror=implicit-function-declaration
-LIBS_gcc     += -lpthread -lrt
+LIBS_gcc     += -lpthread
 
 # clang
 FLAGS_clang    += -msse2 -fno-strict-aliasing -fvisibility=hidden -fomit-frame-pointer
@@ -62,7 +63,11 @@ CXXFLAGS_clang += -Wmissing-declarations -fvisibility-inlines-hidden
 CXXFLAGS_clang += -fno-exceptions -fno-rtti -std=c++14
 WARNINGS_clang += -Wall -Wtype-limits -Wsign-compare -Wignored-qualifiers -Wuninitialized -Wshadow -Winit-self
 WARNINGS_clang += -Werror=implicit-function-declaration
-LIBS_clang     += -lpthread -lrt
+LIBS_clang     += -lpthread
+
+LIBS_unix      += -lrt
+LIBS_osx       += -liconv -framework IOKit -framework AppKit
+
 
 INCLUDES += -I$(CORE_DIR)
 INCLUDES += -I$(DEPS_DIR)/Bochs_disasm

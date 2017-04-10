@@ -57,8 +57,8 @@ LDFLAGS_gcc_shared         += -shared -lm
 FLAGS_clang_debug          += -O0 -g
 FLAGS_clang_release        += -O3
 FLAGS_clang_shared         += -fpic
-LDFLAGS_clang              += -Wl,--no-undefined -L.
-LDFLAGS_clang_release      += -s
+LDFLAGS_clang              += -L.
+#LDFLAGS_clang_release      += -s
 LDFLAGS_clang_shared       += -shared -lm
 
 TARGET_static := $(TARGET_NAME)_libretro$(TARGET_SUFFIX)$(STATIC_EXT)
@@ -139,6 +139,9 @@ $(DEPS_DIR)%.obj: $(DEPS_DIR)%.cpp
 
 %.so:
 	$(CXX) -o $@ $(OBJECTS) -Wl,--start-group $(TARGET_LIBS) -Wl,--end-group $(EXTERNAL_LIBS) $(LIBS) $(LDFLAGS)
+
+%.dylib:
+	$(CXX) -o $@ $(OBJECTS) $(TARGET_LIBS) $(EXTERNAL_LIBS) $(LIBS) $(LDFLAGS)
 
 %.o: %.cpp
 	$(CXX) $< -c -o $@ $(CXXFLAGS)

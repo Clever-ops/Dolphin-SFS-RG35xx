@@ -257,6 +257,8 @@ CORE_PPC_OBJECTS += $(CORE_DIR)/PowerPC/Jit64Common/TrampolineCache.o
 CORE_HW_OBJECTS += $(CORE_DIR)/HW/EXI/BBA-TAP/TAP_Unix.o
 ifeq ($(platform),win)
    CORE_HW_OBJECTS += $(CORE_DIR)/HW/WiimoteReal/IOWin.o
+else ifeq ($(platform),osx)
+#   CORE_HW_OBJECTS += $(CORE_DIR)/HW/WiimoteReal/IOdarwin.o
 else
 #   CORE_HW_OBJECTS += $(CORE_DIR)/HW/WiimoteReal/IOLinux.o
 endif

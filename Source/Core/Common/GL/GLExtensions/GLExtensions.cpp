@@ -9,7 +9,7 @@
 #include "Common/GL/GLInterfaceBase.h"
 #include "Common/Logging/Log.h"
 
-#if defined(__linux__) || defined(__APPLE__)
+#if !defined(__LIBRETRO__) && (defined(__linux__) || defined(__APPLE__))
 #include <dlfcn.h>
 #endif
 
@@ -2154,7 +2154,7 @@ static void* GetFuncAddress(const std::string& name, void** func)
   *func = GLInterface->GetFuncAddress(name);
   if (*func == nullptr)
   {
-#if defined(__linux__) || defined(__APPLE__)
+#if !defined(__LIBRETRO__) && (defined(__linux__) || defined(__APPLE__))
     // Give it a second try with dlsym
     *func = dlsym(RTLD_NEXT, name.c_str());
 #endif

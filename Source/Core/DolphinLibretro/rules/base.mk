@@ -1,5 +1,5 @@
 
-OS          ?= $(shell uname -o)
+OS          ?= $(shell uname -s)
 EXE_EXT     :=
 OBJ_EXT     := .o
 STATIC_EXT  := .a
@@ -24,8 +24,12 @@ ifeq ($(platform),)
       platform := win
    else ifneq ($(findstring Darwin,$(OS)),)   
       platform := osx
-      compiler := clang
    endif
+endif
+
+ifeq ($(platform),osx)
+   compiler   := clang
+   SHARED_EXT := .dylib
 endif
 
 ifeq ($(compiler),gcc)
@@ -96,7 +100,7 @@ ifeq ($(platform),win)
    endif
 endif
 
-define add_lib_ =
+define add_lib_
 ifeq ($(STATIC_LINKING), 1)
    OBJECTS += $(2)
 else
@@ -114,7 +118,7 @@ clean_target: clean_$(1)
 .PHONY: clean_$(1)
 endef
 
-define add_external_lib_ =
+define add_external_lib_
 ifeq ($(STATIC_LINKING), 1)
    OBJECTS += $(2)
 deps: $(2)
@@ -142,7 +146,7 @@ else
    add_external_lib = $(eval $(call add_external_lib_,$(1),$(2)))
 endif
 
-define add_def =
+define add_def
 ifeq ($($(1)), 1)
    DEFINES += -D$(1)
 endif
@@ -158,7 +162,11 @@ remove_occurences = $(strip $(if $(firstword $2),$(call remove_occurences,$(subs
 vars_get_match    = $(foreach var,$(filter $1_%,$(.VARIABLES)),$(if $(call remove_occurences,$(var:$1%=%),$2),,$($(var))))
 get_current       = $(strip $(foreach var,$1,$(call vars_get_match,$(var),$(platform) $(compiler) $(build) $(libtype))))
 
-format_echo = $(if $(strip $(shell echo -e)),$(1),'$(1)')
+ifeq ($(platform),win)
+   format_echo = $(if $(strip $(shell echo -e)),$(1),'$(1)')
+else
+   format_echo = '$(1)'
+endif
 
 ifneq ($V,1)
    Q=@

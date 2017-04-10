@@ -50,9 +50,6 @@ COMMON_OBJECTS += $(COMMON_DIR)/Logging/ConsoleListenerNix.o
 COMMON_OBJECTS += $(COMMON_DIR)/PerformanceCounter.o
 endif
 
-# disable dlsym() reference in GLExtensions.cpp
-$(COMMON_DIR)/GL/GLExtensions/GLExtensions.o : DEFINES += -U__linux__ -U__APPLE__
-
 #override:
 #COMMON_OBJECTS += $(COMMON_DIR)/GL/GLInterface/GLInterface.o
 
