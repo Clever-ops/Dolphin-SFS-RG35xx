@@ -9,10 +9,11 @@
 #include "Core/HW/WiimoteEmu/Attachment/Nunchuk.h"
 #include "Core/HW/WiimoteEmu/WiimoteEmu.h"
 #include "Core/Host.h"
+#include "DolphinLibretro/input.h"
+#include "DolphinLibretro/main.h"
 #include "InputCommon/GCPadStatus.h"
 
 #include <libretro.h>
-#include "common.h"
 
 #define RETRO_DEVICE_WIIMOTE ((1 << 8) | RETRO_DEVICE_JOYPAD)
 #define RETRO_DEVICE_WIIMOTE_SW ((2 << 8) | RETRO_DEVICE_JOYPAD)

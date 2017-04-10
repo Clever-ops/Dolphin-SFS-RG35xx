@@ -10,7 +10,9 @@
 #include "UICommon/UICommon.h"
 #include "VideoCommon/VideoConfig.h"
 
-#include "common.h"
+#include "DolphinLibretro/input.h"
+#include "DolphinLibretro/main.h"
+#include "DolphinLibretro/video.h"
 
 namespace Core
 {

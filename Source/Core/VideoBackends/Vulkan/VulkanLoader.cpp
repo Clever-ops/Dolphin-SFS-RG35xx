@@ -17,12 +17,7 @@
     defined(VK_USE_PLATFORM_ANDROID_KHR)
 #include <dlfcn.h>
 #elif defined(__LIBRETRO__)
-#include <libretro.h>
-#include "libretro_vulkan.h"
-namespace Libretro
-{
-extern const struct retro_hw_render_interface_vulkan* vulkan;
-}
+#include "DolphinLibretro/video.h"
 #endif
 
 #define VULKAN_MODULE_ENTRY_POINT(name, required) PFN_##name name;

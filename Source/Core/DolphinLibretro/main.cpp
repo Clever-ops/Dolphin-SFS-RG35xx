@@ -1,8 +1,5 @@
 
 #include <cstdint>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include <string>
 #include <thread>
 
@@ -13,15 +10,19 @@
 #include "Core/BootManager.h"
 #include "Core/Core.h"
 #include "Core/HW/VideoInterface.h"
+#include "DolphinLibretro/input.h"
+#include "DolphinLibretro/main.h"
 #include "VideoBackends/OGL/FramebufferManager.h"
 #include "VideoCommon/VideoConfig.h"
 
-#include "common.h"
-
 namespace Libretro
 {
+static Options option_base = {
+    {"dolphin_renderer", "Renderer; Hardware|Software|Null"}, {NULL, NULL},
+};
+
 Options options = {
-    {"dolphin_renderer", NULL},
+    {option_base.renderer.key},
 };
 }
 
@@ -82,9 +83,6 @@ void retro_init(void)
 {
   struct retro_log_callback log;
   enum retro_pixel_format xrgb888;
-  static const struct retro_variable vars[] = {
-      {options.renderer.key, "Renderer; Hardware|Software|Null"}, {NULL, NULL},
-  };
   if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
     log_cb = log.log;
   else
@@ -92,7 +90,7 @@ void retro_init(void)
 
   xrgb888 = RETRO_PIXEL_FORMAT_XRGB8888;
   environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &xrgb888);
-  environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)vars);
+  environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)&option_base);
 
   Libretro::init_input();
 }

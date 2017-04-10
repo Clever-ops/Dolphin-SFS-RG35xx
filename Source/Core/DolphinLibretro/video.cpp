@@ -1,6 +1,4 @@
 
-#include <cstdlib>
-//#include <cstring>
 #include <memory>
 #include <sstream>
 #include <vector>
@@ -13,12 +11,13 @@
 #include "Common/Logging/Log.h"
 #include "Core/ConfigManager.h"
 #include "Core/Core.h"
+#include "DolphinLibretro/main.h"
+#include "DolphinLibretro/video.h"
 #include "VideoBackends/Null/Render.h"
 #include "VideoBackends/Software/SWOGLWindow.h"
 #include "VideoCommon/RenderBase.h"
 #include "VideoCommon/VideoConfig.h"
 
-#include "common.h"
 #include "retroGL.h"
 #ifdef HAVE_VULKAN
 #include "libretro_vulkan.h"
@@ -73,7 +72,7 @@ static const VkApplicationInfo* get_application_info(void)
 #endif
 void init_video()
 {
-  if (!std::strcmp(options.renderer.value, "Hardware"))
+  if (options.renderer.value == std::string("Hardware"))
   {
 #ifdef HAVE_HW_CONTEXT_OPENGL_CORE
     hw_render.context_type = RETRO_HW_CONTEXT_OPENGL_CORE;
@@ -115,7 +114,7 @@ void init_video()
 #endif
   }
   hw_render.context_type = RETRO_HW_CONTEXT_NONE;
-  if (!std::strcmp(options.renderer.value, "Null"))
+  if (options.renderer.value == std::string("Null"))
     SConfig::GetInstance().m_strVideoBackend = "Null";
   else
     SConfig::GetInstance().m_strVideoBackend = "Software Renderer";

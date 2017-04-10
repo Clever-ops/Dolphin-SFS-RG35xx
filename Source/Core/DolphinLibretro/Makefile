@@ -90,11 +90,11 @@ endif
 include rules/defines.mk
 
 OBJECTS :=
+OBJECTS += main.o
 OBJECTS += audio.o
 OBJECTS += boot.o
 OBJECTS += host.o
 OBJECTS += input.o
-OBJECTS += libretro.o
 OBJECTS += state.o
 OBJECTS += stubs.o
 OBJECTS += video.o

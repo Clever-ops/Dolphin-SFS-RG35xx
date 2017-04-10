@@ -66,6 +66,10 @@
 #include "Core/PowerPC/GDBStub.h"
 #endif
 
+#ifdef __LIBRETRO__
+#include "DolphinLibretro/main.h"
+#endif
+
 #include "InputCommon/ControllerInterface/ControllerInterface.h"
 #include "InputCommon/GCAdapter.h"
 
@@ -79,14 +83,6 @@
 #include <pthread.h>
 #else  // Everything besides OSX and Android
 #define ThreadLocalStorage thread_local
-#endif
-#ifdef __LIBRETRO__
-#include <libco.h>
-namespace Libretro
-{
-extern cothread_t mainthread;
-extern bool core_stop_request;
-}
 #endif
 namespace Core
 {

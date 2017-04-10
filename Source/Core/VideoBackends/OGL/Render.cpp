@@ -24,6 +24,10 @@
 
 #include "Core/Core.h"
 
+#ifdef __LIBRETRO__
+#include "DolphinLibretro/video.h"
+#endif
+
 #include "VideoBackends/OGL/BoundingBox.h"
 #include "VideoBackends/OGL/FramebufferManager.h"
 #include "VideoBackends/OGL/PostProcessing.h"
@@ -47,11 +51,6 @@
 #include "VideoCommon/XFMemory.h"
 
 #ifdef __LIBRETRO__
-#include <libretro.h>
-namespace Libretro
-{
-extern struct retro_hw_render_callback hw_render;
-}
 #define DEFAULT_FRAMEBUFFER (GLuint) Libretro::hw_render.get_current_framebuffer()
 #else
 #define DEFAULT_FRAMEBUFFER 0
