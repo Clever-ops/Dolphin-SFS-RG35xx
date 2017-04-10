@@ -1,5 +1,6 @@
 
 #include <cstdlib>
+//#include <cstring>
 #include <memory>
 #include <sstream>
 #include <vector>
@@ -72,13 +73,7 @@ static const VkApplicationInfo* get_application_info(void)
 #endif
 void init_video()
 {
-  //   SConfig::m_strVideoBackend = "Software Renderer";
-
-  printf("SConfig::GetInstance().m_strVideoBackend == %s",
-         SConfig::GetInstance().m_strVideoBackend.c_str());
-  fflush(stdout);
-
-  if (SConfig::GetInstance().m_strVideoBackend == "OGL")
+  if (!std::strcmp(options.renderer.value, "Hardware"))
   {
 #ifdef HAVE_HW_CONTEXT_OPENGL_CORE
     hw_render.context_type = RETRO_HW_CONTEXT_OPENGL_CORE;
@@ -93,11 +88,12 @@ void init_video()
     hw_render.stencil = true;
     hw_render.bottom_left_origin = true;
     hw_render.cache_context = true;
-    environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render);
-  }
+    if (environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
+    {
+      SConfig::GetInstance().m_strVideoBackend = "OGL";
+      return;
+    }
 #ifdef HAVE_VULKAN
-  else if (SConfig::GetInstance().m_strVideoBackend == "Vulkan")
-  {
     hw_render.context_type = RETRO_HW_CONTEXT_VULKAN;
     hw_render.version_major = VK_MAKE_VERSION(1, 0, 18);
     hw_render.version_minor = 0;
@@ -105,22 +101,26 @@ void init_video()
     hw_render.context_destroy = context_destroy;
     hw_render.cache_context = true;
 
-    environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render);
+    if (environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
+    {
+      static const struct retro_hw_render_context_negotiation_interface_vulkan iface = {
+          RETRO_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE_VULKAN,
+          RETRO_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE_VULKAN_VERSION, get_application_info, NULL,
+      };
+      environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE, (void*)&iface);
 
-    static const struct retro_hw_render_context_negotiation_interface_vulkan iface = {
-        RETRO_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE_VULKAN,
-        RETRO_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE_VULKAN_VERSION, get_application_info, NULL,
-    };
-
-    environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE, (void*)&iface);
-  }
+      SConfig::GetInstance().m_strVideoBackend = "Vulkan";
+      return;
+    }
 #endif
-  else
-  {
-    hw_render.context_type = RETRO_HW_CONTEXT_NONE;
   }
+  hw_render.context_type = RETRO_HW_CONTEXT_NONE;
+  if (!std::strcmp(options.renderer.value, "Null"))
+    SConfig::GetInstance().m_strVideoBackend = "Null";
+  else
+    SConfig::GetInstance().m_strVideoBackend = "Software Renderer";
 }
-}
+}  // namespace Libretro
 
 void retro_set_video_refresh(retro_video_refresh_t cb)
 {

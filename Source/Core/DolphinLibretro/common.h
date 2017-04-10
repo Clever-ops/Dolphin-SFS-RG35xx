@@ -19,4 +19,10 @@ extern cothread_t emuthread;
 extern cothread_t mainthread;
 
 extern struct retro_hw_render_callback hw_render;
+
+struct Options
+{
+  retro_variable renderer;
+};
+extern Options options;
 }

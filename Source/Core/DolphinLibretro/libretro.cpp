@@ -18,6 +18,13 @@
 
 #include "common.h"
 
+namespace Libretro
+{
+Options options = {
+    {"dolphin_renderer", NULL},
+};
+}
+
 using namespace Libretro;
 
 cothread_t Libretro::emuthread;
@@ -76,9 +83,8 @@ void retro_init(void)
   struct retro_log_callback log;
   enum retro_pixel_format xrgb888;
   static const struct retro_variable vars[] = {
-      {"dolphin_option1", "Option 1; disabled|enabled"}, {NULL, NULL},
+      {options.renderer.key, "Renderer; Hardware|Software|Null"}, {NULL, NULL},
   };
-
   if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
     log_cb = log.log;
   else
@@ -100,13 +106,7 @@ void retro_deinit(void)
 
 void Libretro::check_variables(void)
 {
-  struct retro_variable var;
-
-  var.key = "dolphin_option1";
-  var.value = NULL;
-
-  if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
-    (void)strcmp(var.value, "enabled");
+  environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &options.renderer);
 }
 
 void retro_get_system_info(struct retro_system_info* info)
