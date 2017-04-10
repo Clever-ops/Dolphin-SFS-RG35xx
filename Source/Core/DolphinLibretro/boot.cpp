@@ -14,6 +14,8 @@
 #include "DolphinLibretro/main.h"
 #include "DolphinLibretro/video.h"
 
+using namespace Libretro;
+
 namespace Core
 {
 void EmuThread();
@@ -35,18 +37,13 @@ bool retro_load_game(const struct retro_game_info* game)
 
 #if 0
    /* enable VIDEO debug logging to stdout */
-   LogManager::GetInstance()->AddListener(LogTypes::VIDEO, LogListener::CONSOLE_LISTENER);
-   LogManager::GetInstance()->SetLogLevel(LogTypes::VIDEO, LogTypes::LDEBUG);
-   LogManager::GetInstance()->SetEnable(LogTypes::VIDEO, true);
+  LogManager::GetInstance()->AddListener(LogTypes::VIDEO, LogListener::CONSOLE_LISTENER);
+  LogManager::GetInstance()->SetLogLevel(LogTypes::VIDEO, LogTypes::LDEBUG);
+  LogManager::GetInstance()->SetEnable(LogTypes::VIDEO, true);
 #endif
 
-#ifdef _DEBUG
-  /* Fastmem installs a custom exception handler which
-   * would prevent a debugger from working correctly */
-  SConfig::GetInstance().bFastmem = false;
-#else
-  SConfig::GetInstance().bFastmem = true;
-#endif
+  environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &options.fastmem);
+  SConfig::GetInstance().bFastmem = options.fastmem.value == std::string("ON");
 
   /* force dual thread mode. to make the current one the gpu thread. */
   SConfig::GetInstance().bCPUThread = true;

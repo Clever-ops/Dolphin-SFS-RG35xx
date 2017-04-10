@@ -17,6 +17,7 @@ void check_variables(void);
 struct Options
 {
   retro_variable renderer;
+  retro_variable fastmem;
   retro_variable _null;
 };
 extern Options options;

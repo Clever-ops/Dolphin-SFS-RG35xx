@@ -44,7 +44,11 @@ cothread_t mainthread;
 retro_environment_t environ_cb;
 retro_log_printf_t log_cb;
 
-Options options = {{"dolphin_renderer", "Renderer; Hardware|Software|Null"}, {NULL, NULL}};
+Options options = {{"dolphin_renderer", "Renderer; Hardware|Software|Null"},
+                   // Fastmem installs custom exception handlers
+                   // it needs to be disabled when running in a debugger.
+                   {"dolphin_fastmem", "Fastmem; ON|OFF"},
+                   {NULL, NULL}};
 
 void check_variables(void)
 {
