@@ -29,8 +29,8 @@ void emuthread_entry(void)
 
 bool retro_load_game(const struct retro_game_info* game)
 {
-  Libretro::init_descriptors();
-  Libretro::check_variables();
+  init_descriptors();
+  check_variables();
 
   UICommon::SetUserDirectory("");  // Auto-detect user folder
   UICommon::Init();
@@ -42,7 +42,7 @@ bool retro_load_game(const struct retro_game_info* game)
   LogManager::GetInstance()->SetEnable(LogTypes::VIDEO, true);
 #endif
 
-  environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &options.fastmem);
+  get_variable(&options.fastmem);
   SConfig::GetInstance().bFastmem = options.fastmem.value == std::string("ON");
 
   /* force dual thread mode. to make the current one the gpu thread. */
@@ -54,22 +54,22 @@ bool retro_load_game(const struct retro_game_info* game)
   /* bypass XFB */
   g_ActiveConfig.bUseXFB = false;
 
-  Libretro::init_video();
+  init_video();
   NOTICE_LOG(VIDEO, "Using GFX backend: %s", SConfig::GetInstance().m_strVideoBackend.c_str());
 
-  Libretro::core_stop_request = false;
+  core_stop_request = false;
 
   if (!BootManager::BootCore(game->path))
   {
     fprintf(stderr, "Could not boot %s\n", game->path);
     return 1;
   }
-  Libretro::mainthread = co_active();
+  mainthread = co_active();
 
   /* 4MB stack is most likely overkill
    * todo: determine actual stack usage */
 
-  Libretro::emuthread = co_create(0x400000, emuthread_entry);
+  emuthread = co_create(0x400000, emuthread_entry);
 
   return true;
 }
@@ -81,10 +81,10 @@ bool retro_load_game_special(unsigned game_type, const struct retro_game_info* i
 }
 void retro_unload_game(void)
 {
-  Libretro::core_stop_request = true;
-  co_switch(Libretro::emuthread);
-  co_delete(Libretro::emuthread);
+  core_stop_request = true;
+  co_switch(emuthread);
+  co_delete(emuthread);
 
   UICommon::Shutdown();
-  Libretro::emuthread = NULL;
+  emuthread = NULL;
 }

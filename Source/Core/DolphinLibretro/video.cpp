@@ -72,7 +72,7 @@ static const VkApplicationInfo* get_application_info(void)
 #endif
 void init_video()
 {
-  environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &options.renderer);
+  get_variable(&options.renderer);
   if (options.renderer.value == std::string("Hardware"))
   {
 #ifdef HAVE_OPENGL_CORE
@@ -198,7 +198,7 @@ bool cInterfaceRGL::Create(void* window_handle, bool core)
 {
   s_opengl_mode = GLInterfaceMode::MODE_OPENGL;
 /* doesn't seem to be used anyhwere */
-#ifdef CORE
+#ifdef HAVE_OPENGL_CORE
   m_core = true;
 #else
   m_core = false;
@@ -224,7 +224,7 @@ bool cInterfaceRGL::Create(cInterfaceBase* main_context)
 //   cInterfaceRGL *egl_context = static_cast<cInterfaceRGL *>(main_context);
 
 /* doesn't seem to be used anyhwere */
-#ifdef CORE
+#ifdef HAVE_OPENGL_CORE
   m_core = true;
 #else
   m_core = false;

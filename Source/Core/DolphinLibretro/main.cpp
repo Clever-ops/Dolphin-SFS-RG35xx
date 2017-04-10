@@ -93,7 +93,7 @@ void retro_init(void)
   environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &xrgb888);
   environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)&options);
 
-  Libretro::init_input();
+  init_input();
 }
 
 void retro_deinit(void)
@@ -141,7 +141,7 @@ void retro_run(void)
   static int frames = 0;
 
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
-    Libretro::check_variables();
+    check_variables();
 
   poll_cb();
 

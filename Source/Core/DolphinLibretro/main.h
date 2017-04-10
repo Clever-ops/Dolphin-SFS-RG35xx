@@ -14,6 +14,11 @@ extern retro_log_printf_t log_cb;
 
 void check_variables(void);
 
+static inline bool get_variable(void* data)
+{
+  return environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, data);
+}
+
 struct Options
 {
   retro_variable renderer;
