@@ -1043,6 +1043,10 @@ void Wiimote::LoadDefaults(const ControllerInterface& ciface)
 
   // set nunchuk defaults
   m_extension->attachments[1]->LoadDefaults(ciface);
+#ifdef __LIBRETRO__
+  // force classic controller for now.
+  m_extension->switch_extension = 2;
+#endif
 }
 
 int Wiimote::CurrentExtension() const

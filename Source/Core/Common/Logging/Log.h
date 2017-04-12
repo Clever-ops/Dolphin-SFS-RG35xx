@@ -55,6 +55,9 @@ enum LOG_TYPE
   VIDEOINTERFACE,
   WII_IPC,
   WIIMOTE,
+#ifdef __LIBRETRO__
+  LIBRETRO,
+#endif
 
   NUMBER_OF_LOGS  // Must be last
 };

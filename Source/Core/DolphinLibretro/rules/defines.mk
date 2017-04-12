@@ -1,5 +1,4 @@
 
-DEFINES += -DDATA_DIR=\"/usr/local/share/dolphin-emu/\"
 DEFINES += -D_ARCH_64=1
 DEFINES += -D_DEFAULT_SOURCE
 DEFINES += -D_FILE_OFFSET_BITS=64

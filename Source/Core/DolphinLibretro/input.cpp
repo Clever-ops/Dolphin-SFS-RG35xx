@@ -264,6 +264,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 void Libretro::init_input(void)
 {
   environ_cb(RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE, &rumble);
+  g_wiimote_sources[WIIMOTE_CHAN_0] = WIIMOTE_SRC_EMU;
 }
 
 void Libretro::init_descriptors(void)

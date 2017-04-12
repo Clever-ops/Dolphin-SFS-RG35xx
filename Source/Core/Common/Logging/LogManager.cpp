@@ -89,6 +89,9 @@ LogManager::LogManager()
   m_Log[LogTypes::VIDEOINTERFACE] = new LogContainer("VI", "Video Interface (VI)");
   m_Log[LogTypes::WIIMOTE] = new LogContainer("Wiimote", "Wiimote");
   m_Log[LogTypes::WII_IPC] = new LogContainer("WII_IPC", "WII IPC");
+#ifdef __LIBRETRO__
+  m_Log[LogTypes::LIBRETRO] = new LogContainer("Libretro", "Libretro");
+#endif
 
   RegisterListener(LogListener::FILE_LISTENER,
                    new FileLogListener(File::GetUserPath(F_MAINLOG_IDX)));

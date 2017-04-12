@@ -53,6 +53,7 @@ retro_variable options_desc[] = {{"dolphin_renderer", "Renderer; Hardware|Softwa
                                  {NULL, NULL}};
 
 Options options = *(Options*)options_desc;
+std::string sys_dir;
 
 void check_variables(void)
 {

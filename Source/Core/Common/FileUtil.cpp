@@ -19,6 +19,10 @@
 #include "Common/FileUtil.h"
 #include "Common/Logging/Log.h"
 
+#ifdef __LIBRETRO__
+#include "DolphinLibretro/main.h"
+#endif
+
 #ifdef _WIN32
 #include <windows.h>
 #include <commdlg.h>  // for GetSaveFileName
@@ -738,8 +742,9 @@ std::string& GetExeDirectory()
 std::string GetSysDirectory()
 {
   std::string sysDir;
-
-#if defined(__APPLE__)
+#if defined(__LIBRETRO__)
+  sysDir = Libretro::sys_dir;
+#elif defined(__APPLE__)
   sysDir = GetBundleDirectory() + DIR_SEP + SYSDATA_DIR;
 #elif defined(_WIN32) || defined(LINUX_LOCAL_DEV)
   sysDir = GetExeDirectory() + DIR_SEP + SYSDATA_DIR;
