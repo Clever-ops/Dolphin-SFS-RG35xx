@@ -1,7 +1,7 @@
 set(SRCS  UICommon.cpp)
 
 if(NOT LIBRETRO)
-  set(SRCS
+  set(SRCS ${SRCS}
     CommandLineParse.cpp
     Disassembler.cpp
     USBUtils.cpp
