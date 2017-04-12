@@ -857,6 +857,7 @@ bool PauseAndLock(bool do_lock, bool unpause_on_unlock)
 // This should only be called from VI
 void VideoThrottle()
 {
+#ifndef __LIBRETRO__
   // Update info per second
   u32 ElapseTime = (u32)s_timer.GetTimeDifference();
   if ((ElapseTime >= 1000 && s_drawn_video.load() > 0) || s_request_refresh_info)
@@ -870,6 +871,7 @@ void VideoThrottle()
   }
 
   s_drawn_video++;
+#endif
 }
 
 // Executed from GPU thread
@@ -891,10 +893,12 @@ bool ShouldSkipFrame(int skipped)
 // Should be called from GPU thread when a frame is drawn
 void Callback_VideoCopiedToXFB(bool video_update)
 {
+#ifdef __LIBRETRO__
   if (video_update)
     s_drawn_frame++;
 
   Movie::FrameUpdate();
+#endif
 }
 
 void UpdateTitle()
