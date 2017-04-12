@@ -32,7 +32,9 @@ void* Host_GetRenderHandle()
 
 void Host_UpdateTitle(const std::string& title)
 {
+#if 0
   printf("title : %s\n", title.c_str());
+#endif
 }
 
 void Host_UpdateDisasmDialog()
