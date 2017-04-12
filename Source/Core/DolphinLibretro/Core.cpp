@@ -865,13 +865,6 @@ void Callback_VideoCopiedToXFB(bool video_update)
 void UpdateTitle()
 {
   s_request_refresh_info = false;
-
-  // Update the audio timestretcher with the current speed
-  if (g_sound_stream)
-  {
-    CMixer* pMixer = g_sound_stream->GetMixer();
-    pMixer->UpdateSpeed(100);
-  }
 }
 
 void Shutdown()
