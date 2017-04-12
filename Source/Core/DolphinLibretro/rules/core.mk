@@ -5,7 +5,9 @@ CORE_OBJECTS += $(CORE_DIR)/ActionReplay.o
 CORE_OBJECTS += $(CORE_DIR)/ARDecrypt.o
 CORE_OBJECTS += $(CORE_DIR)/BootManager.o
 CORE_OBJECTS += $(CORE_DIR)/ConfigManager.o
-CORE_OBJECTS += $(CORE_DIR)/Core.o
+
+CORE_OBJECTS += $(CORE_DIR)/../DolphinLibretro/Core.o
+
 CORE_OBJECTS += $(CORE_DIR)/CoreTiming.o
 CORE_OBJECTS += $(CORE_DIR)/DSPEmulator.o
 CORE_OBJECTS += $(CORE_DIR)/ec_wii.o
