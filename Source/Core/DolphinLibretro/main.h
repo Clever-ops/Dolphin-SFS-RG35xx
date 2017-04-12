@@ -25,7 +25,6 @@ struct Options
   retro_variable fastmem;
   retro_variable pal60;
   retro_variable progressive_scan;
-  retro_variable _null;
 };
 extern Options options;
 }

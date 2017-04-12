@@ -44,14 +44,15 @@ cothread_t mainthread;
 retro_environment_t environ_cb;
 retro_log_printf_t log_cb;
 
-Options options = {
-   {"dolphin_renderer", "Renderer; Hardware|Software|Null"},
-   // Fastmem installs custom exception handlers
-   // it needs to be disabled when running in a debugger.
-   {"dolphin_fastmem", "Fastmem; ON|OFF"},
-   {"dolphin_pal60",   "PAL60; OFF|ON"},
-   {"dolphin_progressive_scan", "Progressive scan (HD); OFF|ON"},
-   {NULL, NULL}};
+retro_variable options_desc[] = {{"dolphin_renderer", "Renderer; Hardware|Software|Null"},
+                                 // Fastmem installs custom exception handlers
+                                 // it needs to be disabled when running in a debugger.
+                                 {"dolphin_fastmem", "Fastmem; ON|OFF"},
+                                 {"dolphin_pal60", "PAL60; OFF|ON"},
+                                 {"dolphin_progressive_scan", "Progressive scan (HD); OFF|ON"},
+                                 {NULL, NULL}};
+
+Options options = *(Options*)options_desc;
 
 void check_variables(void)
 {
@@ -78,6 +79,7 @@ void retro_set_environment(retro_environment_t cb)
   else
     log_cb = NULL;
 
+  environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)&options_desc);
 #ifdef PERF_TEST
   environ_cb(RETRO_ENVIRONMENT_GET_PERF_INTERFACE, &perf_cb);
 #endif
@@ -85,16 +87,10 @@ void retro_set_environment(retro_environment_t cb)
 
 void retro_init(void)
 {
-  struct retro_log_callback log;
   enum retro_pixel_format xrgb888;
-  if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
-    log_cb = log.log;
-  else
-    log_cb = NULL;
 
   xrgb888 = RETRO_PIXEL_FORMAT_XRGB8888;
   environ_cb(RETRO_ENVIRONMENT_SET_PIXEL_FORMAT, &xrgb888);
-  environ_cb(RETRO_ENVIRONMENT_SET_VARIABLES, (void*)&options);
 
   init_input();
 }
