@@ -21,6 +21,8 @@ static inline bool get_variable(void* data)
 
 struct Options
 {
+  retro_variable progressive_scan;
+  retro_variable pal60;
   retro_variable renderer;
   retro_variable fastmem;
   retro_variable _null;

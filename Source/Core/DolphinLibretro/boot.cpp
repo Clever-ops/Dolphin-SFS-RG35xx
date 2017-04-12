@@ -43,12 +43,16 @@ bool retro_load_game(const struct retro_game_info* game)
 #endif
 
   get_variable(&options.fastmem);
-  SConfig::GetInstance().bFastmem = options.fastmem.value == std::string("ON");
+  get_variable(&options.pal60);
+  get_variable(&options.progressive_scan);
+  SConfig::GetInstance().bFastmem       = options.fastmem.value            == std::string("ON");
+  SConfig::GetInstance().bProgressive   = options.progressive_scan.value   == std::string("ON");
+  SConfig::GetInstance().bPAL60         = options.pal60.value              == std::string("ON");
 
   /* force dual thread mode. to make the current one the gpu thread. */
   SConfig::GetInstance().bCPUThread = true;
 
-  /* disable throtteling emulation to match GetTargetRefreshRate() */
+  /* disable throttling emulation to match GetTargetRefreshRate() */
   Core::SetIsThrottlerTempDisabled(true);
 
   /* bypass XFB */
