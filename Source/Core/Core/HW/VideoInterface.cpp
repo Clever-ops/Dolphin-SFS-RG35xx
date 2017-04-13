@@ -703,7 +703,9 @@ static void BeginField(FieldType field, u64 ticks)
       xfbAddr -= fbStride * 2;
   }
 
+#ifndef __LIBRETRO__
   LogField(field, xfbAddr);
+#endif
 
   // This assumes the game isn't going to change the VI registers while a
   // frame is scanning out.
@@ -735,6 +737,7 @@ void Update(u64 ticks)
   {
     BeginField(FieldType::Odd, ticks);
   }
+#ifndef __LIBRETRO__
   else if (s_half_line_count == s_even_field_last_hl)
   {
     EndField();
@@ -743,6 +746,7 @@ void Update(u64 ticks)
   {
     EndField();
   }
+#endif
 
   for (UVIInterruptRegister& reg : m_InterruptRegister)
   {
