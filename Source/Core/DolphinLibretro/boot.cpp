@@ -74,18 +74,103 @@ bool retro_load_game(const struct retro_game_info* game)
   get_variable(&options.fastmem);
   get_variable(&options.pal60);
   get_variable(&options.progressive_scan);
-  SConfig::GetInstance().bFastmem = options.fastmem.value == std::string("ON");
+
+  SConfig::GetInstance().bFastmem     = options.fastmem.value == std::string("ON");
   SConfig::GetInstance().bProgressive = options.progressive_scan.value == std::string("ON");
-  SConfig::GetInstance().bPAL60 = options.pal60.value == std::string("ON");
+  SConfig::GetInstance().bPAL60       = options.pal60.value == std::string("ON");
 
   /* force dual thread mode. to make the current one the gpu thread. */
-  SConfig::GetInstance().bCPUThread = true;
+  SConfig::GetInstance().bCPUThread   = true;
 
   /* disable throttling emulation to match GetTargetRefreshRate() */
   Core::SetIsThrottlerTempDisabled(true);
 
-  /* bypass XFB */
-  g_ActiveConfig.bUseXFB = false;
+  /* START OF GFX.INI */
+
+  /* HARDWARE */
+
+  g_ActiveConfig.bVSync               = false;
+
+  /* SETTINGS */
+
+  g_ActiveConfig.iAspectRatio         = 0;
+  g_ActiveConfig.bCrop                = false;
+  g_ActiveConfig.bWidescreenHack      = false;
+  g_ActiveConfig.bUseXFB              = false;     /* bypass XFB */
+  g_ActiveConfig.bUseRealXFB          = true;
+  g_ActiveConfig.iSafeTextureCache_ColorSamples = 128;
+  g_ActiveConfig.bShowFPS             = false;
+  g_ActiveConfig.bShowNetPlayPing     = false;
+  g_ActiveConfig.bShowNetPlayMessages = false;
+  g_ActiveConfig.bLogRenderTimeToFile = false;
+  g_ActiveConfig.bOverlayStats        = false;
+  g_ActiveConfig.bOverlayProjStats    = false;
+  g_ActiveConfig.bDumpTextures        = false;
+  g_ActiveConfig.bHiresTextures       = false;
+  g_ActiveConfig.bConvertHiresTextures= false;
+  g_ActiveConfig.bCacheHiresTextures  = false;
+  g_ActiveConfig.bDumpEFBTarget       = false;
+  g_ActiveConfig.bDumpFramesAsImages  = false;
+  g_ActiveConfig.bFreeLook            = false;
+  g_ActiveConfig.bUseFFV1             = false;
+  g_ActiveConfig.bInternalResolutionFrameDumps = false;
+  g_ActiveConfig.bEnablePixelLighting = false;
+  g_ActiveConfig.bFastDepthCalc       = true;
+
+  /* TODO : MSAA */
+#if 0
+  MSAA
+  SSAA
+#endif
+
+  g_ActiveConfig.iEFBScale            = 2;
+  g_ActiveConfig.bTexFmtOverlayEnable = false;
+  g_ActiveConfig.bTexFmtOverlayCenter = false;
+  g_ActiveConfig.bWireFrame           = false;
+
+  g_ActiveConfig.bDisableFog          = false;
+  g_ActiveConfig.bBorderlessFullscreen= false;
+  g_ActiveConfig.bEnableValidationLayer= false;
+  g_ActiveConfig.bBackendMultithreading= true;
+  g_ActiveConfig.iCommandBufferExecuteInterval = 100;
+
+  g_ActiveConfig.bZComploc             = true;
+  g_ActiveConfig.bZFreeze              = true;
+
+  g_ActiveConfig.bDumpObjects          = false;
+  g_ActiveConfig.bDumpTevStages        = false;
+  g_ActiveConfig.bDumpTevTextureFetches= false;
+
+  g_ActiveConfig.drawStart             = 0;
+  g_ActiveConfig.drawEnd               = 100000;
+
+  /* ENHANCEMENTS */
+
+  g_ActiveConfig.bForceFiltering       = true;
+  g_ActiveConfig.iMaxAnisotropy        = 0;
+  g_ActiveConfig.bForceTrueColor       = false;
+
+  /* STEREOSCOPY */
+
+  g_ActiveConfig.iStereoMode           = 0;
+  g_ActiveConfig.iStereoDepth          = 20;
+  g_ActiveConfig.iStereoConvergencePercentage = 100;
+  g_ActiveConfig.bStereoSwapEyes       = false;
+
+  /* HACKS */
+
+  g_ActiveConfig.bEFBAccessEnable      = false;
+  g_ActiveConfig.bBBoxEnable           = false;
+  g_ActiveConfig.bForceProgressive     = true;
+
+#if 0
+  EFBToTextureEnable   = true;
+  EFBScaledCopy        = true;
+#endif
+
+  g_ActiveConfig.bEFBEmulateFormatChanges = false;
+
+  /* END OF GFX.INI */
 
   init_video();
   NOTICE_LOG(VIDEO, "Using GFX backend: %s", SConfig::GetInstance().m_strVideoBackend.c_str());
