@@ -75,15 +75,176 @@ bool retro_load_game(const struct retro_game_info* game)
   get_variable(&options.pal60);
   get_variable(&options.progressive_scan);
 
-  SConfig::GetInstance().bFastmem     = options.fastmem.value == std::string("ON");
-  SConfig::GetInstance().bProgressive = options.progressive_scan.value == std::string("ON");
-  SConfig::GetInstance().bPAL60       = options.pal60.value == std::string("ON");
-
-  /* force dual thread mode. to make the current one the gpu thread. */
-  SConfig::GetInstance().bCPUThread   = true;
-
   /* disable throttling emulation to match GetTargetRefreshRate() */
   Core::SetIsThrottlerTempDisabled(true);
+
+  /* START OF DOLPHIN.INI */
+
+  /* GENERAL */
+
+  /* INTERFACE */
+
+  /* DISPLAY */
+  SConfig::GetInstance().bProgressive     = options.progressive_scan.value == std::string("ON");
+  SConfig::GetInstance().bPAL60           = options.pal60.value == std::string("ON");
+
+  /* GAMELIST */
+
+  /* CORE */
+
+  SConfig::GetInstance().bHLE_BS2         = true;
+  SConfig::GetInstance().iTimingVariance  = 40;
+  SConfig::GetInstance().iCPUCore         = 1;
+  SConfig::GetInstance().bFastmem         = options.fastmem.value == std::string("ON");
+  /* force dual thread mode. to make the current one the gpu thread. */
+  SConfig::GetInstance().bCPUThread       = true;
+  SConfig::GetInstance().bDSPHLE          = true;
+  SConfig::GetInstance().bSyncGPUOnSkipIdleHack = true;
+  SConfig::GetInstance().bSyncGPU         = true;
+  SConfig::GetInstance().iSyncGpuMaxDistance = 200000;
+  SConfig::GetInstance().iSyncGpuMinDistance = -200000;
+  SConfig::GetInstance().fSyncGpuOverclock   = 1.00000000;
+  SConfig::GetInstance().bFPRF               = false;
+  SConfig::GetInstance().bAccurateNaNs       = false;
+
+#if 0
+  /* DefaultISO
+   * DVDRoot
+   * Apploader
+   */
+#endif
+
+  SConfig::GetInstance().bEnableCheats    = false;
+  SConfig::GetInstance().SelectedLanguage = 0;
+  SConfig::GetInstance().bOverrideGCLanguage  = false;
+  SConfig::GetInstance().bDPL2Decoder         = false;
+  SConfig::GetInstance().iLatency             = 2;
+
+#if 0
+  /* MemCardAPath
+   * MemCardBPath
+   * AgpCartAPath
+   * AgpCartBPath
+   * SlotA
+   * SlotB
+   * SerialPort1
+   * BBA_MAC
+   * SIDevice0
+   * AdapterRumble0
+   * SimulateKonga0
+   * SIDevice1
+   * AdapterRumble1
+   * SimulateKonga1
+   * SIDevice2
+   * AdapterRumble2
+   * SimulateKonga2
+   * SIDevice3
+   * AdapterRumble3
+   * SimulateKonga3
+   */
+#endif
+
+  SConfig::GetInstance().m_WiiSDCard      = false;
+  SConfig::GetInstance().m_WiiKeyboard    = false;
+  SConfig::GetInstance().m_WiimoteContinuousScanning = false;
+  SConfig::GetInstance().m_WiimoteEnableSpeaker      = false;
+
+#if 0
+  /*
+   * RunCompareServer
+   * RunCompareClient
+  */
+#endif
+
+  SConfig::GetInstance().m_EmulationSpeed = 1.00;
+  SConfig::GetInstance().m_FrameSkip      = 0;
+
+#if 0
+  /*
+   *
+   * Overclock
+  */
+#endif
+
+  SConfig::GetInstance().m_OCEnable       = false;
+
+#if 0
+  /* Don't need to implement this:
+   * GFXBackend
+   */
+
+  /* Need to implement this:
+   * GPUDeterminismMode
+   * PerfMapDir
+   *
+   */
+#endif
+
+  SConfig::GetInstance().bEnableCustomRTC = false;
+
+#if 0
+  /* Need to implement this:
+   * CustomRTCValue
+   */
+#endif
+
+  SConfig::GetInstance().m_audio_stretch    = false;
+  SConfig::GetInstance().m_audio_stretch_max_latency    = 80;
+
+  /* MOVIE */
+
+  SConfig::GetInstance().m_PauseMovie     = false;
+
+#if 0
+  /* Don't need to implement this:
+   * Author
+   */
+#endif
+
+  SConfig::GetInstance().m_DumpFrames     = false;
+  SConfig::GetInstance().m_DumpFramesSilent = false;
+  SConfig::GetInstance().m_ShowInputDisplay = false;
+  SConfig::GetInstance().m_ShowRTC          = false;
+
+  /* DSP */
+
+  SConfig::GetInstance().m_DSPEnableJIT   = true;
+  SConfig::GetInstance().m_DumpAudio      = false;
+  SConfig::GetInstance().m_DumpAudioSilent= false;
+  SConfig::GetInstance().m_DumpUCode      = false;
+
+#if 0
+  /* Don't need Backend */
+#endif
+
+  SConfig::GetInstance().m_Volume         = 100;
+  SConfig::GetInstance().m_DSPCaptureLog  = false;
+
+  /* INPUT */
+
+  SConfig::GetInstance().m_BackgroundInput = false;
+
+  /* FIFOPLAYER */
+
+  SConfig::GetInstance().bLoopFifoReplay   = true;
+
+  /* ANALYTICS */
+
+  /* NETWORK */
+
+  /* BLUETOOTHPASSTHROUGH */
+
+  /* SYSCONF */
+
+  SConfig::GetInstance().m_wii_screensaver = 0;
+
+  /* USB PASSTHROUGH */
+
+#if 0
+  /* Don't need Devices */
+#endif
+
+  /* END OF DOLPHIN.INI */
 
   /* START OF GFX.INI */
 
