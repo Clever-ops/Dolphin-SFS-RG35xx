@@ -57,7 +57,7 @@ bool retro_load_game(const struct retro_game_info* game)
   UICommon::Init();
 
   LogManager::GetInstance()->AddListener(LogTypes::LIBRETRO, LogListener::CONSOLE_LISTENER);
-  LogManager::GetInstance()->SetLogLevel(LogTypes::LIBRETRO, LogTypes::LNOTICE);
+  LogManager::GetInstance()->SetLogLevel(LogTypes::LIBRETRO, LogTypes::LDEBUG);
   LogManager::GetInstance()->SetEnable(LogTypes::LIBRETRO, true);
 #if 0
    /* enable VIDEO debug logging to stdout */
