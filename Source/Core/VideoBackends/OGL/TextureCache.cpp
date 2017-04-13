@@ -288,13 +288,12 @@ void TextureCache::TCacheEntry::FromRenderTarget(bool is_depth_copy, const EFBRe
   g_renderer->RestoreAPIState();
 }
 
-void TextureCache::CopyEFB(u8* dst, u32 format, u32 native_width, u32 bytes_per_row,
-                           u32 num_blocks_y, u32 memory_stride, bool is_depth_copy,
-                           const EFBRectangle& srcRect, bool isIntensity, bool scaleByHalf)
+void TextureCache::CopyEFB(u8* dst, const EFBCopyFormat& format, u32 native_width,
+                           u32 bytes_per_row, u32 num_blocks_y, u32 memory_stride,
+                           bool is_depth_copy, const EFBRectangle& src_rect, bool scale_by_half)
 {
   TextureConverter::EncodeToRamFromTexture(dst, format, native_width, bytes_per_row, num_blocks_y,
-                                           memory_stride, is_depth_copy, isIntensity, scaleByHalf,
-                                           srcRect);
+                                           memory_stride, is_depth_copy, src_rect, scale_by_half);
 }
 
 TextureCache::TextureCache()
@@ -775,7 +774,8 @@ void TextureCache::DecodeTextureOnGPU(TCacheEntryBase* entry, u32 dst_level, con
     glBindTexture(GL_TEXTURE_BUFFER, s_palette_resolv_texture);
   }
 
-  auto dispatch_groups = TextureConversionShader::GetDispatchCount(info.base_info, width, height);
+  auto dispatch_groups =
+      TextureConversionShader::GetDispatchCount(info.base_info, aligned_width, aligned_height);
   glBindImageTexture(0, static_cast<TCacheEntry*>(entry)->texture, dst_level, GL_TRUE, 0,
                      GL_WRITE_ONLY, GL_RGBA8);
   glDispatchCompute(dispatch_groups.first, dispatch_groups.second, 1);

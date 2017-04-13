@@ -781,32 +781,33 @@ TextureCacheBase::TCacheEntryBase* TextureCacheBase::Load(const u32 stage)
   if (!entry)
     return nullptr;
 
-  if (!hires_tex)
+  const u8* tlut = &texMem[tlutaddr];
+  if (hires_tex)
   {
-    const u8* tlut = &texMem[tlutaddr];
-    if (decode_on_gpu)
+    entry->Load(temp, width, height, expandedWidth, 0);
+  }
+  else if (decode_on_gpu)
+  {
+    u32 row_stride = bytes_per_block * (expandedWidth / bsw);
+    g_texture_cache->DecodeTextureOnGPU(
+        entry, 0, src_data, texture_size, static_cast<TextureFormat>(texformat), width, height,
+        expandedWidth, expandedHeight, row_stride, tlut, static_cast<TlutFormat>(tlutfmt));
+  }
+  else
+  {
+    if (!(texformat == GX_TF_RGBA8 && from_tmem))
     {
-      u32 row_stride = bytes_per_block * (expandedWidth / bsw);
-      g_texture_cache->DecodeTextureOnGPU(
-          entry, 0, src_data, texture_size, static_cast<TextureFormat>(texformat), width, height,
-          expandedWidth, expandedHeight, row_stride, tlut, static_cast<TlutFormat>(tlutfmt));
+      TexDecoder_Decode(temp, src_data, expandedWidth, expandedHeight, texformat, tlut,
+                        (TlutFormat)tlutfmt);
     }
     else
     {
-      if (!(texformat == GX_TF_RGBA8 && from_tmem))
-      {
-        TexDecoder_Decode(temp, src_data, expandedWidth, expandedHeight, texformat, tlut,
-                          (TlutFormat)tlutfmt);
-      }
-      else
-      {
-        u8* src_data_gb =
-            &texMem[bpmem.tex[stage / 4].texImage2[stage % 4].tmem_odd * TMEM_LINE_SIZE];
-        TexDecoder_DecodeRGBA8FromTmem(temp, src_data, src_data_gb, expandedWidth, expandedHeight);
-      }
-
-      entry->Load(temp, width, height, expandedWidth, 0);
+      u8* src_data_gb =
+          &texMem[bpmem.tex[stage / 4].texImage2[stage % 4].tmem_odd * TMEM_LINE_SIZE];
+      TexDecoder_DecodeRGBA8FromTmem(temp, src_data, src_data_gb, expandedWidth, expandedHeight);
     }
+
+    entry->Load(temp, width, height, expandedWidth, 0);
   }
 
   iter = textures_by_address.emplace(address, entry);
@@ -865,11 +866,10 @@ TextureCacheBase::TCacheEntryBase* TextureCacheBase::Load(const u32 stage)
       const u8*& mip_src_data = from_tmem ? ((level % 2) ? ptr_odd : ptr_even) : src_data;
       size_t mip_size =
           TexDecoder_GetTextureSizeInBytes(expanded_mip_width, expanded_mip_height, texformat);
-      const u8* tlut = &texMem[tlutaddr];
 
       if (decode_on_gpu)
       {
-        u32 row_stride = bytes_per_block * (mip_width / bsw);
+        u32 row_stride = bytes_per_block * (expanded_mip_width / bsw);
         g_texture_cache->DecodeTextureOnGPU(entry, level, mip_src_data, mip_size,
                                             static_cast<TextureFormat>(texformat), mip_width,
                                             mip_height, expanded_mip_width, expanded_mip_height,
@@ -969,7 +969,8 @@ void TextureCacheBase::CopyRenderTargetToTexture(u32 dstAddr, unsigned int dstFo
   ColorMask[0] = ColorMask[1] = ColorMask[2] = ColorMask[3] = 255.0f;
   ColorMask[4] = ColorMask[5] = ColorMask[6] = ColorMask[7] = 1.0f / 255.0f;
   unsigned int cbufid = -1;
-  bool efbHasAlpha = bpmem.zcontrol.pixel_format == PEControl::RGBA6_Z24;
+  u32 srcFormat = bpmem.zcontrol.pixel_format;
+  bool efbHasAlpha = srcFormat == PEControl::RGBA6_Z24;
 
   if (is_depth_copy)
   {
@@ -1278,8 +1279,9 @@ void TextureCacheBase::CopyRenderTargetToTexture(u32 dstAddr, unsigned int dstFo
 
   if (copy_to_ram)
   {
-    CopyEFB(dst, dstFormat, tex_w, bytes_per_row, num_blocks_y, dstStride, is_depth_copy, srcRect,
-            isIntensity, scaleByHalf);
+    EFBCopyFormat format(srcFormat, static_cast<TextureFormat>(dstFormat));
+    CopyEFB(dst, format, tex_w, bytes_per_row, num_blocks_y, dstStride, is_depth_copy, srcRect,
+            scaleByHalf);
   }
   else
   {

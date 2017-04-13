@@ -85,7 +85,7 @@ void NetPlayClient::SendTimeBase()
 
 #include "Core/HW/EXI/EXI_DeviceIPL.h"
 
-u64 CEXIIPL::NetPlay_GetEmulatedTime()
+u64 ExpansionInterface::CEXIIPL::NetPlay_GetEmulatedTime()
 {
   return 0;
 }

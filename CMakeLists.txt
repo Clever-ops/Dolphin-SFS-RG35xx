@@ -209,6 +209,13 @@ if(CMAKE_CXX_COMPILER_ID STREQUAL "GNU" AND CMAKE_CXX_COMPILER_VERSION VERSION_L
   message(FATAL_ERROR "Dolphin requires at least GCC 5.0 (found ${CMAKE_CXX_COMPILER_VERSION})")
 endif()
 
+if(CMAKE_GENERATOR MATCHES "Ninja")
+  check_and_add_flag(DIAGNOSTICS_COLOR -fdiagnostics-color)
+elseif(CMAKE_GENERATOR MATCHES "Visual Studio")
+  # Only MSBuild needs this, other generators will compile one file at a time
+  add_compile_options("/MP")
+endif()
+
 if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
   check_and_add_flag(EXCEPTIONS /EHsc)
   dolphin_compile_definitions(_DEBUG DEBUG_ONLY)
@@ -217,11 +224,6 @@ if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
   string(APPEND CMAKE_EXE_LINKER_FLAGS " /BASE:0x00400000")
   string(APPEND CMAKE_EXE_LINKER_FLAGS " /DYNAMICBASE:NO")
   string(APPEND CMAKE_EXE_LINKER_FLAGS " /FIXED")
-
-  # Only MSBuild needs this, other generators will compile one file at a time
-  if(CMAKE_GENERATOR MATCHES "Visual Studio")
-    add_compile_options("/MP")
-  endif()
 else()
   add_definitions(-D_DEFAULT_SOURCE)
   check_and_add_flag(HAVE_WALL -Wall)
@@ -665,18 +667,11 @@ else()
 endif()
 
 find_package(OpenAL)
-if(OPENAL_FOUND)
-  if(NOT APPLE)
-    check_lib(SOUNDTOUCH soundtouch SoundTouch soundtouch/SoundTouch.h QUIET)
-  endif()
-  if (SOUNDTOUCH_FOUND)
-    message(STATUS "Using shared soundtouch")
-  else()
-    message(STATUS "Using static soundtouch from Externals")
-    add_subdirectory(Externals/soundtouch)
-    include_directories(Externals)
-  endif()
-endif()
+
+# Using static soundtouch from Externals
+# Unable to use system soundtouch library: We require shorts, not floats.
+add_subdirectory(Externals/soundtouch)
+include_directories(Externals)
 
 if(NOT ANDROID)
   add_definitions(-D__LIBUSB__)

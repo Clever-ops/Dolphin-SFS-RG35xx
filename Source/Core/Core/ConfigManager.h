@@ -110,6 +110,8 @@ struct SConfig : NonCopyable
 
   bool bDPL2Decoder = false;
   int iLatency = 14;
+  bool m_audio_stretch = false;
+  int m_audio_stretch_max_latency = 80;
 
   bool bRunCompareServer = false;
   bool bRunCompareClient = false;
@@ -250,7 +252,7 @@ struct SConfig : NonCopyable
   std::string m_strMemoryCardB;
   std::string m_strGbaCartA;
   std::string m_strGbaCartB;
-  TEXIDevices m_EXIDevice[3];
+  ExpansionInterface::TEXIDevices m_EXIDevice[3];
   SerialInterface::SIDevices m_SIDevice[4];
   std::string m_bba_mac;
 

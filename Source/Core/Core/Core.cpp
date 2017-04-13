@@ -86,9 +86,6 @@
 #endif
 namespace Core
 {
-// TODO: ugly, remove
-bool g_aspect_wide;
-
 static bool s_wants_determinism;
 
 // Declarations and definitions

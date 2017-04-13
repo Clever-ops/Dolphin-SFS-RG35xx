@@ -55,6 +55,8 @@
 #include "VideoCommon/Statistics.h"
 #include "VideoCommon/TextureCacheBase.h"
 #include "VideoCommon/TextureDecoder.h"
+#include "VideoCommon/VertexManagerBase.h"
+#include "VideoCommon/VertexShaderManager.h"
 #include "VideoCommon/VideoConfig.h"
 #include "VideoCommon/XFMemory.h"
 
@@ -89,6 +91,11 @@ Renderer::Renderer(int backbuffer_width, int backbuffer_height)
 
   OSDChoice = 0;
   OSDTime = 0;
+
+  if (SConfig::GetInstance().bWii)
+  {
+    m_aspect_wide = SConfig::GetInstance().m_wii_aspect_ratio != 0;
+  }
 }
 
 Renderer::~Renderer()
@@ -122,7 +129,7 @@ void Renderer::RenderToXFB(u32 xfbAddr, const EFBRectangle& sourceRc, u32 fbStri
   }
 }
 
-int Renderer::EFBToScaledX(int x)
+int Renderer::EFBToScaledX(int x) const
 {
   switch (g_ActiveConfig.iEFBScale)
   {
@@ -134,7 +141,7 @@ int Renderer::EFBToScaledX(int x)
   };
 }
 
-int Renderer::EFBToScaledY(int y)
+int Renderer::EFBToScaledY(int y) const
 {
   switch (g_ActiveConfig.iEFBScale)
   {
@@ -146,49 +153,62 @@ int Renderer::EFBToScaledY(int y)
   };
 }
 
-void Renderer::CalculateTargetScale(int x, int y, int* scaledX, int* scaledY)
+float Renderer::EFBToScaledXf(float x) const
+{
+  return x * ((float)GetTargetWidth() / (float)EFB_WIDTH);
+}
+
+float Renderer::EFBToScaledYf(float y) const
+{
+  return y * ((float)GetTargetHeight() / (float)EFB_HEIGHT);
+}
+
+std::tuple<int, int> Renderer::CalculateTargetScale(int x, int y) const
 {
   if (g_ActiveConfig.iEFBScale == SCALE_AUTO || g_ActiveConfig.iEFBScale == SCALE_AUTO_INTEGRAL)
   {
-    *scaledX = x;
-    *scaledY = y;
+    return std::make_tuple(x, y);
   }
-  else
-  {
-    *scaledX = x * (int)m_efb_scale_numeratorX / (int)m_efb_scale_denominatorX;
-    *scaledY = y * (int)m_efb_scale_numeratorY / (int)m_efb_scale_denominatorY;
-  }
+
+  const int scaled_x =
+      x * static_cast<int>(m_efb_scale_numeratorX) / static_cast<int>(m_efb_scale_denominatorX);
+
+  const int scaled_y =
+      y * static_cast<int>(m_efb_scale_numeratorY) / static_cast<int>(m_efb_scale_denominatorY);
+
+  return std::make_tuple(scaled_x, scaled_y);
 }
 
 // return true if target size changed
 bool Renderer::CalculateTargetSize()
 {
-  int newEFBWidth, newEFBHeight;
-  newEFBWidth = newEFBHeight = 0;
-
   m_last_efb_scale = g_ActiveConfig.iEFBScale;
+
+  int new_efb_width = 0;
+  int new_efb_height = 0;
 
   // TODO: Ugly. Clean up
   switch (m_last_efb_scale)
   {
   case SCALE_AUTO:
   case SCALE_AUTO_INTEGRAL:
-    newEFBWidth = FramebufferManagerBase::ScaleToVirtualXfbWidth(EFB_WIDTH, m_target_rectangle);
-    newEFBHeight = FramebufferManagerBase::ScaleToVirtualXfbHeight(EFB_HEIGHT, m_target_rectangle);
+    new_efb_width = FramebufferManagerBase::ScaleToVirtualXfbWidth(EFB_WIDTH, m_target_rectangle);
+    new_efb_height =
+        FramebufferManagerBase::ScaleToVirtualXfbHeight(EFB_HEIGHT, m_target_rectangle);
 
     if (m_last_efb_scale == SCALE_AUTO_INTEGRAL)
     {
       m_efb_scale_numeratorX = m_efb_scale_numeratorY =
-          std::max((newEFBWidth - 1) / EFB_WIDTH + 1, (newEFBHeight - 1) / EFB_HEIGHT + 1);
+          std::max((new_efb_width - 1) / EFB_WIDTH + 1, (new_efb_height - 1) / EFB_HEIGHT + 1);
       m_efb_scale_denominatorX = m_efb_scale_denominatorY = 1;
-      newEFBWidth = EFBToScaledX(EFB_WIDTH);
-      newEFBHeight = EFBToScaledY(EFB_HEIGHT);
+      new_efb_width = EFBToScaledX(EFB_WIDTH);
+      new_efb_height = EFBToScaledY(EFB_HEIGHT);
     }
     else
     {
-      m_efb_scale_numeratorX = newEFBWidth;
+      m_efb_scale_numeratorX = new_efb_width;
       m_efb_scale_denominatorX = EFB_WIDTH;
-      m_efb_scale_numeratorY = newEFBHeight;
+      m_efb_scale_numeratorY = new_efb_height;
       m_efb_scale_denominatorY = EFB_HEIGHT;
     }
     break;
@@ -227,53 +247,56 @@ bool Renderer::CalculateTargetSize()
     break;
   }
   if (m_last_efb_scale > SCALE_AUTO_INTEGRAL)
-    CalculateTargetScale(EFB_WIDTH, EFB_HEIGHT, &newEFBWidth, &newEFBHeight);
+    std::tie(new_efb_width, new_efb_height) = CalculateTargetScale(EFB_WIDTH, EFB_HEIGHT);
 
-  if (newEFBWidth != m_target_width || newEFBHeight != m_target_height)
+  if (new_efb_width != m_target_width || new_efb_height != m_target_height)
   {
-    m_target_width = newEFBWidth;
-    m_target_height = newEFBHeight;
+    m_target_width = new_efb_width;
+    m_target_height = new_efb_height;
     PixelShaderManager::SetEfbScaleChanged(EFBToScaledXf(1), EFBToScaledYf(1));
     return true;
   }
   return false;
 }
 
-void Renderer::ConvertStereoRectangle(const TargetRectangle& rc, TargetRectangle& leftRc,
-                                      TargetRectangle& rightRc)
+std::tuple<TargetRectangle, TargetRectangle>
+Renderer::ConvertStereoRectangle(const TargetRectangle& rc) const
 {
   // Resize target to half its original size
-  TargetRectangle drawRc = rc;
+  TargetRectangle draw_rc = rc;
   if (g_ActiveConfig.iStereoMode == STEREO_TAB)
   {
     // The height may be negative due to flipped rectangles
     int height = rc.bottom - rc.top;
-    drawRc.top += height / 4;
-    drawRc.bottom -= height / 4;
+    draw_rc.top += height / 4;
+    draw_rc.bottom -= height / 4;
   }
   else
   {
     int width = rc.right - rc.left;
-    drawRc.left += width / 4;
-    drawRc.right -= width / 4;
+    draw_rc.left += width / 4;
+    draw_rc.right -= width / 4;
   }
 
   // Create two target rectangle offset to the sides of the backbuffer
-  leftRc = drawRc, rightRc = drawRc;
+  TargetRectangle left_rc = draw_rc;
+  TargetRectangle right_rc = draw_rc;
   if (g_ActiveConfig.iStereoMode == STEREO_TAB)
   {
-    leftRc.top -= m_backbuffer_height / 4;
-    leftRc.bottom -= m_backbuffer_height / 4;
-    rightRc.top += m_backbuffer_height / 4;
-    rightRc.bottom += m_backbuffer_height / 4;
+    left_rc.top -= m_backbuffer_height / 4;
+    left_rc.bottom -= m_backbuffer_height / 4;
+    right_rc.top += m_backbuffer_height / 4;
+    right_rc.bottom += m_backbuffer_height / 4;
   }
   else
   {
-    leftRc.left -= m_backbuffer_width / 4;
-    leftRc.right -= m_backbuffer_width / 4;
-    rightRc.left += m_backbuffer_width / 4;
-    rightRc.right += m_backbuffer_width / 4;
+    left_rc.left -= m_backbuffer_width / 4;
+    left_rc.right -= m_backbuffer_width / 4;
+    right_rc.left += m_backbuffer_width / 4;
+    right_rc.right += m_backbuffer_width / 4;
   }
+
+  return std::make_tuple(left_rc, right_rc);
 }
 
 void Renderer::SaveScreenshot(const std::string& filename, bool wait_for_completion)
@@ -300,7 +323,7 @@ void Renderer::DrawDebugText()
   if (g_ActiveConfig.bShowFPS || SConfig::GetInstance().m_ShowFrameCount)
   {
     if (g_ActiveConfig.bShowFPS)
-      final_cyan += StringFromFormat("FPS: %u", g_renderer->m_fps_counter.GetFPS());
+      final_cyan += StringFromFormat("FPS: %u", m_fps_counter.GetFPS());
 
     if (g_ActiveConfig.bShowFPS && SConfig::GetInstance().m_ShowFrameCount)
       final_cyan += " - ";
@@ -429,11 +452,11 @@ void Renderer::DrawDebugText()
     final_cyan += Statistics::ToStringProj();
 
   // and then the text
-  g_renderer->RenderText(final_cyan, 20, 20, 0xFF00FFFF);
-  g_renderer->RenderText(final_yellow, 20, 20, 0xFFFFFF00);
+  RenderText(final_cyan, 20, 20, 0xFF00FFFF);
+  RenderText(final_yellow, 20, 20, 0xFFFFFF00);
 }
 
-float Renderer::CalculateDrawAspectRatio(int target_width, int target_height)
+float Renderer::CalculateDrawAspectRatio(int target_width, int target_height) const
 {
   // The dimensions are the sizes that are used to create the EFB/backbuffer textures, so
   // they should always be greater than zero.
@@ -447,7 +470,7 @@ float Renderer::CalculateDrawAspectRatio(int target_width, int target_height)
 
   // The rendering window aspect ratio as a proportion of the 4:3 or 16:9 ratio
   if (g_ActiveConfig.iAspectRatio == ASPECT_ANALOG_WIDE ||
-      (g_ActiveConfig.iAspectRatio != ASPECT_ANALOG && Core::g_aspect_wide))
+      (g_ActiveConfig.iAspectRatio != ASPECT_ANALOG && m_aspect_wide))
   {
     return (static_cast<float>(target_width) / static_cast<float>(target_height)) /
            AspectToWidescreen(VideoInterface::GetAspectRatio());
@@ -459,7 +482,8 @@ float Renderer::CalculateDrawAspectRatio(int target_width, int target_height)
   }
 }
 
-std::tuple<float, float> Renderer::ScaleToDisplayAspectRatio(const int width, const int height)
+std::tuple<float, float> Renderer::ScaleToDisplayAspectRatio(const int width,
+                                                             const int height) const
 {
   // Scale either the width or height depending the content aspect ratio.
   // This way we preserve as much resolution as possible when scaling.
@@ -474,7 +498,7 @@ std::tuple<float, float> Renderer::ScaleToDisplayAspectRatio(const int width, co
   return std::make_tuple(static_cast<float>(width) / ratio, static_cast<float>(height));
 }
 
-TargetRectangle Renderer::CalculateFrameDumpDrawRectangle()
+TargetRectangle Renderer::CalculateFrameDumpDrawRectangle() const
 {
   // No point including any borders in the frame dump image, since they'd have to be cropped anyway.
   TargetRectangle rc;
@@ -521,7 +545,7 @@ void Renderer::UpdateDrawRectangle()
   if (g_ActiveConfig.bWidescreenHack)
   {
     float source_aspect = VideoInterface::GetAspectRatio();
-    if (Core::g_aspect_wide)
+    if (m_aspect_wide)
       source_aspect = AspectToWidescreen(source_aspect);
     float target_aspect;
 
@@ -632,7 +656,7 @@ void Renderer::SetWindowSize(int width, int height)
   height = std::max(height, 1);
 
   // Scale the window size by the EFB scale.
-  CalculateTargetScale(width, height, &width, &height);
+  std::tie(width, height) = CalculateTargetScale(width, height);
 
   float scaled_width, scaled_height;
   std::tie(scaled_width, scaled_height) = ScaleToDisplayAspectRatio(width, height);
@@ -641,11 +665,10 @@ void Renderer::SetWindowSize(int width, int height)
   {
     // Force 4:3 or 16:9 by cropping the image.
     float current_aspect = scaled_width / scaled_height;
-    float expected_aspect =
-        (g_ActiveConfig.iAspectRatio == ASPECT_ANALOG_WIDE ||
-         (g_ActiveConfig.iAspectRatio != ASPECT_ANALOG && Core::g_aspect_wide)) ?
-            (16.0f / 9.0f) :
-            (4.0f / 3.0f);
+    float expected_aspect = (g_ActiveConfig.iAspectRatio == ASPECT_ANALOG_WIDE ||
+                             (g_ActiveConfig.iAspectRatio != ASPECT_ANALOG && m_aspect_wide)) ?
+                                (16.0f / 9.0f) :
+                                (4.0f / 3.0f);
     if (current_aspect > expected_aspect)
     {
       // keep height, crop width
@@ -711,11 +734,27 @@ void Renderer::RecordVideoMemory()
 void Renderer::Swap(u32 xfbAddr, u32 fbWidth, u32 fbStride, u32 fbHeight, const EFBRectangle& rc,
                     u64 ticks, float Gamma)
 {
+  // Heuristic to detect if a GameCube game is in 16:9 anamorphic widescreen mode.
+  if (!SConfig::GetInstance().bWii)
+  {
+    size_t flush_count_4_3, flush_count_anamorphic;
+    std::tie(flush_count_4_3, flush_count_anamorphic) =
+        g_vertex_manager->ResetFlushAspectRatioCount();
+    size_t flush_total = flush_count_4_3 + flush_count_anamorphic;
+
+    // Modify the threshold based on which aspect ratio we're already using: if
+    // the game's in 4:3, it probably won't switch to anamorphic, and vice-versa.
+    if (m_aspect_wide)
+      m_aspect_wide = !(flush_count_4_3 > 0.75 * flush_total);
+    else
+      m_aspect_wide = flush_count_anamorphic > 0.75 * flush_total;
+  }
+
   // TODO: merge more generic parts into VideoCommon
-  g_renderer->SwapImpl(xfbAddr, fbWidth, fbStride, fbHeight, rc, ticks, Gamma);
+  SwapImpl(xfbAddr, fbWidth, fbStride, fbHeight, rc, ticks, Gamma);
 
   if (m_xfb_written)
-    g_renderer->m_fps_counter.Update();
+    m_fps_counter.Update();
 
   frameCount++;
   GFX_DEBUGGER_PAUSE_AT(NEXT_FRAME, true);

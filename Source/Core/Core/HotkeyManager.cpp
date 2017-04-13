@@ -15,8 +15,10 @@
 #include "InputCommon/ControllerEmu/ControlGroup/Buttons.h"
 #include "InputCommon/ControllerEmu/ControlGroup/ControlGroup.h"
 #include "InputCommon/ControllerEmu/Setting/BooleanSetting.h"
+#include "InputCommon/ControllerInterface/ControllerInterface.h"
 #include "InputCommon/GCPadStatus.h"
 
+// clang-format off
 const std::string hotkey_labels[] = {
     _trans("Open"),
     _trans("Change Disc"),
@@ -72,7 +74,9 @@ const std::string hotkey_labels[] = {
     _trans("Toggle Texture Dumping"),
     _trans("Toggle Custom Textures"),
 
+    // i18n: IR stands for internal resolution
     _trans("Increase IR"),
+    // i18n: IR stands for internal resolution
     _trans("Decrease IR"),
 
     _trans("Freelook Decrease Speed"),
@@ -147,6 +151,7 @@ const std::string hotkey_labels[] = {
     _trans("Save State"),
     _trans("Load State"),
 };
+// clang-format on
 static_assert(NUM_HOTKEYS == sizeof(hotkey_labels) / sizeof(hotkey_labels[0]),
               "Wrong count of hotkey_labels");
 

@@ -1169,10 +1169,11 @@ void CFrame::OnImportSave(wxCommandEvent& WXUNUSED(event))
 
 void CFrame::OnShowCheatsWindow(wxCommandEvent& WXUNUSED(event))
 {
-  if (!g_CheatsWindow)
-    g_CheatsWindow = new wxCheatsWindow(this);
-  else
-    g_CheatsWindow->Raise();
+  if (!m_cheats_window)
+    m_cheats_window = new wxCheatsWindow(this);
+
+  m_cheats_window->Show();
+  m_cheats_window->Raise();
 }
 
 void CFrame::OnLoadWiiMenu(wxCommandEvent& WXUNUSED(event))
@@ -1514,12 +1515,12 @@ void CFrame::UpdateGUI()
   m_Mgr->Update();
 
   // Update non-modal windows
-  if (g_CheatsWindow)
+  if (m_cheats_window)
   {
     if (SConfig::GetInstance().bEnableCheats)
-      g_CheatsWindow->UpdateGUI();
+      m_cheats_window->UpdateGUI();
     else
-      g_CheatsWindow->Close();
+      m_cheats_window->Hide();
   }
 }
 
@@ -1593,7 +1594,7 @@ void CFrame::GameListChanged(wxCommandEvent& event)
     break;
   case IDM_PURGE_GAME_LIST_CACHE:
     std::vector<std::string> rFilenames =
-        DoFileSearch({".cache"}, {File::GetUserPath(D_CACHE_IDX)});
+        Common::DoFileSearch({".cache"}, {File::GetUserPath(D_CACHE_IDX)});
 
     for (const std::string& rFilename : rFilenames)
     {

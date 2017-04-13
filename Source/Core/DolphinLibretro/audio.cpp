@@ -51,7 +51,7 @@ unsigned int CMixer::MixerFifo::Mix(short* samples, unsigned int numSamples,
   return 0;
 }
 
-unsigned int CMixer::Mix(short* samples, unsigned int num_samples, bool consider_framelimit)
+unsigned int CMixer::Mix(short* samples, unsigned int num_samples)
 {
   return 0;
 }
