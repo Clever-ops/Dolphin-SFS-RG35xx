@@ -9,10 +9,10 @@
 
 #include "AudioCommon/WaveFile.h"
 #include "Common/CommonTypes.h"
-
+#ifndef __LIBRETRO__
 #include <soundtouch/STTypes.h>
 #include <soundtouch/SoundTouch.h>
-
+#endif
 class CMixer final
 {
 public:
