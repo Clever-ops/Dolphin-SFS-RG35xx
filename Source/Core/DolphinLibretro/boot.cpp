@@ -40,9 +40,9 @@ bool retro_load_game(const struct retro_game_info* game)
   environ_cb(RETRO_ENVIRONMENT_GET_CORE_ASSETS_DIRECTORY, &core_assets_dir);
 
   if (save_dir && *save_dir)
-    user_dir = std::string(save_dir) + DIR_SEP "User" DIR_SEP;
+    user_dir = std::string(save_dir) + DIR_SEP "User";
   else if (system_dir && *system_dir)
-    user_dir = std::string(system_dir) + DIR_SEP "dolphin-emu" DIR_SEP "User" DIR_SEP;
+    user_dir = std::string(system_dir) + DIR_SEP "dolphin-emu" DIR_SEP "User";
 
   if (system_dir && *system_dir)
     sys_dir = std::string(system_dir) + DIR_SEP "dolphin-emu" DIR_SEP "Sys";
@@ -59,6 +59,10 @@ bool retro_load_game(const struct retro_game_info* game)
   LogManager::GetInstance()->AddListener(LogTypes::LIBRETRO, LogListener::CONSOLE_LISTENER);
   LogManager::GetInstance()->SetLogLevel(LogTypes::LIBRETRO, LogTypes::LDEBUG);
   LogManager::GetInstance()->SetEnable(LogTypes::LIBRETRO, true);
+
+  LogManager::GetInstance()->AddListener(LogTypes::BOOT, LogListener::CONSOLE_LISTENER);
+  LogManager::GetInstance()->SetLogLevel(LogTypes::BOOT, LogTypes::LDEBUG);
+  LogManager::GetInstance()->SetEnable(LogTypes::BOOT, true);
 #if 0
    /* enable VIDEO debug logging to stdout */
   LogManager::GetInstance()->AddListener(LogTypes::VIDEO, LogListener::CONSOLE_LISTENER);
