@@ -82,7 +82,51 @@ bool retro_load_game(const struct retro_game_info* game)
 
   /* GENERAL */
 
+  /* LastFilename */
+
+  SConfig::GetInstance().m_ShowLag        = false;
+  SConfig::GetInstance().m_ShowFrameCount = false;
+
+  /* ISOPaths */
+
+  SConfig::GetInstance().m_RecursiveISOFolder = false;
+
+#if 0
+  /*
+   *
+   * NANDRootPath
+   * DumpPath
+   * WirelessMac
+   * WiiSDCardPath
+   */
+#endif
+
   /* INTERFACE */
+
+  SConfig::GetInstance().bConfirmStop     = true;
+  SConfig::GetInstance().bUsePanicHandlers= true;
+  SConfig::GetInstance().bOnScreenDisplayMessages = true;
+  SConfig::GetInstance().bHideCursor      = false;
+  SConfig::GetInstance().bAutoHideCursor  = false;
+
+#if 0
+  /*
+   *
+   * MainWindowPosX
+   * MainWindowPosY
+   * MainWindowWidth
+   * MainWindowHeight
+   * LanguageCode
+   * ShowToolbar
+   * ShowStatusBar
+   * ShowLogWindow
+   * ShowLogConfigWindow
+   * ExtendedFPSInfo
+   * ThemeName
+   * PauseOnFocusLost
+   * DisableTooltips
+   */
+#endif
 
   /* DISPLAY */
   SConfig::GetInstance().bProgressive     = options.progressive_scan.value == std::string("ON");
@@ -230,13 +274,45 @@ bool retro_load_game(const struct retro_game_info* game)
 
   /* ANALYTICS */
 
+#if 0
+  /*
+   *
+   * ID
+   * Enabled
+   * PermissionAsked
+   */
+#endif
+
   /* NETWORK */
+
+  SConfig::GetInstance().m_SSLDumpRead   = false;
+  SConfig::GetInstance().m_SSLDumpWrite  = false;
+  SConfig::GetInstance().m_SSLVerifyCert = false;
+  SConfig::GetInstance().m_SSLDumpRootCA = false;
+  SConfig::GetInstance().m_SSLDumpPeerCert = false;
+  SConfig::GetInstance().m_SSLVerifyCert = true;
 
   /* BLUETOOTHPASSTHROUGH */
 
+#if 0
+  /*
+   * Enabled
+   * VID
+   * PID
+   * LinkKeys
+   *
+   */
+#endif
+
   /* SYSCONF */
 
-  SConfig::GetInstance().m_wii_screensaver = 0;
+  SConfig::GetInstance().m_sensor_bar_position = 1;
+  SConfig::GetInstance().m_sensor_bar_sensitivity = 50331648;
+  SConfig::GetInstance().m_speaker_volume      = 88;
+  SConfig::GetInstance().m_wiimote_motor       = true;
+  SConfig::GetInstance().m_wii_language        = 1;
+  SConfig::GetInstance().m_wii_aspect_ratio    = 1;
+  SConfig::GetInstance().m_wii_screensaver     = 0;
 
   /* USB PASSTHROUGH */
 
