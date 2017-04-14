@@ -129,8 +129,22 @@ bool retro_load_game(const struct retro_game_info* game)
 #endif
 
   /* DISPLAY */
-  SConfig::GetInstance().bProgressive     = options.progressive_scan.value == std::string("ON");
-  SConfig::GetInstance().bPAL60           = options.pal60.value == std::string("ON");
+  SConfig::GetInstance().bRenderToMain       = true;
+#if 0
+  /*
+   *
+   * RenderWindowXPos
+   * RenderWindowYPos
+   * RenderWindowWidth
+   * RenderWindowHeight
+   * RenderWindowAutoSize
+   */
+#endif
+  SConfig::GetInstance().bKeepWindowOnTop    = false;
+  SConfig::GetInstance().bProgressive        = options.progressive_scan.value == std::string("ON");
+  SConfig::GetInstance().bPAL60              = options.pal60.value == std::string("ON");
+  SConfig::GetInstance().bDisableScreenSaver = false;
+  SConfig::GetInstance().bForceNTSCJ         = false;
 
   /* GAMELIST */
 
