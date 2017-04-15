@@ -5,9 +5,13 @@
 #pragma once
 
 // Directory separators, do we need this?
+#ifdef _WIN32
+#define DIR_SEP "\\"
+#define DIR_SEP_CHR '\\'
+#else
 #define DIR_SEP "/"
 #define DIR_SEP_CHR '/'
-
+#endif
 // The user data dir
 #define ROOT_DIR "."
 #ifdef _WIN32
