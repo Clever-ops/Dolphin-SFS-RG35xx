@@ -148,22 +148,6 @@ $(DEPS_DIR)/mbedtls/library/x509_csr.o \
 $(DEPS_DIR)/mbedtls/library/x509write_crt.o \
 $(DEPS_DIR)/mbedtls/library/x509write_csr.o
 
-
-miniupnpc_OBJECTS = \
-$(DEPS_DIR)/miniupnpc/src/igd_desc_parse.o \
-$(DEPS_DIR)/miniupnpc/src/miniupnpc.o \
-$(DEPS_DIR)/miniupnpc/src/minixml.o \
-$(DEPS_DIR)/miniupnpc/src/minisoap.o \
-$(DEPS_DIR)/miniupnpc/src/minissdpc.o \
-$(DEPS_DIR)/miniupnpc/src/miniwget.o \
-$(DEPS_DIR)/miniupnpc/src/upnpcommands.o \
-$(DEPS_DIR)/miniupnpc/src/upnpdev.o \
-$(DEPS_DIR)/miniupnpc/src/upnpreplyparse.o \
-$(DEPS_DIR)/miniupnpc/src/upnperrors.o \
-$(DEPS_DIR)/miniupnpc/src/connecthostport.o \
-$(DEPS_DIR)/miniupnpc/src/portlistingparse.o \
-$(DEPS_DIR)/miniupnpc/src/receivedata.o
-
 sfml__network_OBJECTS = \
 $(DEPS_DIR)/SFML/src/SFML/Network/Http.o \
 $(DEPS_DIR)/SFML/src/SFML/Network/IPAddress.o \
@@ -236,7 +220,6 @@ $(call add_external_lib,bdisasm,$(bdisasm_OBJECTS))
 $(call add_external_lib,enet,$(enet_OBJECTS))
 #$(call add_external_lib,hidapi,$(hidapi__hidraw_OBJECTS))
 $(call add_external_lib,mbed,$(mbedcrypto_OBJECTS) $(mbedtls_OBJECTS) $(mbedx509_OBJECTS))
-$(call add_external_lib,miniupnpc,$(miniupnpc_OBJECTS))
 $(call add_external_lib,sfml,$(sfml__network_OBJECTS) $(sfml__system_OBJECTS))
 $(call add_external_lib,SOIL,$(SOIL_OBJECTS))
 $(call add_external_lib,xxhash,$(xxhash_OBJECTS))
@@ -251,7 +234,6 @@ endif
 
 #$(glslang_OBJECTS)        : WARNINGS += -Wno-shadow -Wno-reorder -Wno-sign-compare -Wno-parentheses -Wno-unused-variable
 
-libminiupnpc.a: WARNINGS_gcc += -Wno-shadow
 libSOIL.a:      WARNINGS_gcc += -Wno-misleading-indentation
 libglslang.a:   WARNINGS_gcc += -Wno-shadow -Wno-reorder -Wno-sign-compare -Wno-parentheses -Wno-unused-variable -Wno-unused-but-set-variable
 libz.a:         WARNINGS_gcc += -Wno-implicit-function-declaration
