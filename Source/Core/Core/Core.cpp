@@ -890,7 +890,7 @@ bool ShouldSkipFrame(int skipped)
 // Should be called from GPU thread when a frame is drawn
 void Callback_VideoCopiedToXFB(bool video_update)
 {
-#ifdef __LIBRETRO__
+#ifndef __LIBRETRO__
   if (video_update)
     s_drawn_frame++;
 
