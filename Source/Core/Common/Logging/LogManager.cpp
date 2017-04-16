@@ -142,8 +142,7 @@ void LogManager::Log(LogTypes::LOG_LEVELS level, LogTypes::LOG_TYPE type, const 
   CharArrayFromFormatV(temp, MAX_MSGLEN, format, args);
 
 #if defined(__LIBRETRO__) && !defined(_DEBUG)
-  std::string msg = StringFromFormat("%c[%s]: %s\n", LogTypes::LOG_LEVEL_TO_CHAR[(int)level],
-                                     log->GetShortName().c_str(), temp);
+  std::string msg = StringFromFormat("[%s]: %s\n", log->GetShortName().c_str(), temp);
 #else
   const char* path_to_print = file + m_path_cutoff_point;
 
