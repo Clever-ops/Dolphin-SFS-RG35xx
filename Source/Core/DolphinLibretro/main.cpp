@@ -73,6 +73,9 @@ void retro_set_environment(retro_environment_t cb)
 {
   struct retro_log_callback log;
 
+  if(log_cb)
+    return;
+
   environ_cb = cb;
 
   if (environ_cb(RETRO_ENVIRONMENT_GET_LOG_INTERFACE, &log))
