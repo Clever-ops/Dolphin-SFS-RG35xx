@@ -28,6 +28,13 @@ void emuthread_entry(void)
   Core::EmuThread();
 }
 
+static void enable_log(LogTypes::LOG_TYPE type, LogTypes::LOG_LEVELS level)
+{
+  LogManager::GetInstance()->AddListener(type, LogListener::CONSOLE_LISTENER);
+  LogManager::GetInstance()->SetLogLevel(type, level);
+  LogManager::GetInstance()->SetEnable(type, true);
+}
+
 bool retro_load_game(const struct retro_game_info* game)
 {
   const char* save_dir = NULL;
@@ -56,19 +63,13 @@ bool retro_load_game(const struct retro_game_info* game)
   UICommon::SetUserDirectory(user_dir);
   UICommon::Init();
 
-  LogManager::GetInstance()->AddListener(LogTypes::LIBRETRO, LogListener::CONSOLE_LISTENER);
-  LogManager::GetInstance()->SetLogLevel(LogTypes::LIBRETRO, LogTypes::LDEBUG);
-  LogManager::GetInstance()->SetEnable(LogTypes::LIBRETRO, true);
+  enable_log(LogTypes::LIBRETRO, LogTypes::LDEBUG);
+  enable_log(LogTypes::BOOT, LogTypes::LDEBUG);
+  enable_log(LogTypes::VIDEO, LogTypes::LINFO);
+  enable_log(LogTypes::HOST_GPU, LogTypes::LINFO);
+  enable_log(LogTypes::COMMON, LogTypes::LWARNING);
+  enable_log(LogTypes::MEMMAP, LogTypes::LWARNING);
 
-  LogManager::GetInstance()->AddListener(LogTypes::BOOT, LogListener::CONSOLE_LISTENER);
-  LogManager::GetInstance()->SetLogLevel(LogTypes::BOOT, LogTypes::LDEBUG);
-  LogManager::GetInstance()->SetEnable(LogTypes::BOOT, true);
-#if 0
-   /* enable VIDEO debug logging to stdout */
-  LogManager::GetInstance()->AddListener(LogTypes::VIDEO, LogListener::CONSOLE_LISTENER);
-  LogManager::GetInstance()->SetLogLevel(LogTypes::VIDEO, LogTypes::LDEBUG);
-  LogManager::GetInstance()->SetEnable(LogTypes::VIDEO, true);
-#endif
   INFO_LOG(LIBRETRO, "User Directory set to '%s'", user_dir.c_str());
   INFO_LOG(LIBRETRO, "System Directory set to '%s'", sys_dir.c_str());
 
