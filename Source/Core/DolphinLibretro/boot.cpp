@@ -61,6 +61,7 @@ bool retro_load_game(const struct retro_game_info* game)
     sys_dir = "dolphin-emu" DIR_SEP "Sys";
 
   UICommon::SetUserDirectory(user_dir);
+  UICommon::CreateDirectories();
   UICommon::Init();
 
   enable_log(LogTypes::LIBRETRO, LogTypes::LDEBUG);
