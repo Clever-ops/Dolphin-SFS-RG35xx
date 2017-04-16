@@ -31,19 +31,19 @@ retro_video_refresh_t video_cb;
 
 static void context_reset(void)
 {
-  fprintf(stderr, "Context reset!\n");
+  DEBUG_LOG(LIBRETRO, "Context reset!\n");
 #ifdef HAVE_VULKAN
   if (hw_render.context_type == RETRO_HW_CONTEXT_VULKAN)
   {
     if (!environ_cb(RETRO_ENVIRONMENT_GET_HW_RENDER_INTERFACE, (void**)&vulkan) || !vulkan)
     {
-      fprintf(stderr, "Failed to get HW rendering interface!\n");
+      ERROR_LOG(LIBRETRO, "Failed to get HW rendering interface!\n");
       return;
     }
 
     if (vulkan->interface_version != RETRO_HW_RENDER_INTERFACE_VULKAN_VERSION)
     {
-      fprintf(stderr, "HW render interface mismatch, expected %u, got %u!\n",
+      ERROR_LOG(LIBRETRO, "HW render interface mismatch, expected %u, got %u!\n",
               RETRO_HW_RENDER_INTERFACE_VULKAN_VERSION, vulkan->interface_version);
       vulkan = NULL;
       return;
@@ -54,7 +54,7 @@ static void context_reset(void)
 
 static void context_destroy(void)
 {
-  fprintf(stderr, "Context destroy!\n");
+  DEBUG_LOG(LIBRETRO, "Context destroy!\n");
   if (hw_render.context_type == RETRO_HW_CONTEXT_VULKAN)
   {
     vulkan = NULL;
@@ -190,7 +190,7 @@ void cInterfaceRGL::SwapInterval(int Interval)
 void* cInterfaceRGL::GetFuncAddress(const std::string& name)
 {
   void* addr = (void*)Libretro::hw_render.get_proc_address(name.c_str());
-  //   printf("get_proc_address(\"%s\") --> 0x%08lX\n", name.c_str(), (uintptr_t)addr);
+  // DEBUG_LOG(LIBRETRO, "get_proc_address(\"%s\") --> 0x%08lX\n", name.c_str(), (uintptr_t)addr);
   return addr;
 }
 
@@ -278,7 +278,7 @@ void SWOGLWindow::Prepare()
 void SWOGLWindow::PrintText(const std::string& text, int x, int y, u32 color)
 {
   if (!text.empty())
-    printf("SWOGLWindow::PrintText : %s\n", text.c_str());
+    DEBUG_LOG(LIBRETRO, "SWOGLWindow::PrintText : %s\n", text.c_str());
 }
 
 void SWOGLWindow::ShowImage(const u8* data, int stride, int width, int height, float aspect)

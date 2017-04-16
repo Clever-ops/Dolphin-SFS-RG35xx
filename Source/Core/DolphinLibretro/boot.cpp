@@ -436,7 +436,7 @@ bool retro_load_game(const struct retro_game_info* game)
 
   if (!BootManager::BootCore(game->path))
   {
-    fprintf(stderr, "Could not boot %s\n", game->path);
+    ERROR_LOG(LIBRETRO, "Could not boot %s\n", game->path);
     return 1;
   }
   mainthread = co_active();

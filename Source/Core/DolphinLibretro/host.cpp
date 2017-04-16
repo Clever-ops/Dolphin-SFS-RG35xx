@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <memory>
 
+#include "Common/Logging/Log.h"
 #include "Core/ConfigManager.h"
 #include "Core/Host.h"
 
@@ -22,7 +23,7 @@ void Host_RefreshDSPDebuggerWindow()
 
 void Host_Message(int Id)
 {
-  printf("message id: %i\n", Id);
+  DEBUG_LOG(LIBRETRO, "message id: %i\n", Id);
 }
 
 void* Host_GetRenderHandle()
@@ -33,7 +34,7 @@ void* Host_GetRenderHandle()
 void Host_UpdateTitle(const std::string& title)
 {
 #if 0
-  printf("title : %s\n", title.c_str());
+  DEBUG_LOG(LIBRETRO, "title : %s\n", title.c_str());
 #endif
 }
 
