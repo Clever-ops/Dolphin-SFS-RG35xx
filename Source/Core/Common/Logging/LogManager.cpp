@@ -141,11 +141,16 @@ void LogManager::Log(LogTypes::LOG_LEVELS level, LogTypes::LOG_TYPE type, const 
 
   CharArrayFromFormatV(temp, MAX_MSGLEN, format, args);
 
+#if defined(__LIBRETRO__) && !defined(_DEBUG)
+  std::string msg = StringFromFormat("%c[%s]: %s\n", LogTypes::LOG_LEVEL_TO_CHAR[(int)level],
+                                     log->GetShortName().c_str(), temp);
+#else
   const char* path_to_print = file + m_path_cutoff_point;
 
   std::string msg = StringFromFormat(
       "%s %s:%u %c[%s]: %s\n", Common::Timer::GetTimeFormatted().c_str(), path_to_print, line,
       LogTypes::LOG_LEVEL_TO_CHAR[(int)level], log->GetShortName().c_str(), temp);
+#endif
 
   for (auto listener_id : *log)
     m_listeners[listener_id]->Log(level, msg.c_str());
