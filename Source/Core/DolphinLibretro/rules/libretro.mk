@@ -92,6 +92,13 @@ ifeq ($(compiler), msvc)
    endif
 endif
 
+ifneq ($(compiler), msvc)
+   ifeq ($(GC_SECTIONS),1)
+      FLAGS   += -ffunction-sections -fdata-sections
+      LDFLAGS += -Wl,--gc-sections
+   endif
+endif
+
 CFLAGS      += $(strip $(FLAGS) $(WARNINGS) $(CWARNINGS) $(DEFINES) $(CDEFINES) $(INCLUDES) $(CINCLUDES))
 CFLAGS      += $(call get_current,FLAGS CFLAGS WARNINGS CWARNINGS DEFINES CDEFINES INCLUDES CINCLUDES)
 CXXFLAGS    += $(strip $(FLAGS) $(WARNINGS) $(CXXWARNINGS) $(DEFINES) $(CXXDEFINES) $(INCLUDES) $(CXXINCLUDES))
