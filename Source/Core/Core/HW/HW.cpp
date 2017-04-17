@@ -89,8 +89,10 @@ void DoState(PointerWrap& p)
   p.DoMarker("ProcessorInterface");
   DSP::DoState(p);
   p.DoMarker("DSP");
+#ifndef __LIBRETRO__
   DVDInterface::DoState(p);
   p.DoMarker("DVDInterface");
+#endif
   GPFifo::DoState(p);
   p.DoMarker("GPFifo");
   ExpansionInterface::DoState(p);

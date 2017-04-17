@@ -49,6 +49,7 @@ void SaveAs(const std::string& filename, bool wait = false);
 void LoadAs(const std::string& filename);
 void VerifyAt(const std::string& filename);
 
+std::string DoState(PointerWrap& p);
 void SaveToBuffer(std::vector<u8>& buffer);
 void LoadFromBuffer(std::vector<u8>& buffer);
 void VerifyBuffer(std::vector<u8>& buffer);
