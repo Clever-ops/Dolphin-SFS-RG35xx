@@ -49,7 +49,7 @@ FLAGS_gcc_shared           += -fpic
 
 # version script was causing a link error : investigate / fix.
 # LDFLAGS_gcc += -Wl,--version-script=link.T
-LDFLAGS_gcc                += -Wl,--no-undefined -L.
+LDFLAGS_gcc                += -Wl,--no-undefined -L. -Wl,-Map=map.txt
 LDFLAGS_gcc_release        += -s
 LDFLAGS_gcc_shared         += -shared -lm
 
@@ -153,8 +153,13 @@ $(DEPS_DIR)%.obj: $(DEPS_DIR)%.cpp
 	$(CC) $< -c -o $@ $(CFLAGS)
 
 clean_target:
-	$(call delete, $(TARGET) $(OBJECTS) $(CXXPCH) $(CXXPCH:.pch=$(OBJ_EXT)))
+	$(call delete, $(TARGET) $(OBJECTS) $(CXXPCH) $(CXXPCH:.pch=$(OBJ_EXT)) map.txt)
 
 clean: clean_deps clean_target
 
-.PHONY: clean test deps
+map.txt: $(TARGET)
+
+list_unused: map.txt
+	$(foreach obj, $(OBJECTS) $(OBJECTS_EXTRA),$(if $(shell grep $(notdir $(obj)) map.txt),,$(info unused file: $(obj))))
+
+.PHONY: clean test deps list_unused

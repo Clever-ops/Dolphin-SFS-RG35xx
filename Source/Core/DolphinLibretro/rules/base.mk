@@ -110,6 +110,7 @@ else
       TARGET_LIBS += -l$(1)
    endif
 TARGET_DEPS += lib$(1)$(STATIC_EXT)
+OBJECTS_EXTRA += $(2)
 lib$(1)$(STATIC_EXT): $(2)
 endif
 clean_$(1):
@@ -129,6 +130,7 @@ else
       EXTERNAL_LIBS += -l$(1)
    endif
 TARGET_DEPS += lib$(1)$(STATIC_EXT)
+OBJECTS_EXTRA += $(2)
 lib$(1)$(STATIC_EXT): $(2)
 deps: lib$(1)$(STATIC_EXT)
 endif

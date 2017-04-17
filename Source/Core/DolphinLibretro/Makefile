@@ -71,7 +71,6 @@ LIBS_osx       += -liconv -framework IOKit -framework AppKit
 
 INCLUDES += -I$(CORE_DIR)
 INCLUDES += -I$(DEPS_DIR)/Bochs_disasm
-INCLUDES += -I$(DEPS_DIR)/enet/include
 INCLUDES += -I$(DEPS_DIR)/mbedtls/include
 INCLUDES += -I$(DEPS_DIR)/LZO
 INCLUDES += -I$(DEPS_DIR)/zlib
