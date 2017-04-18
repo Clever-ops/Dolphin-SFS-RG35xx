@@ -635,6 +635,7 @@ u32 GetTicksPerField()
   return GetTicksPerEvenField();
 }
 
+#ifndef __LIBRETRO__
 static void LogField(FieldType field, u32 xfb_address)
 {
   static constexpr std::array<const char*, 2> field_type_names{{"Odd", "Even"}};
@@ -655,6 +656,7 @@ static void LogField(FieldType field, u32 xfb_address)
   DEBUG_LOG(VIDEOINTERFACE, "HorizScaling: %04x | fbwidth %d | %u | %u", m_HorizontalScaling.Hex,
             m_FBWidth.Hex, GetTicksPerEvenField(), GetTicksPerOddField());
 }
+#endif
 
 static void BeginField(FieldType field, u64 ticks)
 {
@@ -715,10 +717,12 @@ static void BeginField(FieldType field, u64 ticks)
     g_video_backend->Video_BeginField(xfbAddr, fbWidth, fbStride, fbHeight, ticks);
 }
 
+#ifndef __LIBRETRO__
 static void EndField()
 {
   Core::VideoThrottle();
 }
+#endif
 
 // Purpose: Send VI interrupt when triggered
 // Run when: When a frame is scanned (progressive/interlace)
