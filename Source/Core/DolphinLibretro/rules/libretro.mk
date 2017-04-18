@@ -50,7 +50,6 @@ FLAGS_gcc_shared           += -fpic
 # version script was causing a link error : investigate / fix.
 # LDFLAGS_gcc += -Wl,--version-script=link.T
 LDFLAGS_gcc                += -Wl,--no-undefined -L. -Wl,-Map=map.txt
-LDFLAGS_gcc_release        += -s
 LDFLAGS_gcc_shared         += -shared -lm
 
 # gcc
@@ -58,8 +57,15 @@ FLAGS_clang_debug          += -O0 -g
 FLAGS_clang_release        += -O3
 FLAGS_clang_shared         += -fpic
 LDFLAGS_clang              += -L.
-#LDFLAGS_clang_release      += -s
 LDFLAGS_clang_shared       += -shared -lm
+
+ifeq ($(SANITIZER),1)
+   FLAGS_gcc   += -fsanitize=address -fno-omit-frame-pointer
+   FLAGS_clang += -fsanitize=address -fno-omit-frame-pointer
+else
+   LDFLAGS_gcc_release     += -s
+   #LDFLAGS_clang_release  += -s
+endif
 
 TARGET_static := $(TARGET_NAME)_libretro$(TARGET_SUFFIX)$(STATIC_EXT)
 TARGET_shared := $(TARGET_NAME)_libretro$(TARGET_SUFFIX)$(SHARED_EXT)

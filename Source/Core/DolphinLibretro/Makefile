@@ -18,6 +18,7 @@ DEBUG           = 0
 STATIC_LINKING  = 0
 LTO             = 0
 GC_SECTIONS     = 0
+SANITIZER       = 0
 
 PERF_TEST        = 1
 DEBUGFAST        = 0
