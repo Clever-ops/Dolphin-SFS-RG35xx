@@ -17,7 +17,7 @@
 static FifoRecorder instance;
 static std::recursive_mutex sMutex;
 
-FifoRecorder::FifoRecorder() : m_Ram(Memory::RAM_SIZE), m_ExRam(Memory::EXRAM_SIZE)
+FifoRecorder::FifoRecorder()
 {
 }
 
@@ -35,6 +35,10 @@ void FifoRecorder::StartRecording(s32 numFrames, CallbackFunc finishedCb)
   FifoAnalyzer::Init();
 
   m_File = new FifoDataFile;
+  
+  m_Ram.resize(Memory::RAM_SIZE);
+  m_ExRam.resize(Memory::EXRAM_SIZE);
+  
   std::fill(m_Ram.begin(), m_Ram.end(), 0);
   std::fill(m_ExRam.begin(), m_ExRam.end(), 0);
 
@@ -87,7 +91,11 @@ void FifoRecorder::WriteGPCommand(const u8* data, u32 size)
       m_File->AddFrame(m_CurrentFrame);
 
       if (m_FinishedCb && m_RequestedRecordingEnd)
+      {
         m_FinishedCb();
+        std::vector<u8>().swap(m_Ram);
+        std::vector<u8>().swap(m_ExRam);
+      }
     }
 
     m_CurrentFrame.memoryUpdates.clear();
