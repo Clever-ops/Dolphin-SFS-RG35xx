@@ -50,6 +50,7 @@ retro_variable options_desc[] = {{"dolphin_renderer", "Renderer; Hardware|Softwa
                                  {"dolphin_fastmem", "Fastmem; ON|OFF"},
                                  {"dolphin_pal60", "PAL60; OFF|ON"},
                                  {"dolphin_progressive_scan", "Progressive scan (HD); OFF|ON"},
+                                 {"dolphin_dsp_mode", "DSP mode; HLE|LLE recompiler|LLE interpreter"},
                                  {NULL, NULL}};
 
 Options options = *(Options*)options_desc;

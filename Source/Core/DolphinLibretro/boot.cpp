@@ -70,6 +70,10 @@ bool retro_load_game(const struct retro_game_info* game)
   enable_log(LogTypes::HOST_GPU, LogTypes::LINFO);
   enable_log(LogTypes::COMMON, LogTypes::LWARNING);
   enable_log(LogTypes::MEMMAP, LogTypes::LWARNING);
+  enable_log(LogTypes::DSPINTERFACE, LogTypes::LWARNING);
+  enable_log(LogTypes::DSPHLE, LogTypes::LWARNING);
+  enable_log(LogTypes::DSPLLE, LogTypes::LWARNING);
+  enable_log(LogTypes::DSP_MAIL, LogTypes::LWARNING);
 
   INFO_LOG(LIBRETRO, "User Directory set to '%s'", user_dir.c_str());
   INFO_LOG(LIBRETRO, "System Directory set to '%s'", sys_dir.c_str());
@@ -80,6 +84,7 @@ bool retro_load_game(const struct retro_game_info* game)
   get_variable(&options.fastmem);
   get_variable(&options.pal60);
   get_variable(&options.progressive_scan);
+  get_variable(&options.DSP_mode);
 
   /* disable throttling emulation to match GetTargetRefreshRate() */
   Core::SetIsThrottlerTempDisabled(true);
@@ -162,7 +167,7 @@ bool retro_load_game(const struct retro_game_info* game)
   SConfig::GetInstance().bFastmem         = options.fastmem.value == std::string("ON");
   /* force dual thread mode. to make the current one the gpu thread. */
   SConfig::GetInstance().bCPUThread       = true;
-  SConfig::GetInstance().bDSPHLE          = true;
+  SConfig::GetInstance().bDSPHLE          = options.DSP_mode.value == std::string("HLE");
   SConfig::GetInstance().bSyncGPUOnSkipIdleHack = true;
   SConfig::GetInstance().bSyncGPU         = true;
   SConfig::GetInstance().iSyncGpuMaxDistance = 200000;
@@ -272,7 +277,7 @@ bool retro_load_game(const struct retro_game_info* game)
 
   /* DSP */
 
-  SConfig::GetInstance().m_DSPEnableJIT   = true;
+  SConfig::GetInstance().m_DSPEnableJIT   = options.DSP_mode.value == std::string("LLE recompiler");;
   SConfig::GetInstance().m_DumpAudio      = false;
   SConfig::GetInstance().m_DumpAudioSilent= false;
   SConfig::GetInstance().m_DumpUCode      = false;
