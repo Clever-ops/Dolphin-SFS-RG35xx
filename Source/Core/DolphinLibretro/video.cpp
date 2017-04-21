@@ -73,7 +73,7 @@ static const VkApplicationInfo* get_application_info(void)
 void init_video()
 {
   get_variable(&options.renderer);
-  if (options.renderer.value == std::string("Hardware"))
+  if (options.renderer == "Hardware")
   {
 #ifdef HAVE_OPENGL_CORE
     hw_render.context_type = RETRO_HW_CONTEXT_OPENGL_CORE;
@@ -115,7 +115,7 @@ void init_video()
 #endif
   }
   hw_render.context_type = RETRO_HW_CONTEXT_NONE;
-  if (options.renderer.value == std::string("Software"))
+  if (options.renderer == "Software")
     SConfig::GetInstance().m_strVideoBackend = "Software Renderer";
   else
     SConfig::GetInstance().m_strVideoBackend = "Null";

@@ -152,8 +152,8 @@ bool retro_load_game(const struct retro_game_info* game)
    */
 #endif
   SConfig::GetInstance().bKeepWindowOnTop    = false;
-  SConfig::GetInstance().bProgressive        = options.progressive_scan.value == std::string("ON");
-  SConfig::GetInstance().bPAL60              = options.pal60.value == std::string("ON");
+  SConfig::GetInstance().bProgressive        = options.progressive_scan == "ON";
+  SConfig::GetInstance().bPAL60              = options.pal60 == "ON";
   SConfig::GetInstance().bDisableScreenSaver = false;
   SConfig::GetInstance().bForceNTSCJ         = false;
 
@@ -164,10 +164,10 @@ bool retro_load_game(const struct retro_game_info* game)
   SConfig::GetInstance().bHLE_BS2         = true;
   SConfig::GetInstance().iTimingVariance  = 40;
   SConfig::GetInstance().iCPUCore         = 1;
-  SConfig::GetInstance().bFastmem         = options.fastmem.value == std::string("ON");
+  SConfig::GetInstance().bFastmem         = options.fastmem == "ON";
   /* force dual thread mode. to make the current one the gpu thread. */
   SConfig::GetInstance().bCPUThread       = true;
-  SConfig::GetInstance().bDSPHLE          = options.DSP_mode.value == std::string("HLE");
+  SConfig::GetInstance().bDSPHLE          = options.DSP_mode == "HLE";
   SConfig::GetInstance().bSyncGPUOnSkipIdleHack = true;
   SConfig::GetInstance().bSyncGPU         = true;
   SConfig::GetInstance().iSyncGpuMaxDistance = 200000;
@@ -277,7 +277,7 @@ bool retro_load_game(const struct retro_game_info* game)
 
   /* DSP */
 
-  SConfig::GetInstance().m_DSPEnableJIT   = options.DSP_mode.value == std::string("LLE recompiler");;
+  SConfig::GetInstance().m_DSPEnableJIT   = options.DSP_mode == "LLE recompiler";
   SConfig::GetInstance().m_DumpAudio      = false;
   SConfig::GetInstance().m_DumpAudioSilent= false;
   SConfig::GetInstance().m_DumpUCode      = false;

@@ -4,6 +4,7 @@
 #include <libco.h>
 #include <libretro.h>
 #include <string>
+#include <cstring>
 
 namespace Libretro
 {
@@ -27,6 +28,11 @@ extern std::string sys_dir;
 static inline bool get_variable(void* data)
 {
   return environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, data);
+}
+
+static inline bool operator == (const retro_variable& option, const char* value)
+{
+  return !std::strcmp(option.value, value);
 }
 
 void check_variables(void);
