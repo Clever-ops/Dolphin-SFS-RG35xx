@@ -13,7 +13,6 @@
 #include "DolphinLibretro/main.h"
 #include "DolphinLibretro/video.h"
 #include "VideoBackends/Null/Render.h"
-#include "VideoBackends/Software/SWOGLWindow.h"
 #include "VideoCommon/Fifo.h"
 #include "VideoCommon/RenderBase.h"
 #include "VideoCommon/VideoConfig.h"
@@ -253,36 +252,4 @@ bool cInterfaceRGL::ClearCurrent()
 
 void cInterfaceRGL::Shutdown()
 {
-}
-
-/* override for SWOGLWindow.cpp used by the software renderer */
-
-std::unique_ptr<SWOGLWindow> SWOGLWindow::s_instance;
-
-void SWOGLWindow::Init(void* window_handle)
-{
-}
-
-void SWOGLWindow::Shutdown()
-{
-}
-
-void SWOGLWindow::Prepare()
-{
-}
-
-void SWOGLWindow::PrintText(const std::string& text, int x, int y, u32 color)
-{
-  if (!text.empty())
-    DEBUG_LOG(LIBRETRO, "SWOGLWindow::PrintText : %s\n", text.c_str());
-}
-
-void SWOGLWindow::ShowImage(const u8* data, int stride, int width, int height, float aspect)
-{
-  Libretro::video_cb(data, width, height, stride);  
-}
-
-int SWOGLWindow::PeekMessages()
-{
-  return 0;
 }

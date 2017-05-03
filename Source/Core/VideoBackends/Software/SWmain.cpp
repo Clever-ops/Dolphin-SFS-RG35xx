@@ -13,7 +13,9 @@
 #include "VideoBackends/Software/EfbCopy.h"
 #include "VideoBackends/Software/EfbInterface.h"
 #include "VideoBackends/Software/Rasterizer.h"
+#ifndef __LIBRETRO__
 #include "VideoBackends/Software/SWOGLWindow.h"
+#endif
 #include "VideoBackends/Software/SWRenderer.h"
 #include "VideoBackends/Software/SWVertexLoader.h"
 #include "VideoBackends/Software/VideoBackend.h"
@@ -143,9 +145,9 @@ bool VideoSoftware::Initialize(void* window_handle)
 {
   InitBackendInfo();
   InitializeShared();
-
+#ifndef __LIBRETRO__
   SWOGLWindow::Init(window_handle);
-
+#endif
   Clipper::Init();
   Rasterizer::Init();
   SWRenderer::Init();
@@ -156,8 +158,9 @@ bool VideoSoftware::Initialize(void* window_handle)
 
 void VideoSoftware::Shutdown()
 {
+#ifndef __LIBRETRO__
   SWOGLWindow::Shutdown();
-
+#endif
   ShutdownShared();
 }
 
@@ -190,6 +193,10 @@ void VideoSoftware::Video_Prepare()
 
 unsigned int VideoSoftware::PeekMessages()
 {
+#ifdef __LIBRETRO__
+  return 0;
+#else
   return SWOGLWindow::s_instance->PeekMessages();
+#endif
 }
 }

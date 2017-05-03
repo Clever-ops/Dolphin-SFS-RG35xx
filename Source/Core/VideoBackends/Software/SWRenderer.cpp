@@ -14,8 +14,14 @@
 
 #include "Core/HW/Memmap.h"
 
+#ifdef __LIBRETRO__
+#include "DolphinLibretro/video.h"
+#endif
+
 #include "VideoBackends/Software/EfbCopy.h"
+#ifndef __LIBRETRO__
 #include "VideoBackends/Software/SWOGLWindow.h"
+#endif
 
 #include "VideoCommon/BoundingBox.h"
 #include "VideoCommon/OnScreenDisplay.h"
@@ -52,7 +58,12 @@ void SWRenderer::Shutdown()
 
 void SWRenderer::RenderText(const std::string& pstr, int left, int top, u32 color)
 {
+#ifdef __LIBRETRO__
+  if (!pstr.empty())
+    DEBUG_LOG(LIBRETRO, "SWRenderer::RenderText : %s\n", pstr.c_str());
+#else
   SWOGLWindow::s_instance->PrintText(pstr, left, top, color);
+#endif
 }
 
 u8* SWRenderer::GetNextColorTexture()
@@ -136,7 +147,11 @@ void SWRenderer::SwapImpl(u32 xfbAddr, u32 fbWidth, u32 fbStride, u32 fbHeight,
 
   DrawDebugText();
 
+#ifdef __LIBRETRO__
+  Libretro::video_cb(GetCurrentColorTexture(), fbWidth, fbHeight, fbWidth * 4);
+#else
   SWOGLWindow::s_instance->ShowImage(GetCurrentColorTexture(), fbWidth * 4, fbWidth, fbHeight, 1.0);
+#endif
 
   UpdateActiveConfig();
 
