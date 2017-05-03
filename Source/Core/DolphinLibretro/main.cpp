@@ -146,6 +146,13 @@ void retro_run(void)
 
   poll_cb();
 
+  if(!Core::IsRunning())
+  {
+    AsyncRequests::GetInstance()->SetEnable(true);
+    AsyncRequests::GetInstance()->SetPassthrough(false);
+    Core::EmuThread();
+  }
+
   RETRO_PERFORMANCE_INIT(dolphin_main_func);
   RETRO_PERFORMANCE_START(dolphin_main_func);
 

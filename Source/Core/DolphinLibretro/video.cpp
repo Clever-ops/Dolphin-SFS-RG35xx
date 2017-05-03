@@ -50,7 +50,7 @@ static void context_reset(void)
     }
   }
 #endif
-  g_video_backend->Video_Prepare();
+//  g_video_backend->Video_Prepare();
 }
 
 static void context_destroy(void)

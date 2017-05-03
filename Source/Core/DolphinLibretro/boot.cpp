@@ -432,10 +432,6 @@ bool retro_load_game(const struct retro_game_info* game)
     return 1;
   }
 
-  AsyncRequests::GetInstance()->SetEnable(true);
-  AsyncRequests::GetInstance()->SetPassthrough(false);
-  Core::EmuThread();
-
   return true;
 }
 
