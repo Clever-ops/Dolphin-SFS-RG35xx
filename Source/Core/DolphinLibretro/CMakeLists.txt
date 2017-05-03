@@ -8,7 +8,6 @@ set(LIBRETRO_SRCS
   state.cpp
   stubs.cpp
   video.cpp
-  libco/libco.c
 )
 
 add_library(dolphin-libretro SHARED ${LIBRETRO_SRCS})

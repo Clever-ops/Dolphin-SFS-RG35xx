@@ -105,7 +105,6 @@ OBJECTS += input.o
 OBJECTS += state.o
 OBJECTS += stubs.o
 OBJECTS += video.o
-OBJECTS += libco/libco.o
 OBJECTS += ../UICommon/UICommon.o
 
 include rules/core.mk

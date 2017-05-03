@@ -3,7 +3,6 @@
 #include <string>
 #include <thread>
 
-#include <libco.h>
 #include <libretro.h>
 
 #include "Common/Event.h"
@@ -13,6 +12,8 @@
 #include "DolphinLibretro/input.h"
 #include "DolphinLibretro/main.h"
 #include "VideoBackends/OGL/FramebufferManager.h"
+#include "VideoCommon/AsyncRequests.h"
+#include "VideoCommon/Fifo.h"
 #include "VideoCommon/VideoConfig.h"
 
 #ifdef PERF_TEST
@@ -37,10 +38,6 @@ static struct retro_perf_callback perf_cb;
 
 namespace Libretro
 {
-bool core_stop_request = false;
-
-cothread_t emuthread;
-cothread_t mainthread;
 retro_environment_t environ_cb;
 retro_log_printf_t log_cb;
 
@@ -152,7 +149,7 @@ void retro_run(void)
   RETRO_PERFORMANCE_INIT(dolphin_main_func);
   RETRO_PERFORMANCE_START(dolphin_main_func);
 
-  co_switch(emuthread);
+  Fifo::RunGpuLoop();
 
   RETRO_PERFORMANCE_STOP(dolphin_main_func);
 

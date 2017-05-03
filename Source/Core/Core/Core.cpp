@@ -68,6 +68,7 @@
 
 #ifdef __LIBRETRO__
 #include "DolphinLibretro/main.h"
+#include "DolphinLibretro/video.h"
 #endif
 
 #include "InputCommon/ControllerInterface/ControllerInterface.h"
@@ -100,8 +101,6 @@ static Common::Flag s_is_booting;
 static void* s_window_handle = nullptr;
 static std::string s_state_filename;
 #ifdef __LIBRETRO__
-void JobDispatchThread();
-static std::thread s_job_dispatch_thread;
 static std::thread::id s_emu_thread_id;
 #else
 static std::thread s_emu_thread;
@@ -264,7 +263,6 @@ bool Init()
 
 #ifdef __LIBRETRO__
   s_emu_thread_id = std::this_thread::get_id();
-  s_job_dispatch_thread = std::thread(JobDispatchThread);
 #else
   // Start the emu thread
   s_emu_thread = std::thread(EmuThread);
@@ -339,10 +337,14 @@ void UndeclareAsCPUThread()
 // For the CPU Thread only.
 static void CPUSetInitialExecutionState()
 {
+#ifdef __LIBRETRO__
+  SetState(State::Running);
+#else
   QueueHostJob([] {
     SetState(SConfig::GetInstance().bBootToPause ? State::Paused : State::Running);
     Host_UpdateMainFrame();
   });
+#endif
 }
 
 // Create the CPU thread, which is a CPU + Video thread in Single Core mode.
@@ -589,12 +591,17 @@ void EmuThread()
     // This thread, after creating the EmuWindow, spawns a CPU
     // thread, and then takes over and becomes the video thread
     Common::SetCurrentThreadName("Video thread");
-
-    g_video_backend->Video_Prepare();
-
+#ifdef __LIBRETRO__
+    if(Libretro::hw_render.context_type == RETRO_HW_CONTEXT_NONE)
+#endif
+    {
+      g_video_backend->Video_Prepare();
+    }
     // Spawn the CPU thread
     s_cpu_thread = std::thread(cpuThreadFunc);
-
+#ifdef __LIBRETRO__
+    return;
+#endif
     // become the GPU thread
     Fifo::RunGpuLoop();
 
@@ -619,7 +626,13 @@ void EmuThread()
       Common::SleepCurrentThread(20);
     }
   }
-
+#ifdef __LIBRETRO__
+}
+void ShutdownEmuThread()
+{
+  const SConfig& core_parameter = SConfig::GetInstance();
+  bool init_controllers = true;
+#endif
   INFO_LOG(CONSOLE, "%s", StopMessage(true, "Stopping Emu thread ...").c_str());
 
   // Wait for s_cpu_thread to exit
@@ -672,29 +685,6 @@ void EmuThread()
 
   if (s_on_stopped_callback)
     s_on_stopped_callback();
-#ifdef __LIBRETRO__
-  if (s_job_dispatch_thread.joinable())
-    s_job_dispatch_thread.join();
-
-  co_switch(Libretro::mainthread);
-}
-
-void JobDispatchThread()
-{
-  while (!Core::IsRunning())
-  {
-    Core::HostDispatchJobs();
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-  }
-
-  while (!Libretro::core_stop_request)
-  {
-    Core::HostDispatchJobs();
-    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-  }
-  Core::Stop();
-  Core::Shutdown();
-#endif
 }
 
 // Set or get the running state

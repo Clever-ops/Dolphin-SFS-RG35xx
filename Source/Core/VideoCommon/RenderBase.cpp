@@ -46,6 +46,7 @@
 #include "VideoCommon/CPMemory.h"
 #include "VideoCommon/CommandProcessor.h"
 #include "VideoCommon/Debugger.h"
+#include "VideoCommon/Fifo.h"
 #include "VideoCommon/FPSCounter.h"
 #include "VideoCommon/FramebufferManagerBase.h"
 #include "VideoCommon/ImageWrite.h"
@@ -767,6 +768,9 @@ void Renderer::Swap(u32 xfbAddr, u32 fbWidth, u32 fbStride, u32 fbHeight, const 
   Core::Callback_VideoCopiedToXFB(m_xfb_written ||
                                   (g_ActiveConfig.bUseXFB && g_ActiveConfig.bUseRealXFB));
   m_xfb_written = false;
+#ifdef __LIBRETRO__
+  Fifo::StopGpuLoop();
+#endif
 }
 
 bool Renderer::IsFrameDumping()

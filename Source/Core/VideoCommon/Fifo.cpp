@@ -147,6 +147,11 @@ void ExitGpuLoop()
   s_gpu_mainloop.Stop(false);
 }
 
+void StopGpuLoop()
+{
+  s_gpu_mainloop.Stop(false);
+}
+
 void EmulatorState(bool running)
 {
   s_emu_running_state.Set(running);
@@ -291,8 +296,10 @@ void ResetVideoBuffer()
 // Purpose: Keep the Core HW updated about the CPU-GPU distance
 void RunGpuLoop()
 {
+#ifndef __LIBRETRO__
   AsyncRequests::GetInstance()->SetEnable(true);
   AsyncRequests::GetInstance()->SetPassthrough(false);
+#endif
 
   s_gpu_mainloop.Run(
       [] {
@@ -389,9 +396,10 @@ void RunGpuLoop()
         }
       },
       100);
-
+#ifndef __LIBRETRO__
   AsyncRequests::GetInstance()->SetEnable(false);
   AsyncRequests::GetInstance()->SetPassthrough(true);
+#endif
 }
 
 void FlushGpu()

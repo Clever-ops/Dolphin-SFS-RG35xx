@@ -48,6 +48,11 @@ bool IsGPUThread();
 
 bool WantsDeterminism();
 
+#ifdef __LIBRETRO__
+void EmuThread();
+void ShutdownEmuThread();
+#endif
+
 // [NOT THREADSAFE] For use by Host only
 void SetState(State state);
 State GetState();

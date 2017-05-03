@@ -1,5 +1,4 @@
 #include <cstdio>
-#include <libco.h>
 #include <libretro.h>
 #include <string>
 
@@ -9,6 +8,7 @@
 #include "Core/ConfigManager.h"
 #include "Core/Core.h"
 #include "UICommon/UICommon.h"
+#include "VideoCommon/AsyncRequests.h"
 #include "VideoCommon/VideoConfig.h"
 
 #include "DolphinLibretro/input.h"
@@ -16,17 +16,6 @@
 #include "DolphinLibretro/video.h"
 
 using namespace Libretro;
-
-namespace Core
-{
-void EmuThread();
-}
-
-void emuthread_entry(void);
-void emuthread_entry(void)
-{
-  Core::EmuThread();
-}
 
 static void enable_log(LogTypes::LOG_TYPE type, LogTypes::LOG_LEVELS level)
 {
@@ -437,19 +426,15 @@ bool retro_load_game(const struct retro_game_info* game)
   init_video();
   NOTICE_LOG(VIDEO, "Using GFX backend: %s", SConfig::GetInstance().m_strVideoBackend.c_str());
 
-  core_stop_request = false;
-
   if (!BootManager::BootCore(game->path))
   {
     ERROR_LOG(LIBRETRO, "Could not boot %s\n", game->path);
     return 1;
   }
-  mainthread = co_active();
 
-  /* 4MB stack is most likely overkill
-   * todo: determine actual stack usage */
-
-  emuthread = co_create(0x400000, emuthread_entry);
+  AsyncRequests::GetInstance()->SetEnable(true);
+  AsyncRequests::GetInstance()->SetPassthrough(false);
+  Core::EmuThread();
 
   return true;
 }
@@ -461,10 +446,12 @@ bool retro_load_game_special(unsigned game_type, const struct retro_game_info* i
 }
 void retro_unload_game(void)
 {
-  core_stop_request = true;
-  co_switch(emuthread);
-  co_delete(emuthread);
+  Core::Stop();
+  Core::Shutdown();
+
+  AsyncRequests::GetInstance()->SetEnable(false);
+  AsyncRequests::GetInstance()->SetPassthrough(true);
+  Core::ShutdownEmuThread();
 
   UICommon::Shutdown();
-  emuthread = NULL;
 }

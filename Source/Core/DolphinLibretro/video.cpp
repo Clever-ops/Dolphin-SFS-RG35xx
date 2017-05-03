@@ -3,7 +3,6 @@
 #include <sstream>
 #include <vector>
 
-#include <libco.h>
 #include <libretro.h>
 
 #include "Common/GL/GLInterfaceBase.h"
@@ -15,8 +14,10 @@
 #include "DolphinLibretro/video.h"
 #include "VideoBackends/Null/Render.h"
 #include "VideoBackends/Software/SWOGLWindow.h"
+#include "VideoCommon/Fifo.h"
 #include "VideoCommon/RenderBase.h"
 #include "VideoCommon/VideoConfig.h"
+#include "VideoCommon/VideoBackendBase.h"
 
 #include "retroGL.h"
 #ifdef HAVE_VULKAN
@@ -50,6 +51,7 @@ static void context_reset(void)
     }
   }
 #endif
+  g_video_backend->Video_Prepare();
 }
 
 static void context_destroy(void)
@@ -59,6 +61,8 @@ static void context_destroy(void)
   {
     vulkan = NULL;
   }
+//  g_video_backend->Video_Cleanup();
+//  g_video_backend->Shutdown();
 }
 #ifdef HAVE_VULKAN
 static const VkApplicationInfo* get_application_info(void)
@@ -161,11 +165,7 @@ TargetRectangle Renderer::ConvertEFBRectangle(const EFBRectangle& rc)
 
 void Renderer::SwapImpl(u32, u32, u32, u32, const EFBRectangle&, u64, float)
 {
-  if (Libretro::core_stop_request)
-    return;
   Libretro::video_cb(NULL, 512, 512, 512 * 4);
-  co_switch(Libretro::mainthread);
-  UpdateActiveConfig();
 }
 
 }  // namespace Null
@@ -173,11 +173,7 @@ void Renderer::SwapImpl(u32, u32, u32, u32, const EFBRectangle&, u64, float)
 /* retroGL interface*/
 void cInterfaceRGL::Swap()
 {
-  if (Libretro::core_stop_request)
-    return;
-
   Libretro::video_cb(RETRO_HW_FRAME_BUFFER_VALID, s_backbuffer_width, s_backbuffer_height, 0);
-  co_switch(Libretro::mainthread);
   s_backbuffer_width = g_renderer->GetTargetWidth();
   s_backbuffer_height = g_renderer->GetTargetHeight();
 }
@@ -283,9 +279,7 @@ void SWOGLWindow::PrintText(const std::string& text, int x, int y, u32 color)
 
 void SWOGLWindow::ShowImage(const u8* data, int stride, int width, int height, float aspect)
 {
-  Libretro::video_cb(data, width, height, stride);
-  if (Core::IsRunning() && !Libretro::core_stop_request)
-    co_switch(Libretro::mainthread);
+  Libretro::video_cb(data, width, height, stride);  
 }
 
 int SWOGLWindow::PeekMessages()

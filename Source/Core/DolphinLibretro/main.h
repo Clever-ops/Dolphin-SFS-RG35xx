@@ -1,7 +1,6 @@
 
 #pragma once
 
-#include <libco.h>
 #include <libretro.h>
 #include <string>
 #include <cstring>
@@ -18,9 +17,6 @@ struct Options
 };
 
 extern Options options;
-extern bool core_stop_request;
-extern cothread_t emuthread;
-extern cothread_t mainthread;
 extern retro_environment_t environ_cb;
 extern retro_log_printf_t log_cb;
 extern std::string sys_dir;
