@@ -17,6 +17,7 @@
 #include "VideoCommon/RenderBase.h"
 #include "VideoCommon/VideoConfig.h"
 #include "VideoCommon/VideoBackendBase.h"
+#include "VideoCommon/VertexLoaderManager.h"
 
 #include "retroGL.h"
 #ifdef HAVE_VULKAN
@@ -24,10 +25,11 @@
 #endif
 namespace Libretro
 {
-struct retro_hw_render_callback hw_render;
-const struct retro_hw_render_interface_vulkan* vulkan;
-
 retro_video_refresh_t video_cb;
+struct retro_hw_render_callback hw_render;
+#ifdef HAVE_VULKAN
+const struct retro_hw_render_interface_vulkan* vulkan;
+#endif
 
 static void context_reset(void)
 {
@@ -48,27 +50,38 @@ static void context_reset(void)
       vulkan = NULL;
       return;
     }
+
+    g_video_backend->Initialize(nullptr);
   }
 #endif
-//  g_video_backend->Video_Prepare();
+
+  g_video_backend->Video_Prepare();
+
+  if(Core::GetState() == Core::State::Paused)
+    Core::PauseAndLock(false, true);
 }
 
 static void context_destroy(void)
 {
   DEBUG_LOG(LIBRETRO, "Context destroy!\n");
+
+  Core::PauseAndLock(true);
+  g_video_backend->Video_Cleanup();
+
+#ifdef HAVE_VULKAN
   if (hw_render.context_type == RETRO_HW_CONTEXT_VULKAN)
   {
     vulkan = NULL;
+    g_video_backend->Shutdown();
   }
-//  g_video_backend->Video_Cleanup();
-//  g_video_backend->Shutdown();
+#endif
 }
 #ifdef HAVE_VULKAN
 static const VkApplicationInfo* get_application_info(void)
 {
-  static const VkApplicationInfo info = {
-      VK_STRUCTURE_TYPE_APPLICATION_INFO, NULL, "dolphin-emu-vulkan", 0, "dolphin-emu-vulkan", 0,
-      VK_MAKE_VERSION(1, 0, 18),
+  static const VkApplicationInfo info =
+  {
+    VK_STRUCTURE_TYPE_APPLICATION_INFO, NULL, "dolphin-emu-vulkan", 0, "dolphin-emu-vulkan", 0, 0
   };
   return &info;
 }
@@ -78,6 +91,7 @@ void init_video()
   get_variable(&options.renderer);
   if (options.renderer == "Hardware")
   {
+    hw_render = {};
 #ifdef HAVE_OPENGL_CORE
     hw_render.context_type = RETRO_HW_CONTEXT_OPENGL_CORE;
     hw_render.version_major = 3;
@@ -90,7 +104,7 @@ void init_video()
     hw_render.depth = true;
     hw_render.stencil = true;
     hw_render.bottom_left_origin = true;
-    hw_render.cache_context = true;
+    hw_render.cache_context = false;
     if (environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
     {
       SConfig::GetInstance().m_strVideoBackend = "OGL";
@@ -100,9 +114,6 @@ void init_video()
     hw_render.context_type = RETRO_HW_CONTEXT_VULKAN;
     hw_render.version_major = VK_MAKE_VERSION(1, 0, 18);
     hw_render.version_minor = 0;
-    hw_render.context_reset = context_reset;
-    hw_render.context_destroy = context_destroy;
-    hw_render.cache_context = true;
 
     if (environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
     {

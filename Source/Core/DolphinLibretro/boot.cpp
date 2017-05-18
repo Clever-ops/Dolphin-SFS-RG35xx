@@ -432,6 +432,11 @@ bool retro_load_game(const struct retro_game_info* game)
     return 1;
   }
 
+  Core::EmuThread();
+
+  AsyncRequests::GetInstance()->SetEnable(true);
+  AsyncRequests::GetInstance()->SetPassthrough(false);
+
   return true;
 }
 
@@ -442,6 +447,9 @@ bool retro_load_game_special(unsigned game_type, const struct retro_game_info* i
 }
 void retro_unload_game(void)
 {
+  if(Core::GetState() == Core::State::Paused)
+    Core::PauseAndLock(false, true);
+
   Core::Stop();
   Core::Shutdown();
 

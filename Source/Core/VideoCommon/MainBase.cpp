@@ -164,6 +164,10 @@ void VideoBackendBase::ShowConfig(void* parent_handle)
 
 void VideoBackendBase::InitializeShared()
 {
+#ifdef __LIBRETRO__
+  if(m_initialized)
+    return;
+#endif
   memset(&g_main_cp_state, 0, sizeof(g_main_cp_state));
   memset(&g_preprocess_cp_state, 0, sizeof(g_preprocess_cp_state));
   memset(texMem, 0, TMEM_SIZE);
@@ -213,6 +217,7 @@ void VideoBackendBase::ShutdownShared()
 void VideoBackendBase::CleanupShared()
 {
   VertexLoaderManager::Clear();
+  VertexLoaderManager::MarkAllDirty();
 }
 
 // Run from the CPU thread

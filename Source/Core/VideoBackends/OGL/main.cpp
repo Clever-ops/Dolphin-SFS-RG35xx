@@ -219,13 +219,26 @@ void VideoBackend::Video_Prepare()
 
 void VideoBackend::Shutdown()
 {
+#ifdef __LIBRETRO__
+  if(!GLInterface)
+  {
+    ShutdownShared();
+    return;
+  }
+#endif
   GLInterface->Shutdown();
   GLInterface.reset();
+#ifndef __LIBRETRO__
   ShutdownShared();
+#endif
 }
 
 void VideoBackend::Video_Cleanup()
 {
+#ifdef __LIBRETRO__
+  if (!g_renderer)
+    return;
+#endif
   // The following calls are NOT Thread Safe
   // And need to be called from the video thread
   CleanupShared();

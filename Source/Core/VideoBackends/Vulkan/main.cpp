@@ -274,6 +274,13 @@ void VideoBackend::Video_Prepare()
 
 void VideoBackend::Shutdown()
 {
+#ifdef __LIBRETRO__
+  if(!g_vulkan_context)
+  {
+    ShutdownShared();
+    return;
+  }
+#endif
   g_command_buffer_mgr->WaitForGPUIdle();
 
   g_object_cache.reset();
@@ -281,12 +288,17 @@ void VideoBackend::Shutdown()
   g_vulkan_context.reset();
 
   UnloadVulkanLibrary();
-
+#ifndef __LIBRETRO__
   ShutdownShared();
+#endif
 }
 
 void VideoBackend::Video_Cleanup()
 {
+#ifdef __LIBRETRO__
+  if (!g_renderer)
+    return;
+#endif
   g_command_buffer_mgr->WaitForGPUIdle();
 
   // Save all cached pipelines out to disk for next time.
