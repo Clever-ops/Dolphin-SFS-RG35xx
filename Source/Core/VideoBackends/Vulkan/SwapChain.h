@@ -49,6 +49,12 @@ public:
   {
     return m_swap_chain_images[m_current_swap_chain_image_index].framebuffer;
   }
+#ifdef __LIBRETRO__
+  const retro_vulkan_image* GetCurrentLibretroImage() const
+  {
+    return &m_swap_chain_images[m_current_swap_chain_image_index].libretro_image;
+  }
+#endif
 
   VkResult AcquireNextImage(VkSemaphore available_semaphore);
 
@@ -78,6 +84,9 @@ private:
     VkImage image;
     std::unique_ptr<Texture2D> texture;
     VkFramebuffer framebuffer;
+#ifdef __LIBRETRO__
+    retro_vulkan_image libretro_image;
+#endif
   };
 
   void* m_native_handle;

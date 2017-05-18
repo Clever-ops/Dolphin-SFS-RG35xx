@@ -37,6 +37,7 @@ VulkanContext::VulkanContext(VkInstance instance, VkPhysicalDevice physical_devi
 
 VulkanContext::~VulkanContext()
 {
+#ifndef __LIBRETRO__
   if (m_device != VK_NULL_HANDLE)
     vkDestroyDevice(m_device, nullptr);
 
@@ -44,6 +45,7 @@ VulkanContext::~VulkanContext()
     DisableDebugReports();
 
   vkDestroyInstance(m_instance, nullptr);
+#endif
 }
 
 bool VulkanContext::CheckValidationLayerAvailablility()
@@ -201,6 +203,10 @@ bool VulkanContext::SelectInstanceExtensions(ExtensionList* extension_list, bool
 
 VulkanContext::GPUList VulkanContext::EnumerateGPUs(VkInstance instance)
 {
+#ifdef __LIBRETRO__
+  GPUList gpus;
+  gpus.push_back(Libretro::vulkan->gpu);
+#else
   u32 gpu_count = 0;
   VkResult res = vkEnumeratePhysicalDevices(instance, &gpu_count, nullptr);
   if (res != VK_SUCCESS)
@@ -218,6 +224,7 @@ VulkanContext::GPUList VulkanContext::EnumerateGPUs(VkInstance instance)
     LOG_VULKAN_ERROR(res, "vkEnumeratePhysicalDevices failed: ");
     return {};
   }
+#endif
 
   return gpus;
 }
@@ -556,6 +563,15 @@ bool VulkanContext::CreateDevice(VkSurfaceKHR surface, bool enable_validation_la
     device_info.ppEnabledLayerNames = layer_names;
   }
 
+#ifdef __LIBRETRO__
+  m_device = Libretro::vulkan->device;
+
+  if (!LoadVulkanDeviceFunctions(m_device))
+    return false;
+
+  m_graphics_queue_family_index = Libretro::vulkan->queue_index;
+  m_graphics_queue = Libretro::vulkan->queue;
+#else
   VkResult res = vkCreateDevice(m_physical_device, &device_info, nullptr, &m_device);
   if (res != VK_SUCCESS)
   {
@@ -569,6 +585,7 @@ bool VulkanContext::CreateDevice(VkSurfaceKHR surface, bool enable_validation_la
 
   // Grab the graphics queue (only one we're using at this point).
   vkGetDeviceQueue(m_device, m_graphics_queue_family_index, 0, &m_graphics_queue);
+#endif
   return true;
 }
 

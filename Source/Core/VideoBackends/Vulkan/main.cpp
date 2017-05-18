@@ -32,7 +32,11 @@ void VideoBackend::InitBackendInfo()
 
   if (LoadVulkanLibrary())
   {
+#ifdef __LIBRETRO__
+    VkInstance temp_instance = Libretro::vulkan->instance;
+#else
     VkInstance temp_instance = VulkanContext::CreateVulkanInstance(false, false, false);
+#endif
     if (temp_instance)
     {
       if (LoadVulkanInstanceFunctions(temp_instance))
@@ -56,8 +60,9 @@ void VideoBackend::InitBackendInfo()
           VulkanContext::PopulateBackendInfoMultisampleModes(&g_Config, gpu, properties);
         }
       }
-
+#ifndef __LIBRETRO__
       vkDestroyInstance(temp_instance, nullptr);
+#endif
     }
     else
     {
@@ -91,12 +96,21 @@ static bool ShouldEnableDebugReports(bool enable_validation_layers)
 
 bool VideoBackend::Initialize(void* window_handle)
 {
+#ifdef __LIBRETRO__
+  if(!Libretro::vulkan)
+    return true;
+#endif
   if (!LoadVulkanLibrary())
   {
     PanicAlert("Failed to load Vulkan library.");
     return false;
   }
-
+#ifdef __LIBRETRO__
+  VkInstance instance = Libretro::vulkan->instance;
+  bool enable_validation_layer = false;
+  bool enable_debug_reports = false;
+  bool enable_surface = false;
+#else
   // Check for presence of the validation layers before trying to enable it
   bool enable_validation_layer = g_Config.bEnableValidationLayer;
   if (enable_validation_layer && !VulkanContext::CheckValidationLayerAvailablility())
@@ -111,6 +125,7 @@ bool VideoBackend::Initialize(void* window_handle)
   bool enable_debug_reports = ShouldEnableDebugReports(enable_validation_layer);
   VkInstance instance = VulkanContext::CreateVulkanInstance(enable_surface, enable_debug_reports,
                                                             enable_validation_layer);
+#endif
   if (instance == VK_NULL_HANDLE)
   {
     PanicAlert("Failed to create Vulkan instance.");
@@ -188,7 +203,9 @@ bool VideoBackend::Initialize(void* window_handle)
 
   // Create swap chain. This has to be done early so that the target size is correct for auto-scale.
   std::unique_ptr<SwapChain> swap_chain;
+#ifndef __LIBRETRO__
   if (surface != VK_NULL_HANDLE)
+#endif
   {
     swap_chain = SwapChain::Create(window_handle, surface, g_Config.IsVSync());
     if (!swap_chain)

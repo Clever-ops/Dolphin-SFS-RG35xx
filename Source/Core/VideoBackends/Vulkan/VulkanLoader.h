@@ -6,7 +6,9 @@
 
 #define VK_NO_PROTOTYPES
 
-#ifndef __LIBRETRO__
+#ifdef __LIBRETRO__
+#include "DolphinLibretro/video.h"
+#else
 #if defined(WIN32)
 #define VK_USE_PLATFORM_WIN32_KHR
 #elif defined(HAVE_X11)

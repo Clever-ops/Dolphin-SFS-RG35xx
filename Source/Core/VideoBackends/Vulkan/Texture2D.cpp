@@ -35,11 +35,11 @@ Texture2D::~Texture2D()
 std::unique_ptr<Texture2D> Texture2D::Create(u32 width, u32 height, u32 levels, u32 layers,
                                              VkFormat format, VkSampleCountFlagBits samples,
                                              VkImageViewType view_type, VkImageTiling tiling,
-                                             VkImageUsageFlags usage)
+                                             VkImageUsageFlags usage, VkImageCreateFlags flags)
 {
   VkImageCreateInfo image_info = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO,
                                   nullptr,
-                                  0,
+                                  flags,
                                   VK_IMAGE_TYPE_2D,
                                   format,
                                   {width, height, 1},

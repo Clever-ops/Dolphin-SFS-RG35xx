@@ -78,13 +78,13 @@ Renderer* Renderer::GetInstance()
 bool Renderer::Initialize()
 {
   BindEFBToStateTracker();
-
+#ifndef __LIBRETRO__
   if (!CreateSemaphores())
   {
     PanicAlert("Failed to create semaphores.");
     return false;
   }
-
+#endif
   if (!CompileShaders())
   {
     PanicAlert("Failed to compile shaders.");
@@ -533,6 +533,12 @@ void Renderer::SwapImpl(u32 xfb_addr, u32 fb_width, u32 fb_stride, u32 fb_height
     g_command_buffer_mgr->SubmitCommandBuffer(
         true, m_image_available_semaphore, m_rendering_finished_semaphore,
         m_swap_chain->GetSwapChain(), m_swap_chain->GetCurrentImageIndex());
+#ifdef __LIBRETRO__
+    Libretro::vulkan->set_image(Libretro::vulkan->handle, m_swap_chain->GetCurrentLibretroImage(), 0, nullptr,
+                                g_vulkan_context->GetGraphicsQueueFamilyIndex());
+    Libretro::video_cb(RETRO_HW_FRAME_BUFFER_VALID, m_swap_chain->GetWidth(),
+                       m_swap_chain->GetHeight(), 0);
+#endif
   }
   else
   {
@@ -720,11 +726,15 @@ void Renderer::DrawScreen(const EFBRectangle& source_rect, u32 xfb_addr,
 
   // End drawing to backbuffer
   vkCmdEndRenderPass(g_command_buffer_mgr->GetCurrentCommandBuffer());
-
+#ifdef __LIBRETRO__
+  backbuffer->TransitionToLayout(g_command_buffer_mgr->GetCurrentCommandBuffer(),
+                                 VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+#else
   // Transition the backbuffer to PRESENT_SRC to ensure all commands drawing
   // to it have finished before present.
   backbuffer->TransitionToLayout(g_command_buffer_mgr->GetCurrentCommandBuffer(),
                                  VK_IMAGE_LAYOUT_PRESENT_SRC_KHR);
+#endif
 }
 
 bool Renderer::DrawFrameDump(const EFBRectangle& source_rect, u32 xfb_addr,

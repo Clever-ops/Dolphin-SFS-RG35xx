@@ -15,6 +15,8 @@
 #include "VideoBackends/Vulkan/CommandBufferManager.h"
 #include "VideoBackends/Vulkan/VulkanContext.h"
 
+#include "VideoCommon/RenderBase.h"
+
 #if defined(VK_USE_PLATFORM_XLIB_KHR)
 #include <X11/Xlib.h>
 #elif defined(VK_USE_PLATFORM_XCB_KHR)
@@ -143,6 +145,11 @@ std::unique_ptr<SwapChain> SwapChain::Create(void* native_handle, VkSurfaceKHR s
 
 bool SwapChain::SelectSurfaceFormat()
 {
+#ifdef __LIBRETRO__
+  m_surface_format.format = VK_FORMAT_R8G8B8A8_UNORM;
+  m_surface_format.colorSpace = VK_COLOR_SPACE_SRGB_NONLINEAR_KHR;
+  return true;
+#else
   u32 format_count;
   VkResult res = vkGetPhysicalDeviceSurfaceFormatsKHR(g_vulkan_context->GetPhysicalDevice(),
                                                       m_surface, &format_count, nullptr);
@@ -172,6 +179,7 @@ bool SwapChain::SelectSurfaceFormat()
   m_surface_format.format = Util::GetLinearFormat(surface_formats[0].format);
   m_surface_format.colorSpace = surface_formats[0].colorSpace;
   return true;
+#endif
 }
 
 bool SwapChain::SelectPresentMode()
@@ -275,6 +283,13 @@ void SwapChain::DestroyRenderPass()
 
 bool SwapChain::CreateSwapChain()
 {
+#ifdef __LIBRETRO__
+  // Select swap chain format and present mode
+  if (!SelectSurfaceFormat())
+    return false;
+  m_width = 640;
+  m_height = 480;
+#else
   // Look up surface properties to determine image count and dimensions
   VkSurfaceCapabilitiesKHR surface_capabilities;
   VkResult res = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(g_vulkan_context->GetPhysicalDevice(),
@@ -359,6 +374,7 @@ bool SwapChain::CreateSwapChain()
 
   m_width = size.width;
   m_height = size.height;
+#endif
   return true;
 }
 
@@ -366,6 +382,17 @@ bool SwapChain::SetupSwapChainImages()
 {
   _assert_(m_swap_chain_images.empty());
 
+#ifdef __LIBRETRO__
+  VkResult res;
+  uint32_t image_count = 0;
+  u32 swapchain_mask = Libretro::vulkan->get_sync_index_mask(Libretro::vulkan->handle);
+
+  while(swapchain_mask)
+  {
+    image_count++;
+    swapchain_mask >>= 1;
+  }
+#else
   uint32_t image_count;
   VkResult res =
       vkGetSwapchainImagesKHR(g_vulkan_context->GetDevice(), m_swap_chain, &image_count, nullptr);
@@ -379,11 +406,30 @@ bool SwapChain::SetupSwapChainImages()
   res = vkGetSwapchainImagesKHR(g_vulkan_context->GetDevice(), m_swap_chain, &image_count,
                                 images.data());
   _assert_(res == VK_SUCCESS);
+#endif
 
   m_swap_chain_images.reserve(image_count);
   for (uint32_t i = 0; i < image_count; i++)
   {
     SwapChainImage image;
+#ifdef __LIBRETRO__
+    image.texture = Texture2D::Create(m_width, m_height, 1, 1, m_surface_format.format,
+                                      VK_SAMPLE_COUNT_1_BIT,VK_IMAGE_VIEW_TYPE_2D, VK_IMAGE_TILING_OPTIMAL,
+                                      VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT |
+                                      VK_IMAGE_USAGE_TRANSFER_SRC_BIT, VK_IMAGE_CREATE_MUTABLE_FORMAT_BIT);
+
+    VkImageView view = image.texture->GetView();
+
+    image.libretro_image.image_view = view;
+    image.libretro_image.image_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    image.libretro_image.create_info = {VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
+    image.libretro_image.create_info.image = image.image;
+    image.libretro_image.create_info.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    image.libretro_image.create_info.format = m_surface_format.format;
+    image.libretro_image.create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    image.libretro_image.create_info.subresourceRange.levelCount = 1;
+    image.libretro_image.create_info.subresourceRange.layerCount = 1;
+#else
     image.image = images[i];
 
     // Create texture object, which creates a view of the backbuffer
@@ -392,6 +438,7 @@ bool SwapChain::SetupSwapChainImages()
         VK_IMAGE_VIEW_TYPE_2D, image.image);
 
     VkImageView view = image.texture->GetView();
+#endif
     VkFramebufferCreateInfo framebuffer_info = {VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
                                                 nullptr,
                                                 0,
@@ -437,6 +484,13 @@ void SwapChain::DestroySwapChain()
 
 VkResult SwapChain::AcquireNextImage(VkSemaphore available_semaphore)
 {
+#ifdef __LIBRETRO__
+  Libretro::vulkan->wait_sync_index(Libretro::vulkan->handle);
+  m_current_swap_chain_image_index = Libretro::vulkan->get_sync_index(Libretro::vulkan->handle);
+  m_width = g_renderer->GetTargetWidth();
+  m_height = g_renderer->GetTargetHeight();
+  return VK_SUCCESS;
+#else
   VkResult res =
       vkAcquireNextImageKHR(g_vulkan_context->GetDevice(), m_swap_chain, UINT64_MAX,
                             available_semaphore, VK_NULL_HANDLE, &m_current_swap_chain_image_index);
@@ -444,6 +498,7 @@ VkResult SwapChain::AcquireNextImage(VkSemaphore available_semaphore)
     LOG_VULKAN_ERROR(res, "vkAcquireNextImageKHR failed: ");
 
   return res;
+#endif
 }
 
 bool SwapChain::ResizeSwapChain()
@@ -491,7 +546,9 @@ bool SwapChain::RecreateSurface(void* native_handle)
 
 void SwapChain::DestroySurface()
 {
+#ifndef __LIBRETRO__
   vkDestroySurfaceKHR(g_vulkan_context->GetVulkanInstance(), m_surface, nullptr);
   m_surface = VK_NULL_HANDLE;
+#endif
 }
 }
