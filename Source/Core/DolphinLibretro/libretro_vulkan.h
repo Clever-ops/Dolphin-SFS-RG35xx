@@ -252,7 +252,7 @@ struct retro_hw_render_interface_vulkan
    * frame RETRO_HW_FRAME_BUFFER_VALID was last used.
    *
    * Essentially, the lifetime of the pointer passed to
-   * retro_video_refresh_t should be extended if frame duping is used
+   * set_image should be extended if frame duping is used
    * so that the frontend can reuse the older pointer.
    *
    * The image itself however, must not be touched by the core until
