@@ -217,6 +217,7 @@ void VideoBackendBase::ShutdownShared()
 void VideoBackendBase::CleanupShared()
 {
   VertexLoaderManager::Clear();
+  m_invalid = true;
   VertexLoaderManager::MarkAllDirty();
 }
 
