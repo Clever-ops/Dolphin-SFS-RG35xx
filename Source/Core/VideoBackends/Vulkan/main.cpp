@@ -96,10 +96,6 @@ static bool ShouldEnableDebugReports(bool enable_validation_layers)
 
 bool VideoBackend::Initialize(void* window_handle)
 {
-#ifdef __LIBRETRO__
-  if(!Libretro::vulkan)
-    return true;
-#endif
   if (!LoadVulkanLibrary())
   {
     PanicAlert("Failed to load Vulkan library.");

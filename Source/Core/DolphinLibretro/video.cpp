@@ -36,13 +36,6 @@ static void context_reset(void)
 {
   DEBUG_LOG(LIBRETRO, "Context reset!\n");
 
-  if(!Core::IsRunning())
-  {
-    Core::EmuThread();
-    AsyncRequests::GetInstance()->SetEnable(true);
-    AsyncRequests::GetInstance()->SetPassthrough(false);
-  }
-
 #ifdef HAVE_VULKAN
   if (hw_render.context_type == RETRO_HW_CONTEXT_VULKAN)
   {
@@ -60,21 +53,20 @@ static void context_reset(void)
       return;
     }
 
-    g_video_backend->Initialize(nullptr);
+    if(Core::GetState() != Core::State::Uninitialized)
+      g_video_backend->Initialize(nullptr);
   }
 #endif
 
-  g_video_backend->Video_Prepare();
-
-  if(Core::GetState() == Core::State::Paused)
-    Core::PauseAndLock(false, true);
+  if(Core::GetState() != Core::State::Uninitialized)
+    g_video_backend->Video_Prepare();
 }
 
 static void context_destroy(void)
 {
   DEBUG_LOG(LIBRETRO, "Context destroy!\n");
 
-  Core::PauseAndLock(true);
+  Core::SetState(Core::State::Paused);
   g_video_backend->Video_Cleanup();
 
 #ifdef HAVE_VULKAN

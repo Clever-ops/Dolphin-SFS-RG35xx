@@ -443,7 +443,7 @@ bool retro_load_game_special(unsigned game_type, const struct retro_game_info* i
 void retro_unload_game(void)
 {
   if(Core::GetState() == Core::State::Paused)
-    Core::PauseAndLock(false, true);
+    Core::SetState(Core::State::Running);
 
   Core::Stop();
   Core::Shutdown();

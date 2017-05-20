@@ -592,10 +592,7 @@ void EmuThread()
     // thread, and then takes over and becomes the video thread
     Common::SetCurrentThreadName("Video thread");
 
-#ifdef __LIBRETRO__
-    if(Libretro::hw_render.context_type == RETRO_HW_CONTEXT_NONE)
-#endif
-      g_video_backend->Video_Prepare();
+    g_video_backend->Video_Prepare();
 
     // Spawn the CPU thread
     s_cpu_thread = std::thread(cpuThreadFunc);

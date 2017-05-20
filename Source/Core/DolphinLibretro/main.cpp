@@ -146,11 +146,18 @@ void retro_run(void)
 
   poll_cb();
 
-  if(!Core::IsRunning())
+  switch (Core::GetState())
   {
+  case Core::State::Uninitialized:
+    Core::EmuThread();
     AsyncRequests::GetInstance()->SetEnable(true);
     AsyncRequests::GetInstance()->SetPassthrough(false);
-    Core::EmuThread();
+    break;
+  case Core::State::Paused:
+    Core::SetState(Core::State::Running);
+    break;
+  default:
+    break;
   }
 
   RETRO_PERFORMANCE_INIT(dolphin_main_func);
@@ -159,6 +166,8 @@ void retro_run(void)
   Fifo::RunGpuLoop();
 
   RETRO_PERFORMANCE_STOP(dolphin_main_func);
+
+//  Core::SetState(Core::State::Paused);
 
   frames++;
 }
