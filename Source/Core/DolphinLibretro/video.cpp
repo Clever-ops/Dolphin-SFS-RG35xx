@@ -13,6 +13,7 @@
 #include "DolphinLibretro/main.h"
 #include "DolphinLibretro/video.h"
 #include "VideoBackends/Null/Render.h"
+#include "VideoCommon/AsyncRequests.h"
 #include "VideoCommon/Fifo.h"
 #include "VideoCommon/RenderBase.h"
 #include "VideoCommon/VideoConfig.h"
@@ -34,6 +35,14 @@ const struct retro_hw_render_interface_vulkan* vulkan;
 static void context_reset(void)
 {
   DEBUG_LOG(LIBRETRO, "Context reset!\n");
+
+  if(!Core::IsRunning())
+  {
+    Core::EmuThread();
+    AsyncRequests::GetInstance()->SetEnable(true);
+    AsyncRequests::GetInstance()->SetPassthrough(false);
+  }
+
 #ifdef HAVE_VULKAN
   if (hw_render.context_type == RETRO_HW_CONTEXT_VULKAN)
   {

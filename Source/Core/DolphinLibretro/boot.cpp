@@ -429,13 +429,8 @@ bool retro_load_game(const struct retro_game_info* game)
   if (!BootManager::BootCore(game->path))
   {
     ERROR_LOG(LIBRETRO, "Could not boot %s\n", game->path);
-    return 1;
+    return false;
   }
-
-  Core::EmuThread();
-
-  AsyncRequests::GetInstance()->SetEnable(true);
-  AsyncRequests::GetInstance()->SetPassthrough(false);
 
   return true;
 }
