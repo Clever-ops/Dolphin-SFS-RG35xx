@@ -109,7 +109,7 @@ void retro_get_system_info(struct retro_system_info* info)
   info->need_fullpath = true;
   info->valid_extensions = "elf|dol|gcm|iso|tgc|wbfs|ciso|gcz|wad";
   info->library_version = "v0.01";
-  info->library_name = "dolphin-emu";
+  info->library_name = "Dolphin";
   info->block_extract = true;
 }
 
