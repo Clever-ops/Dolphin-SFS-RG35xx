@@ -48,7 +48,7 @@ retro_variable options_desc[] = {{"dolphin_renderer", "Renderer; Hardware|Softwa
                                  {"dolphin_pal60", "PAL60; OFF|ON"},
                                  {"dolphin_progressive_scan", "Progressive scan (HD); OFF|ON"},
                                  {"dolphin_dsp_mode", "DSP mode; HLE|LLE recompiler|LLE interpreter"},
-                                 {"dolphin_internal_resolution", "Internal resolution (restart); Custom|1x (640x528)|1.5x (960x792)|2x (1280x1056)|2.5x (1600x1320)|3x (1920x1584)|4x (2560x2112)|5x (3200x2640)|6x (3840x3168)|7x (4480x3696)|8x (5120x4224)"},
+                                 {"dolphin_internal_resolution", "Internal resolution (restart); 1x (640x528)|1.5x (960x792)|2x (1280x1056)|2.5x (1600x1320)|3x (1920x1584)|4x (2560x2112)|5x (3200x2640)|6x (3840x3168)|7x (4480x3696)|8x (5120x4224)|Custom"},
                                  {NULL, NULL}};
 
 Options options = *(Options*)options_desc;
@@ -65,7 +65,6 @@ struct resolution_list
 
 struct resolution_list resolutions[] = 
 {
-   {"Custom",           0},
    {"1x (640x528)",     2},
    {"1.5x (960x792)",   3},
    {"2x (1280x1056)",   4},
@@ -75,7 +74,8 @@ struct resolution_list resolutions[] =
    {"5x (3200x2640)",   8},
    {"6x (3840x3168)",   9},
    {"7x (4480x3696)",   10},
-   {"8x (5120x4224",    11}
+   {"8x (5120x4224",    11},
+   {"Custom",           0},
 };
 
 bool should_override_efb_scale(void)
