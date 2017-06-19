@@ -26,6 +26,9 @@ static inline bool get_variable(void* data)
   return environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, data);
 }
 
+unsigned get_fbo_width(void);
+unsigned get_fbo_height(void);
+
 static inline bool operator == (const retro_variable& option, const char* value)
 {
   return !std::strcmp(option.value, value);

@@ -24,6 +24,10 @@
 #include <X11/Xlib.h>
 #endif
 
+#ifdef __LIBRETRO__
+#include "../../DolphinLibretro/main.h"
+#endif
+
 namespace Vulkan
 {
 SwapChain::SwapChain(void* native_handle, VkSurfaceKHR surface, bool vsync)
@@ -287,8 +291,8 @@ bool SwapChain::CreateSwapChain()
   // Select swap chain format and present mode
   if (!SelectSurfaceFormat())
     return false;
-  m_width = 640;
-  m_height = 480;
+  m_width  = Libretro::get_fbo_width();
+  m_height = Libretro::get_fbo_height();
 #else
   // Look up surface properties to determine image count and dimensions
   VkSurfaceCapabilitiesKHR surface_capabilities;

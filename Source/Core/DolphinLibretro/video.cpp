@@ -35,6 +35,16 @@ const struct retro_hw_render_interface_vulkan* vulkan;
 unsigned FBO_WIDTH =  640;
 unsigned FBO_HEIGHT = 480;
 
+unsigned get_fbo_width(void)
+{
+   return FBO_WIDTH;
+}
+
+unsigned get_fbo_height(void)
+{
+   return FBO_HEIGHT;
+}
+
 static void context_reset(void)
 {
   DEBUG_LOG(LIBRETRO, "Context reset!\n");
