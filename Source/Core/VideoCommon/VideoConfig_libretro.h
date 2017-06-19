@@ -1024,7 +1024,7 @@ struct ini_map maps[] =
    }
 };
 
-static bool LoadGameIniLibretro(IniFile *iniFile, const char *id, u16 revision)
+static bool VideoConfigLoadGameIniLibretro(IniFile *iniFile, const char *id, u16 revision)
 {
    for (unsigned i = 0; i < (sizeof(maps) / sizeof(maps[0])); i++)
    {

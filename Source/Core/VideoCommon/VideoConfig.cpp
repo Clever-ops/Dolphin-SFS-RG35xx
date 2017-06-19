@@ -166,7 +166,7 @@ void VideoConfig::GameIniLoad()
   IniFile iniFile;
 
 #ifdef __LIBRETRO__
-  if (!LoadGameIniLibretro(&iniFile, SConfig::GetInstance().GetGameID().c_str(), SConfig::GetInstance().GetRevision()))
+  if (!VideoConfigLoadGameIniLibretro(&iniFile, SConfig::GetInstance().GetGameID().c_str(), SConfig::GetInstance().GetRevision()))
 #endif
      iniFile = SConfig::GetInstance().LoadGameIni();
 
