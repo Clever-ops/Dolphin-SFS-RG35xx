@@ -141,6 +141,10 @@ void VideoConfig::Load(const std::string& ini_file)
   VerifyValidity();
 }
 
+#ifdef __LIBRETRO__
+#include "VideoConfig_libretro.h"
+#endif
+
 void VideoConfig::GameIniLoad()
 {
   bool gfx_override_exists = false;
@@ -159,7 +163,12 @@ void VideoConfig::GameIniLoad()
     }                                                                                              \
   } while (0)
 
-  IniFile iniFile = SConfig::GetInstance().LoadGameIni();
+  IniFile iniFile;
+
+#ifdef __LIBRETRO__
+  if (!LoadGameIniLibretro(&iniFile, SConfig::GetInstance().GetGameID().c_str(), SConfig::GetInstance().GetRevision()))
+#endif
+     iniFile = SConfig::GetInstance().LoadGameIni();
 
   CHECK_SETTING("Video_Hardware", "VSync", bVSync);
 
