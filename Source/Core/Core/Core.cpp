@@ -500,7 +500,9 @@ void EmuThread()
     return;
   }
 
+#if 0
   OSD::AddMessage("Dolphin " + g_video_backend->GetName() + " Video Backend.", 5000);
+#endif
 
   if (cpu_info.HTT)
     SConfig::GetInstance().bDSPThread = cpu_info.num_cores > 4;
