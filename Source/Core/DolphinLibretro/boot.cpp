@@ -68,12 +68,13 @@ bool retro_load_game(const struct retro_game_info* game)
   INFO_LOG(LIBRETRO, "System Directory set to '%s'", sys_dir.c_str());
 
   init_descriptors();
-  check_variables();
 
   get_variable(&options.fastmem);
   get_variable(&options.pal60);
   get_variable(&options.progressive_scan);
   get_variable(&options.DSP_mode);
+
+  check_variables(true);
 
   /* disable throttling emulation to match GetTargetRefreshRate() */
   Core::SetIsThrottlerTempDisabled(true);

@@ -53,9 +53,10 @@ retro_variable options_desc[] = {{"dolphin_renderer", "Renderer; Hardware|Softwa
 Options options = *(Options*)options_desc;
 std::string sys_dir;
 
-void check_variables(void)
+void check_variables(bool first_init)
 {
 }
+
 }  // namespace Libretro
 
 using namespace Libretro;
@@ -142,7 +143,7 @@ void retro_run(void)
   static int frames = 0;
 
   if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE_UPDATE, &updated) && updated)
-    check_variables();
+    check_variables(false);
 
   poll_cb();
 

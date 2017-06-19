@@ -31,5 +31,5 @@ static inline bool operator == (const retro_variable& option, const char* value)
   return !std::strcmp(option.value, value);
 }
 
-void check_variables(void);
+void check_variables(bool first_init);
 }
