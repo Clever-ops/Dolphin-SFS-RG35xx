@@ -32,6 +32,9 @@ struct retro_hw_render_callback hw_render;
 const struct retro_hw_render_interface_vulkan* vulkan;
 #endif
 
+unsigned FBO_WIDTH =  640;
+unsigned FBO_HEIGHT = 480;
+
 static void context_reset(void)
 {
   DEBUG_LOG(LIBRETRO, "Context reset!\n");
@@ -87,7 +90,7 @@ static const VkApplicationInfo* get_application_info(void)
   return &info;
 }
 #endif
-void init_video()
+void init_video(void)
 {
   get_variable(&options.renderer);
   if (options.renderer == "Hardware")
@@ -106,7 +109,7 @@ void init_video()
     if (environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
     {
       SConfig::GetInstance().m_strVideoBackend = "OGL";
-      return;
+      goto set_scaling;
     }
 #ifdef HAVE_VULKAN
     hw_render.context_type = RETRO_HW_CONTEXT_VULKAN;
@@ -122,7 +125,7 @@ void init_video()
       environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE, (void*)&iface);
 
       SConfig::GetInstance().m_strVideoBackend = "Vulkan";
-      return;
+      goto set_scaling;
     }
 #endif
   }
@@ -131,6 +134,58 @@ void init_video()
     SConfig::GetInstance().m_strVideoBackend = "Software Renderer";
   else
     SConfig::GetInstance().m_strVideoBackend = "Null";
+
+set_scaling:
+  printf("EFBScale is: %d\n", g_ActiveConfig.iEFBScale);
+
+  switch (g_ActiveConfig.iEFBScale)
+  {
+     case 0: /* Auto (Window size) */
+        break;
+     case 1: /* Auto (Multiple of 640x528) */
+        break;
+     case 2: /* Native (640x528) */
+        FBO_WIDTH  = 640;
+        FBO_HEIGHT = 528;
+        break;
+     case 3: /* 1.5x Native (960x792) */
+        FBO_WIDTH  = 960;
+        FBO_HEIGHT = 792;
+        break;
+     case 4: /* 2x Native (1280x1056) for 720p) */
+        FBO_WIDTH  = 1280;
+        FBO_HEIGHT = 1056;
+        break;
+     case 5: /* 2.5x Native (1600x1320) */
+        FBO_WIDTH  = 1600;
+        FBO_HEIGHT = 1320;
+        break;
+     case 6: /* 3x Native (1920x1584) for 1080p */
+        FBO_WIDTH  = 1920;
+        FBO_HEIGHT = 1584;
+        break;
+     case 7: /* 4x Native (2560x2112) for 1440p */
+        FBO_WIDTH  = 2560;
+        FBO_HEIGHT = 2112;
+        break;
+     case 8: /* 5x Native (3200x2640) */
+        FBO_WIDTH  = 3200;
+        FBO_HEIGHT = 2640;
+        break;
+     case 9: /* 6x Native (3840x3168) for 4K */
+        FBO_WIDTH  = 3840;
+        FBO_HEIGHT = 3168;
+        break;
+     case 10: /* 7x Native (4480x3696) */
+        FBO_WIDTH  = 4480;
+        FBO_HEIGHT = 3696;
+        break;
+     case 11: /* 8x Native (5120x4224) for 5K */
+        FBO_WIDTH  = 5120;
+        FBO_HEIGHT = 4224;
+        break;
+
+  }
 }
 }  // namespace Libretro
 
@@ -173,7 +228,7 @@ TargetRectangle Renderer::ConvertEFBRectangle(const EFBRectangle& rc)
 
 void Renderer::SwapImpl(u32, u32, u32, u32, const EFBRectangle&, u64, float)
 {
-  Libretro::video_cb(NULL, 512, 512, 512 * 4);
+  Libretro::video_cb(NULL, Libretro::FBO_WIDTH, Libretro::FBO_HEIGHT, Libretro::FBO_WIDTH * 4);
 }
 
 }  // namespace Null
@@ -207,8 +262,8 @@ bool cInterfaceRGL::Create(void* window_handle, bool core)
 #else
   m_core = false;
 #endif
-  s_backbuffer_width = 512;
-  s_backbuffer_height = 512;
+  s_backbuffer_width = Libretro::FBO_WIDTH;
+  s_backbuffer_height = Libretro::FBO_HEIGHT;
 
   return true;
 }
@@ -234,8 +289,8 @@ bool cInterfaceRGL::Create(cInterfaceBase* main_context)
   m_core = false;
 #endif
   m_is_shared = true;
-  s_backbuffer_width = 512;
-  s_backbuffer_height = 512;
+  s_backbuffer_width = Libretro::FBO_WIDTH;
+  s_backbuffer_height = Libretro::FBO_HEIGHT;
   s_opengl_mode = GLInterfaceMode::MODE_OPENGL;
   return true;
 }
