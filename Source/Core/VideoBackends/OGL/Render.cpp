@@ -666,9 +666,11 @@ Renderer::Renderer()
   g_Config.VerifyValidity();
   UpdateActiveConfig();
 
+#if 0
   OSD::AddMessage(StringFromFormat("Video Info: %s, %s, %s", g_ogl_config.gl_vendor,
                                    g_ogl_config.gl_renderer, g_ogl_config.gl_version),
                   5000);
+#endif
 
   WARN_LOG(VIDEO, "Missing OGL Extensions: %s%s%s%s%s%s%s%s%s%s%s%s%s%s",
            g_ActiveConfig.backend_info.bSupportsDualSourceBlend ? "" : "DualSourceBlend ",
