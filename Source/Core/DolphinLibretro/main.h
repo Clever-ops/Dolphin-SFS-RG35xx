@@ -31,5 +31,8 @@ static inline bool operator == (const retro_variable& option, const char* value)
   return !std::strcmp(option.value, value);
 }
 
+bool should_override_efb_scale(void);
+int efb_override_scale(void);
 void check_variables(bool first_init);
+void rescale_video(void);
 }

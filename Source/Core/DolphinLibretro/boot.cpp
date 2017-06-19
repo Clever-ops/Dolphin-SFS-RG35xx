@@ -375,7 +375,10 @@ bool retro_load_game(const struct retro_game_info* game)
   SSAA
 #endif
 
-  g_ActiveConfig.iEFBScale            = 2;
+  if (Libretro::should_override_efb_scale())
+     g_ActiveConfig.iEFBScale         = efb_override_scale();
+  else
+     g_ActiveConfig.iEFBScale            = 2;
   g_ActiveConfig.bTexFmtOverlayEnable = false;
   g_ActiveConfig.bTexFmtOverlayCenter = false;
   g_ActiveConfig.bWireFrame           = false;

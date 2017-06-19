@@ -48,13 +48,69 @@ retro_variable options_desc[] = {{"dolphin_renderer", "Renderer; Hardware|Softwa
                                  {"dolphin_pal60", "PAL60; OFF|ON"},
                                  {"dolphin_progressive_scan", "Progressive scan (HD); OFF|ON"},
                                  {"dolphin_dsp_mode", "DSP mode; HLE|LLE recompiler|LLE interpreter"},
+                                 {"dolphin_internal_resolution", "Internal resolution (restart); Custom|1x (640x528)|1.5x (960x792)|2x (1280x1056)|2.5x (1600x1320)|3x (1920x1584)|4x (2560x2112)|5x (3200x2640)|6x (3840x3168)|7x (4480x3696)|8x (5120x4224)"},
                                  {NULL, NULL}};
 
 Options options = *(Options*)options_desc;
 std::string sys_dir;
 
+bool override_efb_scale;
+static int efb_override;
+
+struct resolution_list
+{
+   const char *name;
+   int idx;
+};
+
+struct resolution_list resolutions[] = 
+{
+   {"Custom",           0},
+   {"1x (640x528)",     2},
+   {"1.5x (960x792)",   3},
+   {"2x (1280x1056)",   4},
+   {"2.5x (1600x1320)", 5},
+   {"3x (1920x1584)",   6},
+   {"4x (2560x2112)",   7},
+   {"5x (3200x2640)",   8},
+   {"6x (3840x3168)",   9},
+   {"7x (4480x3696)",   10},
+   {"8x (5120x4224",    11}
+};
+
+bool should_override_efb_scale(void)
+{
+   if (override_efb_scale)
+      return true;
+   return false;
+}
+
+int efb_override_scale(void)
+{
+   return efb_override;
+}
+
 void check_variables(bool first_init)
 {
+   if (first_init)
+   {
+      struct retro_variable var;
+
+      var.key = "dolphin_internal_resolution";
+
+      if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
+      {
+         unsigned i;
+         for (i = 0; i < (sizeof(resolutions) / sizeof(resolutions[0])); i++)
+         {
+            if (!strcmp(var.value, resolutions[i].name))
+            {
+               efb_override       = resolutions[i].idx;
+               override_efb_scale = true;
+            }
+         }
+      }
+   }
 }
 
 }  // namespace Libretro
