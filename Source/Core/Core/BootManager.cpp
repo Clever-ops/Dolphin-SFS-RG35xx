@@ -218,6 +218,10 @@ static GPUDeterminismMode ParseGPUDeterminismMode(const std::string& mode)
   return GPU_DETERMINISM_AUTO;
 }
 
+#ifdef __LIBRETRO__
+#include "BootManager_libretro.h"
+#endif
+
 // Boot the ISO or file
 bool BootCore(const std::string& _rFilename)
 {
@@ -241,7 +245,12 @@ bool BootCore(const std::string& _rFilename)
 
   // Load game specific settings
   {
-    IniFile game_ini = StartUp.LoadGameIni();
+    IniFile game_ini;
+    
+#ifdef __LIBRETRO__
+    if (!BootManagerConfigLoadGameIniLibretro(&game_ini, SConfig::GetInstance().GetGameID().c_str(), SConfig::GetInstance().GetRevision()))
+#endif
+       game_ini = StartUp.LoadGameIni();
 
     // General settings
     IniFile::Section* core_section = game_ini.GetOrCreateSection("Core");

@@ -52,13 +52,6 @@ struct ini_map
       bool enabled;
    } force_filtering;
 
-   /* Wii */
-   struct
-   {
-      bool value;
-      bool enabled;
-   } wii_widescreen;
-   
    /* Video_Stereoscopy */
 
    struct
@@ -111,7 +104,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -129,7 +121,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -147,7 +138,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -165,7 +155,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -183,7 +172,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -201,7 +189,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -219,7 +206,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -237,7 +223,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -255,7 +240,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -273,7 +257,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -291,7 +274,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -309,7 +291,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -327,7 +308,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -345,7 +325,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -363,7 +342,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -381,7 +359,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -399,7 +376,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -417,7 +393,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -435,7 +410,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -453,7 +427,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -471,7 +444,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -489,7 +461,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -506,7 +477,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -524,7 +494,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -542,7 +511,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -560,7 +528,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -578,7 +545,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -596,7 +562,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     true},                            /* max_anisotropy */
       {false, true},                            /* force_filtering */
-      {false, true},                            /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -614,7 +579,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -632,7 +596,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -650,7 +613,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -668,7 +630,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -686,7 +647,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -704,7 +664,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -722,7 +681,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -740,7 +698,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -758,7 +715,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -776,7 +732,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -794,7 +749,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -812,7 +766,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -830,7 +783,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -848,25 +800,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
-      {false, false},                           /* stereo_convergence */
-      {false, false},                           /* stereo_efb_mono_depth */
-      {0,     false},                           /* stereo_depth_percentage */
-      {false, false},                           /* stereo_mode */
-      {false, false},                           /* stereo_depth */
-      {false, false},                           /* stereo_swap_eyes */
-   },
-   {  "G3AP69",                                 /* ID */
-      "The Lord of The Rings - The Third Age",  /* Name */
-      {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
-      {false, false},                           /* use_xfb */
-      {false, false},                           /* use_real_xfb */
-      {0,     true},                            /* safe_texture_cache_color_samples */
-      {false, false},                           /* efb_to_texture_enable */
-      {0,     false},                           /* max_anisotropy */
-      {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -884,7 +817,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -902,7 +834,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -920,7 +851,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -938,7 +868,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {7,     true},                            /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -956,7 +885,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {0,     false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -977,7 +905,6 @@ struct ini_map maps[] =
       {false, true},                            /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -995,7 +922,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -1014,7 +940,6 @@ struct ini_map maps[] =
       {false, false},                           /* efb_to_texture_enable */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
-      {false, false},                           /* wii_widescreen */
       {false, false},                           /* stereo_convergence */
       {false, false},                           /* stereo_efb_mono_depth */
       {0,     false},                           /* stereo_depth_percentage */
@@ -1065,9 +990,6 @@ static bool VideoConfigLoadGameIniLibretro(IniFile *iniFile, const char *id, u16
             settings->Set("ForceFiltering", maps[i].force_filtering.value);
 
          settings = iniFile->GetOrCreateSection("Wii");
-
-         if (maps[i].wii_widescreen.enabled)
-            settings->Set("Widescreen", maps[i].wii_widescreen.value);
 
          settings = iniFile->GetOrCreateSection("Video_Stereoscopy");
 
