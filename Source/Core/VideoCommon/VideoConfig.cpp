@@ -247,10 +247,12 @@ void VideoConfig::GameIniLoad()
   CHECK_SETTING("Video", "PH_ZFar", sPhackvalue[1]);
   CHECK_SETTING("Video", "PerfQueriesEnable", bPerfQueriesEnable);
 
+#if 0
   if (gfx_override_exists)
     OSD::AddMessage(
         "Warning: Opening the graphics configuration will reset settings and might cause issues!",
         10000);
+#endif
 }
 
 void VideoConfig::VerifyValidity()
