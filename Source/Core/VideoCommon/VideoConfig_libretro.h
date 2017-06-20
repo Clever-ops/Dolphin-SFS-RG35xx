@@ -71,6 +71,7 @@ struct ini_map
       unsigned value;
       bool enabled;
    } safe_texture_cache_color_samples;
+
    struct
    {
       bool value;
@@ -1539,10 +1540,27 @@ struct ini_map maps[] =
       {"",    false},                           /* ph_znear */
       {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {512,   true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
       {false, false},                           /* efb_access_enable */
       {false, false},                           /* bbox_enable */
       {false, false},                           /* force_progressive */
@@ -1567,10 +1585,27 @@ struct ini_map maps[] =
       {"",    false},                           /* ph_znear */
       {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {512,   true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
       {false, false},                           /* efb_access_enable */
       {false, false},                           /* bbox_enable */
       {false, false},                           /* force_progressive */
