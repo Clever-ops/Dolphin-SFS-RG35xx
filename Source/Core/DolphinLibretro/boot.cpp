@@ -285,7 +285,7 @@ bool retro_load_game(const struct retro_game_info* game)
 
   /* FIFOPLAYER */
 
-  SConfig::GetInstance().bLoopFifoReplay   = true;
+  SConfig::GetInstance().bLoopFifoReplay   = false;
 
   /* ANALYTICS */
 
