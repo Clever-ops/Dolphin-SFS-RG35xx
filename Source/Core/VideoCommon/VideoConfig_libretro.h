@@ -6,6 +6,31 @@ struct ini_map
    /* Video */
    struct
    {
+      int value;
+      bool enabled;
+   } projection_hack;
+   struct
+   {
+      const char *value;
+      bool enabled;
+   } ph_sznear;
+   struct
+   {
+      const char *value;
+      bool enabled;
+   } ph_szfar;
+   struct
+   {
+      const char *value;
+      bool enabled;
+   } ph_znear;
+   struct
+   {
+      const char *value;
+      bool enabled;
+   } ph_zfar;
+   struct
+   {
       bool value;
       bool enabled;
    } perf_queries;
@@ -13,9 +38,24 @@ struct ini_map
    /* Video_Settings */
    struct
    {
+      bool value;
+      bool enabled;
+   } vsync;
+   struct
+   {
+      bool value;
+      bool enabled;
+   } widescreen_hack;
+   struct
+   {
       int value;
       bool enabled;
-   } efb_scale;
+   } aspect_ratio;
+   struct
+   {
+      bool value;
+      bool enabled;
+   } crop;
    struct
    {
       bool value;
@@ -31,13 +71,103 @@ struct ini_map
       unsigned value;
       bool enabled;
    } safe_texture_cache_color_samples;
+   struct
+   {
+      bool value;
+      bool enabled;
+   } hirestextures;
+   struct
+   {
+      bool value;
+      bool enabled;
+   } convert_hirestextures;
+   struct
+   {
+      bool value;
+      bool enabled;
+   } cache_hirestextures;
+   struct
+   {
+      bool value;
+      bool enabled;
+   } enable_pixel_lighting;
+   struct
+   {
+      bool value;
+      bool enabled;
+   } fast_depth_calc;
+   struct
+   {
+      int value;
+      bool enabled;
+   } msaa;
+   struct
+   {
+      bool value;
+      bool enabled;
+   } ssaa;
+   struct
+   {
+      bool value;
+      bool enabled;
+   } force_truecolor;
+   struct
+   {
+      int value;
+      bool enabled;
+   } efb_scale;
+   struct
+   {
+      bool value;
+      bool enabled;
+   } disable_fog;
+   struct
+   {
+      bool value;
+      bool enabled;
+   } backend_multithreading;
+   struct
+   {
+      bool value;
+      bool enabled;
+   } command_buffer_execute_interval;
 
    /* Video_Hacks */
    struct
    {
       bool value;
       bool enabled;
+   } efb_access_enable;
+   struct
+   {
+      bool value;
+      bool enabled;
+   } bbox_enable;
+   struct
+   {
+      bool value;
+      bool enabled;
+   } force_progressive;
+   struct
+   {
+      bool value;
+      bool enabled;
    } efb_to_texture_enable;
+   struct
+   {
+      bool value;
+      bool enabled;
+   } efb_scaled_copy;
+   struct
+   {
+      bool value;
+      bool enabled;
+   } efb_emulate_format_changes;
+   struct
+   {
+      bool value;
+      bool enabled;
+   } vertex_rounding;
 
    /* Video_Enhancements */
    struct
@@ -89,6 +219,7 @@ struct ini_map
       bool value;
       bool enabled;
    } stereo_swap_eyes;
+
 };
 
 struct ini_map maps[] =
@@ -96,12 +227,40 @@ struct ini_map maps[] =
    /* TODO/FIXME - Skipping FAAE01 to FASE01 - not sure why EFBToTextureEnable is empty here */
    {  "Cxxxxx",                                 /* ID */
       "All Virtual Console Commodore 64 games", /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -113,12 +272,40 @@ struct ini_map maps[] =
    },
    {  "D43E01",                                 /* ID */
       "ZELDA OCARINA MULTI PACK",               /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     false},                           /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -130,12 +317,41 @@ struct ini_map maps[] =
    },
    {  "D43J01",                                 /* ID */
       "ZELDA OCARINA MULTI PACK",               /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     false},                           /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -147,12 +363,40 @@ struct ini_map maps[] =
    },
    {  "D43P01",                                 /* ID */
       "ZELDA OCARINA MULTI PACK",               /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     false},                           /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -164,12 +408,40 @@ struct ini_map maps[] =
    },
    {  "DD2P41",                                 /* ID */
       "Just Dance 2 (Demo)",                    /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {-1,    true},                            /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {512,   true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {-1,    true},                            /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -181,12 +453,40 @@ struct ini_map maps[] =
    },
    {  "DLSE64",                                 /* ID */
       "Star Wars: Rogue Squadron III: Rebel Strike : Limited Edition Bonus Disc (Demo)", /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
-      {true,  true},                            /* use_xfb */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
+      {true,   true},                           /* use_xfb */
       {false, true},                            /* use_real_xfb */
-      {0,   false},                             /* safe_texture_cache_color_samples */
+      {0,     false},                           /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -198,12 +498,40 @@ struct ini_map maps[] =
    },
    {  "DLSP64",                                 /* ID */
       "Star Wars: Rogue Squadron III: Rebel Strike : Limited Edition Bonus Disc (Demo)", /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {true,  true},                            /* use_xfb */
       {false, true},                            /* use_real_xfb */
-      {0,   false},                             /* safe_texture_cache_color_samples */
+      {0,     false},                           /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -215,12 +543,40 @@ struct ini_map maps[] =
    },
    {  "Exxxxx",                                 /* ID */
       "All Virtual Console Arcade and NeoGeo Virtual Console games", /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -232,12 +588,40 @@ struct ini_map maps[] =
    },
    {  "ESWE8P",                                 /* ID */
       "Wonder Boy II",                          /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -249,12 +633,40 @@ struct ini_map maps[] =
    },
    {  "E5ZE8P",                                 /* ID */
       "Super Hang-On",                          /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {true,  true},                            /* use_xfb */
       {true,  true},                            /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -266,12 +678,40 @@ struct ini_map maps[] =
    },
    {  "E6ME9B",                                 /* ID */
       "TECMO BOWL",                             /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {true,  false},                           /* use_xfb */
       {true,  false},                           /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -283,12 +723,40 @@ struct ini_map maps[] =
    },
    {  "E6NE9B",                                 /* ID */
       "Solomon's Key",                          /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {true,  false},                           /* use_xfb */
       {true,  false},                           /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -300,12 +768,40 @@ struct ini_map maps[] =
    },
    {  "E6QE9B",                                 /* ID */
       "RYGAR",                                  /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {true,  false},                           /* use_xfb */
       {true,  false},                           /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -317,12 +813,40 @@ struct ini_map maps[] =
    },
    {  "E6VE8P",                                 /* ID */
       "Zaxxon",                                 /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {true,  true},                            /* use_xfb */
       {true,  true},                            /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -334,12 +858,40 @@ struct ini_map maps[] =
    },
    {  "E6WE8P",                                 /* ID */
       "Golden Axe",                             /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {true,  true},                            /* use_xfb */
       {true,  true},                            /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -351,12 +903,40 @@ struct ini_map maps[] =
    },
    {  "E6XE8P",                                 /* ID */
       "Altered Beast",                          /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {true,  true},                            /* use_xfb */
       {true,  true},                            /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -368,12 +948,40 @@ struct ini_map maps[] =
    },
    {  "E7ZEAF",                                 /* ID */
       "The Tower of Druaga",                    /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
-      {false, false},                           /* use_xfb */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
+      {true,  true},                            /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -385,12 +993,40 @@ struct ini_map maps[] =
    },
    {  "E52E08",                                 /* ID */
       "1942",                                   /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     false},                           /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -402,12 +1038,40 @@ struct ini_map maps[] =
    },
    {  "E53E08",                                 /* ID */
       "BLACK TIGER",                            /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -419,12 +1083,40 @@ struct ini_map maps[] =
    },
    {  "E54E08",                                 /* ID */
       "GHOSTS'N GOBLINS",                       /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -436,12 +1128,40 @@ struct ini_map maps[] =
    },
    {  "E55E08",                                 /* ID */
       "WoB:COMMANDO",                           /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     false},                           /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -453,12 +1173,40 @@ struct ini_map maps[] =
    },
    {  "E56E08",                                 /* ID */
       "EXED EXES",                              /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     false},                           /* safe_texture_cache_color_samples */
-      {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
+      {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -470,11 +1218,40 @@ struct ini_map maps[] =
    },
    {  "E57E08",                                 /* ID */
       "SONSON",                                 /* Name */
-      {0,     false},                           /* efb_scale */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
+      {false, false},                           /* perf_queries */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     false},                           /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -486,12 +1263,40 @@ struct ini_map maps[] =
    },
    {  "E62E8P",                                 /* ID */
       "Space Harrier",                          /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {true,  true},                            /* use_xfb */
       {true,  true},                            /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -503,12 +1308,40 @@ struct ini_map maps[] =
    },
    {  "E63E8P",                                 /* ID */
       "Shinobi",                                /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {true,  true},                            /* use_xfb */
       {true,  true},                            /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -520,12 +1353,40 @@ struct ini_map maps[] =
    },
    {  "E73EAF",                                 /* ID */
       "Mappy",                                  /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {true,  false},                           /* use_xfb */
       {true,  false},                           /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -537,12 +1398,40 @@ struct ini_map maps[] =
    },
    {  "E79EAF",                                 /* ID */
       "Gaplus",                                 /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {true,  false},                           /* use_xfb */
       {true,  false},                           /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -554,12 +1443,40 @@ struct ini_map maps[] =
    },
    {  "Fxxxxx",                                 /* ID */
       "All NES Virtual Console games",          /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     true},                            /* max_anisotropy */
       {false, true},                            /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -571,12 +1488,40 @@ struct ini_map maps[] =
    },
    {  "G2BE5G",                                 /* ID */
       "Black & Bruised",                        /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {512,   true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -588,12 +1533,23 @@ struct ini_map maps[] =
    },
    {  "G2BP7D",                                 /* ID */
       "Black & Bruised",                        /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
       {0,     false},                           /* efb_scale */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {512,   true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -605,12 +1561,23 @@ struct ini_map maps[] =
    },
    {  "G2ME01",                                 /* ID */
       "Metroid Prime 2: Echoes",                /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
       {0,     false},                           /* efb_scale */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {512,   true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -622,12 +1589,40 @@ struct ini_map maps[] =
    },
    {  "G2MJ01",                                 /* ID */
       "Metroid Prime 2: Echoes",                /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {512,   true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -639,12 +1634,40 @@ struct ini_map maps[] =
    },
    {  "G2MP01",                                 /* ID */
       "Metroid Prime 2: Echoes",                /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {512,   true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -656,12 +1679,40 @@ struct ini_map maps[] =
    },
    {  "G2OE41",                                 /* ID */
       "Prince of Persia: Warrior Within",       /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {512,   true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -673,12 +1724,40 @@ struct ini_map maps[] =
    },
    {  "G2OP41",                                 /* ID */
       "Prince of Persia: Warrior Within",       /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {512,   true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -690,12 +1769,40 @@ struct ini_map maps[] =
    },
    {  "G2VE08",                                 /* ID */
       "Viewtiful Joe 2",                        /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {true,  true},                            /* use_xfb */
       {true,  true},                            /* use_real_xfb */
       {0,   false},                             /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -707,12 +1814,40 @@ struct ini_map maps[] =
    },
    {  "G2VP08",                                 /* ID */
       "Viewtiful Joe 2",                        /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {true,  true},                            /* use_xfb */
       {true,  true},                            /* use_real_xfb */
       {0,   false},                             /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -724,12 +1859,40 @@ struct ini_map maps[] =
    },
    {  "G2XE8P",                                 /* ID */
       "SONIC GEMS COLLECTION",                  /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {4096,  true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -741,12 +1904,40 @@ struct ini_map maps[] =
    },
    {  "G2XP8P",                                 /* ID */
       "SONIC GEMS COLLECTION",                  /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {4096,  true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -758,12 +1949,40 @@ struct ini_map maps[] =
    },
    {  "G3AD69",                                 /* ID */
       "The Lord of The Rings - The Third Age",  /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -775,12 +1994,40 @@ struct ini_map maps[] =
    },
    {  "G3AE69",                                 /* ID */
       "The Lord of The Rings - The Third Age",  /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -792,12 +2039,40 @@ struct ini_map maps[] =
    },
    {  "G3AF69",                                 /* ID */
       "The Lord of The Rings - The Third Age",  /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -809,12 +2084,40 @@ struct ini_map maps[] =
    },
    {  "G3FE69",                                 /* ID */
       "TimeSplitters Future Perfect",           /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {true,  true},                            /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     false},                           /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -826,12 +2129,40 @@ struct ini_map maps[] =
    },
    {  "G3FP69",                                 /* ID */
       "TimeSplitters Future Perfect",           /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {true,  true},                            /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     false},                           /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -843,12 +2174,40 @@ struct ini_map maps[] =
    },
    {  "G3FF69",                                 /* ID */
       "TimeSplitters Future Perfect",           /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {true,  true},                            /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     false},                           /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -860,12 +2219,40 @@ struct ini_map maps[] =
    },
    {  "G3LE8P",                                 /* ID */
       "Super Monkey Ball Adventure",            /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     false},                           /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {7,     true},                            /* stereo_convergence */
@@ -877,12 +2264,40 @@ struct ini_map maps[] =
    },
    {  "G3QEA4",                                 /* ID */
       "TMNT3",                                  /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {512,   true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {0,     false},                           /* stereo_convergence */
@@ -897,12 +2312,40 @@ struct ini_map maps[] =
 
    {  "D43U01",                                 /* ID */
       "ZELDA OCARINA MULTI PACK",               /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {false, false},                           /* use_xfb */
       {false, false},                           /* use_real_xfb */
       {0,     false},                           /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, true},                            /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -914,12 +2357,40 @@ struct ini_map maps[] =
    },
    {  "GRSEAF",                                 /* ID */
       "SOULCALIBUR2",                           /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
       {true,  true},                            /* use_xfb */
       {false, true},                            /* use_real_xfb */
       {512,   true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -932,12 +2403,40 @@ struct ini_map maps[] =
    {
       "GRSPAF",                                 /* ID */
       "SOULCALIBUR2",                           /* Name */
+      {0,     false},                           /* projection_hack */
+      {"",    false},                           /* ph_sznear */
+      {"",    false},                           /* ph_szfar */
+      {"",    false},                           /* ph_znear */
+      {"",    false},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
-      {0,     false},                           /* efb_scale */
-      {true , true},                            /* use_xfb */
+
+      {false, false},                           /* vsync */
+      {false, false},                           /* widescreen_hack */
+      {0,     false},                           /* aspect_ratio */
+      {false, false},                           /* crop */
+      {true,  true},                            /* use_xfb */
       {false, true},                            /* use_real_xfb */
       {512,   true},                            /* safe_texture_cache_color_samples */
+      {false, false},                           /* hirestextures */
+      {false, false},                           /* convert_hirestextures */
+      {false, false},                           /* cache_hirestextures */
+      {false, false},                           /* enable_pixel_lighting */
+      {false, false},                           /* fast_depth_calc */
+      {0,     false},                           /* msaa */
+      {false, false},                           /* ssaa */
+      {false, false},                           /* force_true_color */
+      {0,     false},                           /* efb_scale */
+      {false, false},                           /* disable_fog */
+      {false, false},                           /* backend_multithreading */
+      {false, false},                           /* command_buffer_execute_interval */
+
+      {false, false},                           /* efb_access_enable */
+      {false, false},                           /* bbox_enable */
+      {false, false},                           /* force_progressive */
       {false, false},                           /* efb_to_texture_enable */
+      {false, false},                           /* efb_scaled_copy */
+      {false, false},                           /* efb_emulate_format_changes */
+      {false, false},                           /* vertex_rounding */
       {0,     false},                           /* max_anisotropy */
       {false, false},                           /* force_filtering */
       {false, false},                           /* stereo_convergence */
@@ -961,35 +2460,58 @@ static bool VideoConfigLoadGameIniLibretro(IniFile *iniFile, const char *id, u16
 
          printf("ID found within database: %s (name: %s)\n", id, maps[i].name);
 
-         settings = iniFile->GetOrCreateSection("Video");
-
-         if (maps[i].perf_queries.enabled)
-            settings->Set("PerfQueriesEnable", maps[i].perf_queries.value);
-
          settings = iniFile->GetOrCreateSection("Video_Settings");
 
-         if (maps[i].efb_scale.enabled)
-            settings->Set("EFBScale", maps[i].efb_scale.value);
+         if (maps[i].vsync.enabled)
+            settings->Set("VSync", maps[i].vsync.value);
+         if (maps[i].widescreen_hack.enabled)
+            settings->Set("wideScreenHack", maps[i].widescreen_hack.value);
+         if (maps[i].aspect_ratio.enabled)
+            settings->Set("AspectRatio", maps[i].aspect_ratio.value);
+         if (maps[i].crop.enabled)
+            settings->Set("Crop", maps[i].crop.value);
          if (maps[i].use_xfb.enabled)
             settings->Set("UseXFB", maps[i].use_xfb.value);
          if (maps[i].use_real_xfb.enabled)
             settings->Set("UseRealXFB", maps[i].use_real_xfb.value);
          if (maps[i].safe_texture_cache_color_samples.enabled)
             settings->Set("SafeTextureCacheColorSamples", maps[i].safe_texture_cache_color_samples.value);
+         if (maps[i].hirestextures.enabled)
+            settings->Set("HiresTextures", maps[i].hirestextures.value);
+         if (maps[i].convert_hirestextures.enabled)
+            settings->Set("ConvertHiresTextures", maps[i].convert_hirestextures.value);
+         if (maps[i].cache_hirestextures.enabled)
+            settings->Set("CacheHiresTextures", maps[i].cache_hirestextures.value);
+         if (maps[i].enable_pixel_lighting.enabled)
+            settings->Set("EnablePixelLighting", maps[i].enable_pixel_lighting.value);
+         if (maps[i].fast_depth_calc.enabled)
+            settings->Set("FastDepthCalc", maps[i].fast_depth_calc.value);
+         if (maps[i].msaa.enabled)
+            settings->Set("MSAA", maps[i].msaa.value);
+         if (maps[i].ssaa.enabled)
+            settings->Set("SSAA", maps[i].ssaa.value);
+         if (maps[i].force_truecolor.enabled)
+            settings->Set("ForceTrueColor", maps[i].force_truecolor.value);
+         if (maps[i].efb_scale.enabled)
+            settings->Set("EFBScale", maps[i].efb_scale.value);
 
-         settings = iniFile->GetOrCreateSection("Video_Hacks");
-
-         if (maps[i].efb_to_texture_enable.enabled)
-            settings->Set("EFBToTextureEnable", maps[i].efb_to_texture_enable.value);
+         if (maps[i].disable_fog.enabled)
+            settings->Set("DisableFog", maps[i].disable_fog.value);
+         if (maps[i].backend_multithreading.enabled)
+            settings->Set("BackendMultithreading", maps[i].backend_multithreading.value);
+         if (maps[i].command_buffer_execute_interval.enabled)
+            settings->Set("CommandBufferExecuteInterval", maps[i].command_buffer_execute_interval.value);
 
          settings = iniFile->GetOrCreateSection("Video_Enhancements");
 
-         if (maps[i].max_anisotropy.enabled)
-            settings->Set("MaxAnisotropy", maps[i].max_anisotropy.value);
          if (maps[i].force_filtering.enabled)
             settings->Set("ForceFiltering", maps[i].force_filtering.value);
+         if (maps[i].max_anisotropy.enabled)
+            settings->Set("MaxAnisotropy", maps[i].max_anisotropy.value);
 
-         settings = iniFile->GetOrCreateSection("Wii");
+#if 0
+         /* PostProcessingShader */
+#endif
 
          settings = iniFile->GetOrCreateSection("Video_Stereoscopy");
 
@@ -1010,6 +2532,38 @@ static bool VideoConfigLoadGameIniLibretro(IniFile *iniFile, const char *id, u16
 
          if (maps[i].stereo_swap_eyes.enabled)
             settings->Set("StereoSwapEyes", maps[i].stereo_swap_eyes.value);
+
+         settings = iniFile->GetOrCreateSection("Video_Hacks");
+
+         if (maps[i].efb_access_enable.enabled)
+            settings->Set("EFBAccessEnable", maps[i].efb_access_enable.value);
+         if (maps[i].bbox_enable.enabled)
+            settings->Set("BBoxEnable", maps[i].bbox_enable.value);
+         if (maps[i].force_progressive.enabled)
+            settings->Set("ForceProgressive", maps[i].force_progressive.value);
+         if (maps[i].efb_to_texture_enable.enabled)
+            settings->Set("EFBToTextureEnable", maps[i].efb_to_texture_enable.value);
+         if (maps[i].efb_scaled_copy.enabled)
+            settings->Set("EFBScaledCopy", maps[i].efb_scaled_copy.value);
+         if (maps[i].efb_emulate_format_changes.enabled)
+            settings->Set("EFBEmulateFormatChanges", maps[i].efb_emulate_format_changes.value);
+         if (maps[i].vertex_rounding.enabled)
+            settings->Set("VertexRounding", maps[i].vertex_rounding.value);
+
+         settings = iniFile->GetOrCreateSection("Video");
+
+         if (maps[i].projection_hack.enabled)
+            settings->Set("ProjectionHack", maps[i].projection_hack.value);
+         if (maps[i].ph_sznear.enabled)
+            settings->Set("PH_SZNear", maps[i].ph_sznear.value);
+         if (maps[i].ph_szfar.enabled)
+            settings->Set("PH_SZFar", maps[i].ph_szfar.value);
+         if (maps[i].ph_znear.enabled)
+            settings->Set("PH_ZNear", maps[i].ph_znear.value);
+         if (maps[i].ph_zfar.enabled)
+            settings->Set("PH_ZFar", maps[i].ph_zfar.value);
+         if (maps[i].perf_queries.enabled)
+            settings->Set("PerfQueriesEnable", maps[i].perf_queries.value);
 
          return true;
       }
