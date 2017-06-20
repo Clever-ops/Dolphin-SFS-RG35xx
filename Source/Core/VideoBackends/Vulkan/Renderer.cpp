@@ -720,7 +720,7 @@ void Renderer::DrawScreen(const EFBRectangle& source_rect, u32 xfb_addr,
   // Draw OSD
   Util::SetViewportAndScissor(g_command_buffer_mgr->GetCurrentCommandBuffer(), 0, 0,
                               backbuffer->GetWidth(), backbuffer->GetHeight());
-  DrawDebugText();
+  //DrawDebugText();
   OSD::DoCallbacks(OSD::CallbackType::OnFrame);
   OSD::DrawMessages();
 
