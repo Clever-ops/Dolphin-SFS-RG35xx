@@ -53,6 +53,7 @@ bool retro_load_game(const struct retro_game_info* game)
   UICommon::CreateDirectories();
   UICommon::Init();
 
+#if 0
   enable_log(LogTypes::LIBRETRO, LogTypes::LDEBUG);
   enable_log(LogTypes::BOOT, LogTypes::LDEBUG);
   enable_log(LogTypes::VIDEO, LogTypes::LINFO);
@@ -63,6 +64,7 @@ bool retro_load_game(const struct retro_game_info* game)
   enable_log(LogTypes::DSPHLE, LogTypes::LWARNING);
   enable_log(LogTypes::DSPLLE, LogTypes::LWARNING);
   enable_log(LogTypes::DSP_MAIL, LogTypes::LWARNING);
+#endif
 
   INFO_LOG(LIBRETRO, "User Directory set to '%s'", user_dir.c_str());
   INFO_LOG(LIBRETRO, "System Directory set to '%s'", sys_dir.c_str());
