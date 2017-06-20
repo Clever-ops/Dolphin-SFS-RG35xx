@@ -10695,8 +10695,10 @@ static bool BootManagerConfigLoadGameIniLibretro(IniFile *iniFile, const char *i
          if (maps[i].emulation_speed.enabled)
             settings->Set("EmulationSpeed", maps[i].emulation_speed.value);
 
+#if 0
          if (maps[i].gpu_determinism_mode.enabled)
             settings->Set("GPUDeterminismMode", maps[i].gpu_determinism_mode.value);
+#endif
 
          if (maps[i].overclock.enabled)
             settings->Set("Overclock", maps[i].overclock.value);
