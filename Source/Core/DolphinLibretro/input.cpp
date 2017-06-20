@@ -286,6 +286,8 @@ void Libretro::init_descriptors(void)
   };
 
   environ_cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
+
+  environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, input_desc_gc);
 }
 
 GCPadStatus Pad::GetStatus(int pad_num)
