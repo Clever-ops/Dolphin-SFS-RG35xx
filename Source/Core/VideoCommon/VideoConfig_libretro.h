@@ -229,10 +229,10 @@ struct ini_map maps[] =
    {  "Cxxxxx",                                 /* ID */
       "All Virtual Console Commodore 64 games", /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -274,10 +274,10 @@ struct ini_map maps[] =
    {  "D43E01",                                 /* ID */
       "ZELDA OCARINA MULTI PACK",               /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -319,10 +319,10 @@ struct ini_map maps[] =
    {  "D43J01",                                 /* ID */
       "ZELDA OCARINA MULTI PACK",               /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
 
@@ -365,10 +365,10 @@ struct ini_map maps[] =
    {  "D43P01",                                 /* ID */
       "ZELDA OCARINA MULTI PACK",               /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -410,10 +410,10 @@ struct ini_map maps[] =
    {  "DD2P41",                                 /* ID */
       "Just Dance 2 (Demo)",                    /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -455,10 +455,10 @@ struct ini_map maps[] =
    {  "DLSE64",                                 /* ID */
       "Star Wars: Rogue Squadron III: Rebel Strike : Limited Edition Bonus Disc (Demo)", /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -500,10 +500,10 @@ struct ini_map maps[] =
    {  "DLSP64",                                 /* ID */
       "Star Wars: Rogue Squadron III: Rebel Strike : Limited Edition Bonus Disc (Demo)", /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -545,10 +545,10 @@ struct ini_map maps[] =
    {  "Exxxxx",                                 /* ID */
       "All Virtual Console Arcade and NeoGeo Virtual Console games", /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -590,10 +590,10 @@ struct ini_map maps[] =
    {  "ESWE8P",                                 /* ID */
       "Wonder Boy II",                          /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -635,10 +635,10 @@ struct ini_map maps[] =
    {  "E5ZE8P",                                 /* ID */
       "Super Hang-On",                          /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -680,10 +680,10 @@ struct ini_map maps[] =
    {  "E6ME9B",                                 /* ID */
       "TECMO BOWL",                             /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -725,10 +725,10 @@ struct ini_map maps[] =
    {  "E6NE9B",                                 /* ID */
       "Solomon's Key",                          /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -770,10 +770,10 @@ struct ini_map maps[] =
    {  "E6QE9B",                                 /* ID */
       "RYGAR",                                  /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -815,10 +815,10 @@ struct ini_map maps[] =
    {  "E6VE8P",                                 /* ID */
       "Zaxxon",                                 /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -860,10 +860,10 @@ struct ini_map maps[] =
    {  "E6WE8P",                                 /* ID */
       "Golden Axe",                             /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -950,10 +950,10 @@ struct ini_map maps[] =
    {  "E7ZEAF",                                 /* ID */
       "The Tower of Druaga",                    /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -995,10 +995,10 @@ struct ini_map maps[] =
    {  "E52E08",                                 /* ID */
       "1942",                                   /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1040,10 +1040,10 @@ struct ini_map maps[] =
    {  "E53E08",                                 /* ID */
       "BLACK TIGER",                            /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1085,10 +1085,10 @@ struct ini_map maps[] =
    {  "E54E08",                                 /* ID */
       "GHOSTS'N GOBLINS",                       /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1130,10 +1130,10 @@ struct ini_map maps[] =
    {  "E55E08",                                 /* ID */
       "WoB:COMMANDO",                           /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1175,10 +1175,10 @@ struct ini_map maps[] =
    {  "E56E08",                                 /* ID */
       "EXED EXES",                              /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1220,10 +1220,10 @@ struct ini_map maps[] =
    {  "E57E08",                                 /* ID */
       "SONSON",                                 /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1265,10 +1265,10 @@ struct ini_map maps[] =
    {  "E62E8P",                                 /* ID */
       "Space Harrier",                          /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1310,10 +1310,10 @@ struct ini_map maps[] =
    {  "E63E8P",                                 /* ID */
       "Shinobi",                                /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1355,10 +1355,10 @@ struct ini_map maps[] =
    {  "E73EAF",                                 /* ID */
       "Mappy",                                  /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1400,10 +1400,10 @@ struct ini_map maps[] =
    {  "E79EAF",                                 /* ID */
       "Gaplus",                                 /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1445,10 +1445,10 @@ struct ini_map maps[] =
    {  "Fxxxxx",                                 /* ID */
       "All NES Virtual Console games",          /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1490,10 +1490,10 @@ struct ini_map maps[] =
    {  "G2BE5G",                                 /* ID */
       "Black & Bruised",                        /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1535,10 +1535,10 @@ struct ini_map maps[] =
    {  "G2BP7D",                                 /* ID */
       "Black & Bruised",                        /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1580,10 +1580,10 @@ struct ini_map maps[] =
    {  "G2ME01",                                 /* ID */
       "Metroid Prime 2: Echoes",                /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1625,10 +1625,10 @@ struct ini_map maps[] =
    {  "G2MJ01",                                 /* ID */
       "Metroid Prime 2: Echoes",                /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1670,10 +1670,10 @@ struct ini_map maps[] =
    {  "G2MP01",                                 /* ID */
       "Metroid Prime 2: Echoes",                /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1715,10 +1715,10 @@ struct ini_map maps[] =
    {  "G2OE41",                                 /* ID */
       "Prince of Persia: Warrior Within",       /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1760,10 +1760,10 @@ struct ini_map maps[] =
    {  "G2OP41",                                 /* ID */
       "Prince of Persia: Warrior Within",       /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1805,10 +1805,10 @@ struct ini_map maps[] =
    {  "G2VE08",                                 /* ID */
       "Viewtiful Joe 2",                        /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1850,10 +1850,10 @@ struct ini_map maps[] =
    {  "G2VP08",                                 /* ID */
       "Viewtiful Joe 2",                        /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1895,10 +1895,10 @@ struct ini_map maps[] =
    {  "G2XE8P",                                 /* ID */
       "SONIC GEMS COLLECTION",                  /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1940,10 +1940,10 @@ struct ini_map maps[] =
    {  "G2XP8P",                                 /* ID */
       "SONIC GEMS COLLECTION",                  /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -1985,10 +1985,10 @@ struct ini_map maps[] =
    {  "G3AD69",                                 /* ID */
       "The Lord of The Rings - The Third Age",  /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -2030,10 +2030,10 @@ struct ini_map maps[] =
    {  "G3AE69",                                 /* ID */
       "The Lord of The Rings - The Third Age",  /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -2075,10 +2075,10 @@ struct ini_map maps[] =
    {  "G3AF69",                                 /* ID */
       "The Lord of The Rings - The Third Age",  /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -2120,10 +2120,10 @@ struct ini_map maps[] =
    {  "G3FE69",                                 /* ID */
       "TimeSplitters Future Perfect",           /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {true,  true},                            /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -2165,10 +2165,10 @@ struct ini_map maps[] =
    {  "G3FP69",                                 /* ID */
       "TimeSplitters Future Perfect",           /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {true,  true},                            /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -2210,10 +2210,10 @@ struct ini_map maps[] =
    {  "G3FF69",                                 /* ID */
       "TimeSplitters Future Perfect",           /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {true,  true},                            /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -2255,10 +2255,10 @@ struct ini_map maps[] =
    {  "G3LE8P",                                 /* ID */
       "Super Monkey Ball Adventure",            /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -2300,10 +2300,10 @@ struct ini_map maps[] =
    {  "G3QEA4",                                 /* ID */
       "TMNT3",                                  /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -2346,10 +2346,10 @@ struct ini_map maps[] =
    {  "G3RD52",                                 /* ID */
       "Shrek 2",                                /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -2391,10 +2391,10 @@ struct ini_map maps[] =
    {  "G3RE52",                                 /* ID */
       "Shrek 2",                                /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -2436,10 +2436,10 @@ struct ini_map maps[] =
    {  "G3RF52",                                 /* ID */
       "Shrek 2",                                /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -31102,10 +31102,10 @@ struct ini_map maps[] =
    {  "D43U01",                                 /* ID */
       "ZELDA OCARINA MULTI PACK",               /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -31147,10 +31147,10 @@ struct ini_map maps[] =
    {  "GRSEAF",                                 /* ID */
       "SOULCALIBUR2",                           /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -31193,10 +31193,10 @@ struct ini_map maps[] =
       "GRSPAF",                                 /* ID */
       "SOULCALIBUR2",                           /* Name */
       {0,     false},                           /* projection_hack */
-      {0,   false},                           /* ph_sznear */
-      {0,   false},                           /* ph_szfar */
-      {0,   false},                           /* ph_znear */
-      {0,   false},                           /* ph_zfar */
+      {0.0f,   false},                          /* ph_sznear */
+      {0.0f,   false},                          /* ph_szfar */
+      {0.0f,   false},                          /* ph_znear */
+      {0.0f,   false},                          /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
