@@ -9639,7 +9639,7 @@ struct ini_map maps[] =
       {1,    true},                             /* ph_sznear */
       {0,    true},                             /* ph_szfar */
       {0,   false},                             /* ph_znear */
-      {0.1,    true},                           /* ph_zfar */
+      {(float)0.1,    true},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -24529,7 +24529,7 @@ struct ini_map maps[] =
       {false, false},                           /* stereo_swap_eyes */
    },
    {  "SMNE01",                                 /* ID */
-      "New SUper Mario Bros. Wii",              /* Name */
+      "New Super Mario Bros. Wii",              /* Name */
       {0,     false},                           /* projection_hack */
       {0,   false},                           /* ph_sznear */
       {0,   false},                           /* ph_szfar */
@@ -25703,8 +25703,8 @@ struct ini_map maps[] =
       {1,      true},                           /* projection_hack */
       {0,    true},                           /* ph_sznear */
       {0,    true},                           /* ph_szfar */
-      {0.5,    true},                           /* ph_znear */
-      {0.5,    true},                           /* ph_zfar */
+      {(float)0.5,    true},                           /* ph_znear */
+      {(float)0.5,    true},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
@@ -25748,8 +25748,8 @@ struct ini_map maps[] =
       {1,      true},                           /* projection_hack */
       {0,    true},                           /* ph_sznear */
       {0,    true},                           /* ph_szfar */
-      {0.5,    true},                           /* ph_znear */
-      {0.5,    true},                           /* ph_zfar */
+      {(float)0.5,    true},                           /* ph_znear */
+      {(float)0.5,    true},                           /* ph_zfar */
       {false, false},                           /* perf_queries */
 
       {false, false},                           /* vsync */
