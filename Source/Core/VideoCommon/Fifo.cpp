@@ -100,7 +100,9 @@ void PauseAndLock(bool doLock, bool unpauseOnUnlock)
     if (!param.bCPUThread || s_use_deterministic_gpu_thread)
       return;
 
+#ifndef __LIBRETRO__
     s_gpu_mainloop.WaitYield(std::chrono::milliseconds(100), Host_YieldToUI);
+#endif
   }
   else
   {

@@ -165,8 +165,10 @@ void Stop()
   {
     std::cv_status status =
         s_state_cpu_idle_cvar.wait_for(state_lock, std::chrono::milliseconds(100));
+#ifndef __LIBRETRO__
     if (status == std::cv_status::timeout)
       Host_YieldToUI();
+#endif
   }
 
   RunAdjacentSystems(false);
@@ -234,8 +236,10 @@ void EnableStepping(bool stepping)
     {
       std::cv_status status =
           s_state_cpu_idle_cvar.wait_for(state_lock, std::chrono::milliseconds(100));
+#ifndef __LIBRETRO__
       if (status == std::cv_status::timeout)
         Host_YieldToUI();
+#endif
     }
 
     RunAdjacentSystems(false);
@@ -285,8 +289,10 @@ bool PauseAndLock(bool do_lock, bool unpause_on_unlock, bool control_adjacent)
     {
       std::cv_status status =
           s_state_cpu_idle_cvar.wait_for(state_lock, std::chrono::milliseconds(100));
+#ifndef __LIBRETRO__
       if (status == std::cv_status::timeout)
         Host_YieldToUI();
+#endif
     }
 
     if (control_adjacent)
