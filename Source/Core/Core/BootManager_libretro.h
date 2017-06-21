@@ -121,7 +121,7 @@ struct ini_map
 
    struct
    {
-      const char *value;
+      unsigned value;
       bool enabled;
    } gpu_determinism_mode;
 
@@ -173,7 +173,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -200,7 +200,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -227,7 +227,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -254,7 +254,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -281,7 +281,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -308,7 +308,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -335,7 +335,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -362,7 +362,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -389,7 +389,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -416,7 +416,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -443,7 +443,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -470,7 +470,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -497,7 +497,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -524,7 +524,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -551,7 +551,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -578,7 +578,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -605,7 +605,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -632,7 +632,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -659,7 +659,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -686,7 +686,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -713,7 +713,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -740,7 +740,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -767,7 +767,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -794,7 +794,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -821,7 +821,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -848,7 +848,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -875,7 +875,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -902,7 +902,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -929,7 +929,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -956,7 +956,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -983,7 +983,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1010,7 +1010,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1037,7 +1037,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1064,7 +1064,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1091,7 +1091,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1118,7 +1118,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1145,7 +1145,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1172,7 +1172,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1199,7 +1199,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1226,7 +1226,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1253,7 +1253,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1280,7 +1280,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1307,7 +1307,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1334,7 +1334,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1361,7 +1361,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1388,7 +1388,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1415,7 +1415,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1442,7 +1442,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1469,7 +1469,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1496,7 +1496,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1523,7 +1523,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1550,7 +1550,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1577,7 +1577,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1604,7 +1604,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1631,7 +1631,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1658,7 +1658,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1685,7 +1685,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1712,7 +1712,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1739,7 +1739,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1766,7 +1766,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1793,7 +1793,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1820,7 +1820,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1847,7 +1847,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1874,7 +1874,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1901,7 +1901,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1928,7 +1928,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1955,7 +1955,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -1982,7 +1982,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2009,7 +2009,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2036,7 +2036,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2063,7 +2063,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2090,7 +2090,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2117,7 +2117,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2144,7 +2144,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2171,7 +2171,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2198,7 +2198,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2225,7 +2225,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2252,7 +2252,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2279,7 +2279,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2306,7 +2306,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2333,7 +2333,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2360,7 +2360,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2387,7 +2387,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2414,7 +2414,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2441,7 +2441,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2468,7 +2468,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2495,7 +2495,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2522,7 +2522,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2549,7 +2549,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2576,7 +2576,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2603,7 +2603,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2630,7 +2630,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2657,7 +2657,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2684,7 +2684,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2711,7 +2711,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2738,7 +2738,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2765,7 +2765,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2792,7 +2792,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2819,7 +2819,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2846,7 +2846,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2873,7 +2873,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2900,7 +2900,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2927,7 +2927,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2954,7 +2954,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -2981,7 +2981,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3008,7 +3008,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3035,7 +3035,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3062,7 +3062,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3089,7 +3089,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3116,7 +3116,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3143,7 +3143,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3170,7 +3170,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3197,7 +3197,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3224,7 +3224,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3251,7 +3251,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3278,7 +3278,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3305,7 +3305,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3332,7 +3332,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3359,7 +3359,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3386,7 +3386,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3413,7 +3413,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3440,7 +3440,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3467,7 +3467,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3494,7 +3494,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3521,7 +3521,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3548,7 +3548,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3575,7 +3575,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3602,7 +3602,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3629,7 +3629,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3656,7 +3656,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3683,7 +3683,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3710,7 +3710,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3737,7 +3737,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3764,7 +3764,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3791,7 +3791,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3818,7 +3818,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3845,7 +3845,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3872,7 +3872,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3899,7 +3899,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3926,7 +3926,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3953,7 +3953,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -3980,7 +3980,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4007,7 +4007,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4034,7 +4034,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4061,7 +4061,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4088,7 +4088,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4115,7 +4115,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4142,7 +4142,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4169,7 +4169,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4196,7 +4196,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4223,7 +4223,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4250,7 +4250,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4277,7 +4277,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4304,7 +4304,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4331,7 +4331,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4358,7 +4358,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4385,7 +4385,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4412,7 +4412,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4439,7 +4439,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4466,7 +4466,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4493,7 +4493,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4520,7 +4520,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4547,7 +4547,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4574,7 +4574,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4601,7 +4601,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4628,7 +4628,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4655,7 +4655,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4682,7 +4682,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4709,7 +4709,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4736,7 +4736,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4763,7 +4763,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4790,7 +4790,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4817,7 +4817,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4844,7 +4844,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4871,7 +4871,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4898,7 +4898,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4925,7 +4925,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4952,7 +4952,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -4979,7 +4979,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5006,7 +5006,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5033,7 +5033,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5060,7 +5060,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5087,7 +5087,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5114,7 +5114,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5141,7 +5141,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5168,7 +5168,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5195,7 +5195,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5222,7 +5222,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5249,7 +5249,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5276,7 +5276,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5303,7 +5303,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5330,7 +5330,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5357,7 +5357,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5384,7 +5384,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5411,7 +5411,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5438,7 +5438,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5465,7 +5465,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5492,7 +5492,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5519,7 +5519,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5546,7 +5546,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5573,7 +5573,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5600,7 +5600,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5627,7 +5627,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5654,7 +5654,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5681,7 +5681,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5708,7 +5708,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5735,7 +5735,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5762,7 +5762,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5789,7 +5789,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5816,7 +5816,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5843,7 +5843,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5870,7 +5870,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5897,7 +5897,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5924,7 +5924,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5951,7 +5951,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -5978,7 +5978,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6005,7 +6005,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6032,7 +6032,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6059,7 +6059,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6086,7 +6086,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6113,7 +6113,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6140,7 +6140,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6167,7 +6167,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6194,7 +6194,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6221,7 +6221,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6248,7 +6248,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6275,7 +6275,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6302,7 +6302,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6329,7 +6329,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6356,7 +6356,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6383,7 +6383,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6410,7 +6410,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6437,7 +6437,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6464,7 +6464,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6491,7 +6491,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6518,7 +6518,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6545,7 +6545,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6572,7 +6572,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6599,7 +6599,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6626,7 +6626,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6653,7 +6653,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6680,7 +6680,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6707,7 +6707,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6734,7 +6734,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6761,7 +6761,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6788,7 +6788,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6815,7 +6815,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6842,7 +6842,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6869,7 +6869,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6896,7 +6896,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6923,7 +6923,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6950,7 +6950,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -6977,7 +6977,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7004,7 +7004,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7031,7 +7031,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7058,7 +7058,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7085,7 +7085,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7112,7 +7112,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7139,7 +7139,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7166,7 +7166,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7193,7 +7193,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7220,7 +7220,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7247,7 +7247,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7274,7 +7274,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7301,7 +7301,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7328,7 +7328,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7355,7 +7355,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7382,7 +7382,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7409,7 +7409,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7436,7 +7436,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7463,7 +7463,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7490,7 +7490,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7517,7 +7517,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7544,7 +7544,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7571,7 +7571,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7598,7 +7598,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7625,7 +7625,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7652,7 +7652,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7679,7 +7679,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7706,7 +7706,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7733,7 +7733,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7760,7 +7760,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7787,7 +7787,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7814,7 +7814,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7841,7 +7841,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7868,7 +7868,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7895,7 +7895,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7922,7 +7922,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7949,7 +7949,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -7976,7 +7976,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8003,7 +8003,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8030,7 +8030,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8057,7 +8057,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8084,7 +8084,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8111,7 +8111,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8138,7 +8138,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8165,7 +8165,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8192,7 +8192,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8219,7 +8219,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8246,7 +8246,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8273,7 +8273,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8300,7 +8300,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8327,7 +8327,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8354,7 +8354,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8381,7 +8381,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8408,7 +8408,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8435,7 +8435,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8462,7 +8462,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8489,7 +8489,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8516,7 +8516,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8543,7 +8543,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8570,7 +8570,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8597,7 +8597,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8624,7 +8624,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8651,7 +8651,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8678,7 +8678,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8705,7 +8705,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8732,7 +8732,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8759,7 +8759,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8786,7 +8786,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8813,7 +8813,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8840,7 +8840,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8867,7 +8867,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8894,7 +8894,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8921,7 +8921,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8948,7 +8948,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -8975,7 +8975,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9002,7 +9002,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9029,7 +9029,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9056,7 +9056,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9083,7 +9083,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9110,7 +9110,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9137,7 +9137,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9164,7 +9164,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9191,7 +9191,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9218,7 +9218,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9245,7 +9245,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9272,7 +9272,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9299,7 +9299,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9326,7 +9326,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9353,7 +9353,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9380,7 +9380,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9407,7 +9407,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9434,7 +9434,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9461,7 +9461,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9488,7 +9488,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9515,7 +9515,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9542,7 +9542,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9569,7 +9569,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9596,7 +9596,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9623,7 +9623,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9650,7 +9650,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9677,7 +9677,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9704,7 +9704,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9731,7 +9731,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9758,7 +9758,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9785,7 +9785,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9812,7 +9812,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9839,7 +9839,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9866,7 +9866,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9893,7 +9893,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9920,7 +9920,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9947,7 +9947,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -9974,7 +9974,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10001,7 +10001,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10028,7 +10028,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10055,7 +10055,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10082,7 +10082,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10109,7 +10109,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10136,7 +10136,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10163,7 +10163,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10190,7 +10190,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10217,7 +10217,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10244,7 +10244,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10271,7 +10271,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10298,7 +10298,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10325,7 +10325,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10352,7 +10352,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10379,7 +10379,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10406,7 +10406,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10433,7 +10433,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10460,7 +10460,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10487,7 +10487,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10514,7 +10514,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10541,7 +10541,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10568,7 +10568,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10595,7 +10595,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10622,7 +10622,7 @@ struct ini_map maps[] =
       {false, false},                           /* pal60 */
       {false, false},                           /* gamecube_language */
       {0.0f,  false},                           /* emulation_speed */
-      {"",    false},                           /* gpu_determinism_mode */
+      {0,    false},                           /* gpu_determinism_mode */
       {0.0f,  false},                           /* overclock */
       {false, false},                           /* overclock_enable */
       {0,     false},                           /* dsp_volume */
@@ -10695,10 +10695,8 @@ static bool BootManagerConfigLoadGameIniLibretro(IniFile *iniFile, const char *i
          if (maps[i].emulation_speed.enabled)
             settings->Set("EmulationSpeed", maps[i].emulation_speed.value);
 
-#if 0
          if (maps[i].gpu_determinism_mode.enabled)
             settings->Set("GPUDeterminismMode", maps[i].gpu_determinism_mode.value);
-#endif
 
          if (maps[i].overclock.enabled)
             settings->Set("Overclock", maps[i].overclock.value);
