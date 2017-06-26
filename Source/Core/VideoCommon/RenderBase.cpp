@@ -36,7 +36,9 @@
 #include "Core/ConfigManager.h"
 #include "Core/Core.h"
 #include "Core/CoreTiming.h"
+#ifdef USE_FIFO_RECORDING
 #include "Core/FifoPlayer/FifoRecorder.h"
+#endif
 #include "Core/HW/VideoInterface.h"
 #include "Core/Host.h"
 #include "Core/Movie.h"
@@ -47,7 +49,9 @@
 #include "VideoCommon/CommandProcessor.h"
 #include "VideoCommon/Debugger.h"
 #include "VideoCommon/Fifo.h"
+#ifdef USE_FPS_COUNTER
 #include "VideoCommon/FPSCounter.h"
+#endif
 #include "VideoCommon/FramebufferManagerBase.h"
 #include "VideoCommon/ImageWrite.h"
 #include "VideoCommon/OnScreenDisplay.h"
@@ -109,7 +113,9 @@ Renderer::~Renderer()
 void Renderer::RenderToXFB(u32 xfbAddr, const EFBRectangle& sourceRc, u32 fbStride, u32 fbHeight,
                            float Gamma)
 {
+#ifdef USE_FIFO_RECORDING
   CheckFifoRecording();
+#endif
 
   if (!fbStride || !fbHeight)
     return;
@@ -323,8 +329,10 @@ void Renderer::DrawDebugText()
 
   if (g_ActiveConfig.bShowFPS || SConfig::GetInstance().m_ShowFrameCount)
   {
+#ifdef USE_FPS_COUNTER
     if (g_ActiveConfig.bShowFPS)
       final_cyan += StringFromFormat("FPS: %u", m_fps_counter.GetFPS());
+#endif
 
     if (g_ActiveConfig.bShowFPS && SConfig::GetInstance().m_ShowFrameCount)
       final_cyan += " - ";
@@ -699,6 +707,7 @@ void Renderer::SetWindowSize(int width, int height)
   }
 }
 
+#ifdef USE_FIFO_RECORDING
 void Renderer::CheckFifoRecording()
 {
   bool wasRecording = g_bRecordFifoData;
@@ -731,6 +740,7 @@ void Renderer::RecordVideoMemory()
   FifoRecorder::GetInstance().SetVideoMemory(bpmem_ptr, cpmem, xfmem_ptr, xfregs_ptr, xfregs_size,
                                              texMem);
 }
+#endif
 
 void Renderer::Swap(u32 xfbAddr, u32 fbWidth, u32 fbStride, u32 fbHeight, const EFBRectangle& rc,
                     u64 ticks, float Gamma)
@@ -754,8 +764,10 @@ void Renderer::Swap(u32 xfbAddr, u32 fbWidth, u32 fbStride, u32 fbHeight, const 
   // TODO: merge more generic parts into VideoCommon
   SwapImpl(xfbAddr, fbWidth, fbStride, fbHeight, rc, ticks, Gamma);
 
+#ifdef USE_FPS_COUNTER
   if (m_xfb_written)
     m_fps_counter.Update();
+#endif
 
   frameCount++;
   GFX_DEBUGGER_PAUSE_AT(NEXT_FRAME, true);

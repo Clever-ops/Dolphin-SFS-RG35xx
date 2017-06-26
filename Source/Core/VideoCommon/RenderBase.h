@@ -28,7 +28,9 @@
 #include "Common/MathUtil.h"
 #include "VideoCommon/AVIDump.h"
 #include "VideoCommon/BPMemory.h"
+#ifdef USE_FPS_COUNTER
 #include "VideoCommon/FPSCounter.h"
+#endif
 #include "VideoCommon/VideoCommon.h"
 
 class PostProcessingShaderImplementation;
@@ -172,7 +174,9 @@ protected:
   TargetRectangle m_target_rectangle = {};
   bool m_xfb_written = false;
 
+#ifdef USE_FPS_COUNTER
   FPSCounter m_fps_counter;
+#endif
 
   std::unique_ptr<PostProcessingShaderImplementation> m_post_processor;
 
