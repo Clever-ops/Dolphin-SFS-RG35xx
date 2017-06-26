@@ -22,7 +22,7 @@ SANITIZER       = 0
 
 PERF_TEST        = 0
 DEBUGFAST        = 0
-LOGGING          = 1
+LOGGING          = 0
 HAVE_OPENGL_CORE = 1
 HAVE_VULKAN      = 1
 
