@@ -20,7 +20,7 @@ LTO             = 0
 GC_SECTIONS     = 0
 SANITIZER       = 0
 
-PERF_TEST        = 1
+PERF_TEST        = 0
 DEBUGFAST        = 0
 LOGGING          = 1
 HAVE_OPENGL_CORE = 1
