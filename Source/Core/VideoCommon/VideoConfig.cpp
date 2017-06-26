@@ -141,8 +141,10 @@ void VideoConfig::Load(const std::string& ini_file)
   VerifyValidity();
 }
 
+#if 0
 #ifdef __LIBRETRO__
 #include "VideoConfig_libretro.h"
+#endif
 #endif
 
 void VideoConfig::GameIniLoad()
@@ -165,8 +167,10 @@ void VideoConfig::GameIniLoad()
 
   IniFile iniFile;
 
+#if 0
 #ifdef __LIBRETRO__
   if (!VideoConfigLoadGameIniLibretro(&iniFile, SConfig::GetInstance().GetGameID().c_str(), SConfig::GetInstance().GetRevision()))
+#endif
 #endif
      iniFile = SConfig::GetInstance().LoadGameIni();
 
