@@ -14,6 +14,9 @@ struct Options
   retro_variable pal60;
   retro_variable progressive_scan;
   retro_variable DSP_mode;
+  retro_variable skip_efb_access_from_cpu;
+  retro_variable efb_ignore_format_changes;
+  retro_variable store_efb_copies_to_texture_only;
 };
 
 extern Options options;

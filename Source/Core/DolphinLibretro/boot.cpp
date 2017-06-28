@@ -88,6 +88,9 @@ bool retro_load_game(const struct retro_game_info* game)
   get_variable(&options.pal60);
   get_variable(&options.progressive_scan);
   get_variable(&options.DSP_mode);
+  get_variable(&options.skip_efb_access_from_cpu);
+  get_variable(&options.efb_ignore_format_changes);
+  get_variable(&options.store_efb_copies_to_texture_only);
 
   check_variables(true);
 
@@ -429,7 +432,6 @@ bool retro_load_game(const struct retro_game_info* game)
 
   /* HACKS */
 
-  g_ActiveConfig.bEFBAccessEnable      = false;
   g_ActiveConfig.bBBoxEnable           = false;
   g_ActiveConfig.bForceProgressive     = true;
 
@@ -438,7 +440,9 @@ bool retro_load_game(const struct retro_game_info* game)
   EFBScaledCopy        = true;
 #endif
 
-  g_ActiveConfig.bEFBEmulateFormatChanges = false;
+  g_ActiveConfig.bEFBAccessEnable         = options.skip_efb_access_from_cpu == "OFF";
+  g_ActiveConfig.bSkipEFBCopyToRam        = options.store_efb_copies_to_texture_only == "ON";
+  g_ActiveConfig.bEFBEmulateFormatChanges = options.efb_ignore_format_changes == "OFF";
 
   /* END OF GFX.INI */
 

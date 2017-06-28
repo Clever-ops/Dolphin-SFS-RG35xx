@@ -49,6 +49,9 @@ retro_variable options_desc[] = {{"dolphin_renderer", "Renderer; Hardware|Softwa
                                  {"dolphin_progressive_scan", "Progressive scan (HD); OFF|ON"},
                                  {"dolphin_dsp_mode", "DSP mode; HLE|LLE recompiler|LLE interpreter"},
                                  {"dolphin_internal_resolution", "Internal resolution (restart); 1x (640x528)|1.5x (960x792)|2x (1280x1056)|2.5x (1600x1320)|3x (1920x1584)|4x (2560x2112)|5x (3200x2640)|6x (3840x3168)|7x (4480x3696)|8x (5120x4224)|Custom"},
+                                 {"dolphin_skip_efb_access_from_cpu", "Skip EFB Access From CPU; OFF|ON"},
+                                 {"dolphin_efb_ignore_format_changes", "Ignore EFB Format Changes; ON|OFF"},
+                                 {"dolphin_store_efb_copies_to_texture_only", "Store EFB Copies To Texture Only; ON|OFF"},
                                  {NULL, NULL}};
 
 Options options = *(Options*)options_desc;
