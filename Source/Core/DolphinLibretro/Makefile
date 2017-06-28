@@ -78,6 +78,7 @@ INCLUDES += -I$(DEPS_DIR)/enet/include
 INCLUDES += -I$(DEPS_DIR)/LZO
 INCLUDES += -I$(DEPS_DIR)/zlib
 INCLUDES += -I$(DEPS_DIR)/libpng
+INCLUDES += -I$(LIBRETRO_DIR)/libretro-common/include
 
 CXXINCLUDES += -I$(BASE_DIR)
 CXXINCLUDES += -I$(DEPS_DIR)/SFML/include
@@ -106,6 +107,11 @@ OBJECTS += state.o
 OBJECTS += stubs.o
 OBJECTS += video.o
 OBJECTS += ../UICommon/UICommon.o
+OBJECTS += libretro-common/compat/compat_posix_string.o
+OBJECTS += libretro-common/compat/compat_snprintf.o 
+OBJECTS += libretro-common/compat/compat_strcasestr.o
+OBJECTS += libretro-common/compat/compat_strl.o
+OBJECTS += libretro-common/file/file_path.o
 
 include rules/core.mk
 include rules/common.mk
