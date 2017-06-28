@@ -176,13 +176,11 @@ void retro_get_system_info(struct retro_system_info* info)
 
 void retro_get_system_av_info(struct retro_system_av_info* info)
 {
-  info->geometry.base_width = 640;
-  info->geometry.base_height = 448;
+  info->geometry.base_width  = get_fbo_width();;
+  info->geometry.base_height = get_fbo_height();
 
-  info->geometry.max_width = 2048;   // 640 * max scale
-  info->geometry.max_height = 2048;  // 528 * max scale
-  //   info->geometry.max_width = 640; // 640 * max scale
-  //   info->geometry.max_height = 528; // 528 * max scale
+  info->geometry.max_width   = get_fbo_width();
+  info->geometry.max_height  = get_fbo_height();
 
   info->geometry.aspect_ratio = (float)(4.0 / 3.0);
 

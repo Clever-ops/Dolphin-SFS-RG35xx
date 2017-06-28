@@ -152,6 +152,10 @@ void rescale_video(void)
          break;
 
    }
+
+   struct retro_system_av_info av_info;
+   retro_get_system_av_info(&av_info);
+   environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &av_info);
 }
 
 void init_video(void)
