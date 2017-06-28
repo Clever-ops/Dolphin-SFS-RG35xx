@@ -2,6 +2,8 @@
 #include <libretro.h>
 #include <string>
 
+#include <file/file_path.h>
+
 #include "Common/CommonPaths.h"
 #include "Common/Logging/LogManager.h"
 #include "Core/BootManager.h"
@@ -30,24 +32,35 @@ bool retro_load_game(const struct retro_game_info* game)
   const char* system_dir = NULL;
   const char* core_assets_dir = NULL;
   std::string user_dir;
+  std::string system_dir_str;
+  std::string system_dir_title;
 
   environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_dir);
   environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_dir);
   environ_cb(RETRO_ENVIRONMENT_GET_CORE_ASSETS_DIRECTORY, &core_assets_dir);
 
+  system_dir_title = std::string("Dolphin");
+  system_dir_str   = std::string(system_dir) + DIR_SEP "Dolphin";
+
+  if (!path_is_directory(system_dir_str.c_str()))
+  {
+     system_dir_title = "dolphin-emu";
+     system_dir_str   = std::string(system_dir) + DIR_SEP "dolphin-emu";
+  }
+
   if (save_dir && *save_dir)
     user_dir = std::string(save_dir) + DIR_SEP "User";
   else if (system_dir && *system_dir)
-    user_dir = std::string(system_dir) + DIR_SEP "dolphin-emu" DIR_SEP "User";
+    user_dir = std::string(system_dir_str) + DIR_SEP "User";
 
   if (system_dir && *system_dir)
-    sys_dir = std::string(system_dir) + DIR_SEP "dolphin-emu" DIR_SEP "Sys";
+    sys_dir = std::string(system_dir_str) + DIR_SEP "Sys";
   else if (core_assets_dir && *core_assets_dir)
-    sys_dir = std::string(core_assets_dir) + DIR_SEP "dolphin-emu" DIR_SEP "Sys";
+    sys_dir = std::string(core_assets_dir) + DIR_SEP + system_dir_title.c_str() + DIR_SEP "Sys";
   else if (save_dir && *save_dir)
     sys_dir = std::string(save_dir) + DIR_SEP "Sys";
   else
-    sys_dir = "dolphin-emu" DIR_SEP "Sys";
+    sys_dir = system_dir_title + DIR_SEP "Sys";
 
   UICommon::SetUserDirectory(user_dir);
   UICommon::CreateDirectories();
