@@ -52,6 +52,7 @@ retro_variable options_desc[] = {{"dolphin_renderer", "Renderer; Hardware|Softwa
                                  {"dolphin_skip_efb_access_from_cpu", "Skip EFB Access From CPU; OFF|ON"},
                                  {"dolphin_efb_ignore_format_changes", "Ignore EFB Format Changes; ON|OFF"},
                                  {"dolphin_store_efb_copies_to_texture_only", "Store EFB Copies To Texture Only; ON|OFF"},
+                                 {"dolphin_scaled_efb_copy", "Scaled EFB Copy; OFF|ON"},
                                  {NULL, NULL}};
 
 Options options = *(Options*)options_desc;

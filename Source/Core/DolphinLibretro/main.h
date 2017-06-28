@@ -17,6 +17,7 @@ struct Options
   retro_variable skip_efb_access_from_cpu;
   retro_variable efb_ignore_format_changes;
   retro_variable store_efb_copies_to_texture_only;
+  retro_variable scaled_efb_copy;
 };
 
 extern Options options;

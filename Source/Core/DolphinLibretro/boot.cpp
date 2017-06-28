@@ -91,6 +91,7 @@ bool retro_load_game(const struct retro_game_info* game)
   get_variable(&options.skip_efb_access_from_cpu);
   get_variable(&options.efb_ignore_format_changes);
   get_variable(&options.store_efb_copies_to_texture_only);
+  get_variable(&options.scaled_efb_copy);
 
   check_variables(true);
 
@@ -435,11 +436,7 @@ bool retro_load_game(const struct retro_game_info* game)
   g_ActiveConfig.bBBoxEnable           = false;
   g_ActiveConfig.bForceProgressive     = true;
 
-#if 0
-  EFBToTextureEnable   = true;
-  EFBScaledCopy        = true;
-#endif
-
+  g_ActiveConfig.bCopyEFBScaled           = options.scaled_efb_copy == "ON";
   g_ActiveConfig.bEFBAccessEnable         = options.skip_efb_access_from_cpu == "OFF";
   g_ActiveConfig.bSkipEFBCopyToRam        = options.store_efb_copies_to_texture_only == "ON";
   g_ActiveConfig.bEFBEmulateFormatChanges = options.efb_ignore_format_changes == "OFF";
