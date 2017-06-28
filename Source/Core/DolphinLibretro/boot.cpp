@@ -49,9 +49,28 @@ bool retro_load_game(const struct retro_game_info* game)
   }
 
   if (save_dir && *save_dir)
-    user_dir = std::string(save_dir) + DIR_SEP "User";
+  {
+     std::string tmp = std::string(save_dir) + DIR_SEP "Dolphin";
+
+     if (path_is_directory(tmp.c_str()))
+     {
+        system_dir_title = std::string("Dolphin");
+        system_dir_str   = tmp;
+     }
+     else
+     {
+        tmp = std::string(save_dir) + DIR_SEP "dolphin-emu";
+
+        if (path_is_directory(tmp.c_str()))
+        {
+           system_dir_title = std::string("dolphin-emu");
+           system_dir_str   = tmp;
+        }
+     }
+     user_dir        = std::string(save_dir) + DIR_SEP "User";
+  }
   else if (system_dir && *system_dir)
-    user_dir = std::string(system_dir_str) + DIR_SEP "User";
+     user_dir = std::string(system_dir_str) + DIR_SEP "User";
 
   if (system_dir && *system_dir)
     sys_dir = std::string(system_dir_str) + DIR_SEP "Sys";
