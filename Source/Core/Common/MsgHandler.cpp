@@ -108,8 +108,15 @@ bool DefaultMsgHandler(const char* caption, const char* text, bool yes_no, int S
   if (Style == WARNING)
     STYLE = MB_ICONWARNING;
 
+#ifdef __LIBRETRO__
+  fprintf(stderr, "%s\n", text);
+
+  // Return no to any question (which will in general crash the emulator)
+  return false;
+#else
   return IDYES == MessageBox(0, UTF8ToTStr(text).c_str(), UTF8ToTStr(caption).c_str(),
                              STYLE | (yes_no ? MB_YESNO : MB_OK));
+#endif
 #else
   fprintf(stderr, "%s\n", text);
 
