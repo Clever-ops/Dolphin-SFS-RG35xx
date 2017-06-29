@@ -331,19 +331,14 @@ void CommandBufferManager::SubmitCommandBuffer(size_t index, VkSemaphore wait_se
   }
 
 #ifdef __LIBRETRO__
-#if 0
-  Libretro::vulkan->set_command_buffers(Libretro::vulkan->handle,
-                                        static_cast<u32>(resources.command_buffers.size()),
-                                        resources.command_buffers.data());
-#else
   Libretro::vulkan->lock_queue(Libretro::vulkan->handle);
-  VkResult res =
-      vkQueueSubmit(g_vulkan_context->GetGraphicsQueue(), 1, &submit_info, resources.fence);
-  Libretro::vulkan->unlock_queue(Libretro::vulkan->handle);
 #endif
-#else
+
   VkResult res =
       vkQueueSubmit(g_vulkan_context->GetGraphicsQueue(), 1, &submit_info, resources.fence);
+
+#ifdef __LIBRETRO__
+  Libretro::vulkan->unlock_queue(Libretro::vulkan->handle);
 #endif
 
   if (res != VK_SUCCESS)
