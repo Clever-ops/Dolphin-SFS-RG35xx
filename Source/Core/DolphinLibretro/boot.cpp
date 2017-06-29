@@ -79,8 +79,14 @@ bool retro_load_game(const struct retro_game_info* game)
   
   if (!path_is_directory(sys_dir.c_str()))
   {
+     system_dir_title = std::string("Dolphin");
      if (core_assets_dir && *core_assets_dir)
         sys_dir = std::string(core_assets_dir) + DIR_SEP + system_dir_title.c_str() + DIR_SEP "Sys";
+     if (!path_is_directory(sys_dir.c_str()))
+     {
+        system_dir_title = std::string("dolphin-emu");
+        sys_dir = std::string(core_assets_dir) + DIR_SEP + system_dir_title.c_str() + DIR_SEP "Sys";
+     }
   }
 
   if (!path_is_directory(sys_dir.c_str()))
