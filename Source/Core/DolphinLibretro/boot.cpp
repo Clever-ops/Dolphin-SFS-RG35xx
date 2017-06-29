@@ -73,13 +73,24 @@ bool retro_load_game(const struct retro_game_info* game)
      user_dir = std::string(system_dir_str) + DIR_SEP "User";
 
   if (system_dir && *system_dir)
-    sys_dir = std::string(system_dir_str) + DIR_SEP "Sys";
-  else if (core_assets_dir && *core_assets_dir)
-    sys_dir = std::string(core_assets_dir) + DIR_SEP + system_dir_title.c_str() + DIR_SEP "Sys";
-  else if (save_dir && *save_dir)
-    sys_dir = std::string(save_dir) + DIR_SEP "Sys";
-  else
-    sys_dir = system_dir_title + DIR_SEP "Sys";
+  {
+     sys_dir = std::string(system_dir_str) + DIR_SEP "Sys";
+  }
+  
+  if (!path_is_directory(sys_dir.c_str()))
+  {
+     if (core_assets_dir && *core_assets_dir)
+        sys_dir = std::string(core_assets_dir) + DIR_SEP + system_dir_title.c_str() + DIR_SEP "Sys";
+  }
+
+  if (!path_is_directory(sys_dir.c_str()))
+  {
+     if (save_dir && *save_dir)
+        sys_dir = std::string(save_dir) + DIR_SEP "Sys";
+  }
+
+  if (!path_is_directory(sys_dir.c_str()))
+     sys_dir = system_dir_title + DIR_SEP "Sys";
 
   UICommon::SetUserDirectory(user_dir);
   UICommon::CreateDirectories();
