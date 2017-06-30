@@ -5,12 +5,17 @@
 
 size_t retro_serialize_size(void)
 {
-  size_t size = 0;
+   size_t size = 0;
+   bool wasUnpaused = Core::PauseAndLock(true);
+   if (wasUnpaused)
+   {
 
-  PointerWrap p((u8**)&size, PointerWrap::MODE_MEASURE);
-  State::DoState(p);
+      PointerWrap p((u8**)&size, PointerWrap::MODE_MEASURE);
+      State::DoState(p);
+   }
+   Core::PauseAndLock(false, wasUnpaused);
 
-  return size;
+   return size;
 }
 
 bool retro_serialize(void* data, size_t size)
