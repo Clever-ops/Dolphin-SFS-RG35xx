@@ -86,7 +86,7 @@ void VideoConfig::Load(const std::string& ini_file)
   settings->Get("FastDepthCalc", &bFastDepthCalc, true);
   settings->Get("MSAA", &iMultisamples, 1);
   settings->Get("SSAA", &bSSAA, false);
-  //settings->Get("EFBScale", &iEFBScale, (int)SCALE_1X);  // native
+  settings->Get("EFBScale", &iEFBScale, (int)SCALE_1X);  // native
   settings->Get("TexFmtOverlayEnable", &bTexFmtOverlayEnable, false);
   settings->Get("TexFmtOverlayCenter", &bTexFmtOverlayCenter, false);
   settings->Get("WireFrame", &bWireFrame, false);
