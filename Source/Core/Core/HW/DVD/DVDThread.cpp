@@ -154,7 +154,9 @@ void DoState(PointerWrap& p)
 
 void WaitUntilIdle()
 {
+#ifndef __LIBRETRO__
   _assert_(Core::IsCPUThread());
+#endif
 
   while (!s_request_queue.Empty())
     s_result_queue_expanded.Wait();
