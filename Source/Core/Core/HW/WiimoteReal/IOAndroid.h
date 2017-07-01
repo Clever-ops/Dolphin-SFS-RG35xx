@@ -4,7 +4,7 @@
 
 #pragma once
 
-#ifdef ANDROID
+#if defined(ANDROID) &&!defined(__LIBRETRO__)
 #include <jni.h>
 
 #include "Common/StringUtil.h"
