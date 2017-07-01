@@ -27,7 +27,11 @@
 #include <Windows.h>
 #else
 #include <errno.h>
+#ifdef ANDROID
+#include "include/iconv.h"
+#else
 #include <iconv.h>
+#endif
 #include <locale.h>
 #endif
 
