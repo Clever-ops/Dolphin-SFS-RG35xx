@@ -20,6 +20,11 @@
 VideoConfig g_Config;
 VideoConfig g_ActiveConfig;
 
+#ifdef __LIBRETRO__
+#include "DolphinLibretro/main.h"
+using namespace Libretro;
+#endif
+
 void UpdateActiveConfig()
 {
   if (Movie::IsPlayingInput() && Movie::IsConfigSaved())
@@ -86,7 +91,7 @@ void VideoConfig::Load(const std::string& ini_file)
   settings->Get("FastDepthCalc", &bFastDepthCalc, true);
   settings->Get("MSAA", &iMultisamples, 1);
   settings->Get("SSAA", &bSSAA, false);
-  settings->Get("EFBScale", &iEFBScale, (int)SCALE_1X);  // native
+  settings->Get("EFBScale", &iEFBScale, (int)efb_override_scale());  // native
   settings->Get("TexFmtOverlayEnable", &bTexFmtOverlayEnable, false);
   settings->Get("TexFmtOverlayCenter", &bTexFmtOverlayCenter, false);
   settings->Get("WireFrame", &bWireFrame, false);
