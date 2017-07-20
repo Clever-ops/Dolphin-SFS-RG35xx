@@ -140,6 +140,9 @@ void rescale_video(void)
       case 17: /* 14x Native (8960x7392) */
       case 18: /* 15x Native (9600x7920) for 9K */
       case 19: /* 16x Native (10240x8448) for 10K */
+      case 20: /* 17x Native (10880x8976)  */
+      case 21: /* 18x Native (11520x9504) for 12K */
+      case 22: /* 19x Native (12160x10032)  */
          FBO_WIDTH  = 640 * (g_ActiveConfig.iEFBScale - 3);
          FBO_HEIGHT = 528 * (g_ActiveConfig.iEFBScale - 3);
          break;
