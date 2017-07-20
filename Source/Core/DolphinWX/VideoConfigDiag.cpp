@@ -560,15 +560,19 @@ VideoConfigDiag::VideoConfigDiag(wxWindow* parent, const std::string& title)
 					   _("10x Native (6400x5280)"),
 					   _("11x Native (7040x5808)"),
 					   _("12x Native (7680x6336) for 8K"),
+					   _("13x Native"),
+					   _("14x Native"),
+					   _("15x Native"),
+					   _("16x Native"),
                                            _("Custom")};
 
       wxChoice* const choice_efbscale = CreateChoice(
           page_enh, vconfig.iEFBScale, wxGetTranslation(internal_res_desc),
-          (vconfig.iEFBScale > 15) ? ArraySize(efbscale_choices) : ArraySize(efbscale_choices) - 1,
+          (vconfig.iEFBScale > 19) ? ArraySize(efbscale_choices) : ArraySize(efbscale_choices) - 1,
           efbscale_choices);
 
-      if (vconfig.iEFBScale > 15)
-        choice_efbscale->SetSelection(16);
+      if (vconfig.iEFBScale > 19)
+        choice_efbscale->SetSelection(20);
 
       szr_enh->Add(new wxStaticText(page_enh, wxID_ANY, _("Internal Resolution:")),
                    wxGBPosition(row, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);

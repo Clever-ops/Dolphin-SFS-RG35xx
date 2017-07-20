@@ -127,45 +127,22 @@ void rescale_video(void)
          FBO_HEIGHT = 1320;
          break;
       case 6: /* 3x Native (1920x1584) for 1080p */
-         FBO_WIDTH  = 1920;
-         FBO_HEIGHT = 1584;
-         break;
       case 7: /* 4x Native (2560x2112) for 1440p */
-         FBO_WIDTH  = 2560;
-         FBO_HEIGHT = 2112;
-         break;
       case 8: /* 5x Native (3200x2640) */
-         FBO_WIDTH  = 3200;
-         FBO_HEIGHT = 2640;
-         break;
       case 9: /* 6x Native (3840x3168) for 4K */
-         FBO_WIDTH  = 3840;
-         FBO_HEIGHT = 3168;
-         break;
       case 10: /* 7x Native (4480x3696) */
-         FBO_WIDTH  = 4480;
-         FBO_HEIGHT = 3696;
-         break;
       case 11: /* 8x Native (5120x4224) for 5K */
-         FBO_WIDTH  = 5120;
-         FBO_HEIGHT = 4224;
+      case 12: /* 9x Native (5760x4752) */
+      case 13: /* 10x Native (6400x5280) for 6K */
+      case 14: /* 11x Native (7040x5808) for 7K */
+      case 15: /* 12x Native (8680x6336) for 8K */
+      case 16: /* 13x Native (8320x6864) */
+      case 17: /* 14x Native (8960x7392) */
+      case 18: /* 15x Native (9600x7920) for 9K */
+      case 19: /* 16x Native (10240x8448) for 10K */
+         FBO_WIDTH  = 640 * (g_ActiveConfig.iEFBScale - 3);
+         FBO_HEIGHT = 528 * (g_ActiveConfig.iEFBScale - 3);
          break;
-      case 12:
-	 FBO_WIDTH = 5760;
-	 FBO_HEIGHT = 4752;
-	 break;
-      case 13:
-	 FBO_WIDTH = 6400;
-	 FBO_HEIGHT = 5280;
-	 break;
-      case 14:
-	 FBO_WIDTH = 7040;
-	 FBO_HEIGHT = 5808;
-	 break;
-      case 15:
-	 FBO_WIDTH = 7680;
-	 FBO_HEIGHT = 6336;
-	 break;
    }
 
    struct retro_system_av_info av_info;

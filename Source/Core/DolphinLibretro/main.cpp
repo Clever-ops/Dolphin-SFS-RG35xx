@@ -48,7 +48,7 @@ retro_variable options_desc[] = {{"dolphin_renderer", "Renderer; Hardware|Softwa
                                  {"dolphin_pal60", "PAL60; OFF|ON"},
                                  {"dolphin_progressive_scan", "Progressive scan (HD); OFF|ON"},
                                  {"dolphin_dsp_mode", "DSP mode; HLE|LLE recompiler|LLE interpreter"},
-                                 {"dolphin_internal_resolution", "Internal resolution (restart); 1x (640x528)|1.5x (960x792)|2x (1280x1056)|2.5x (1600x1320)|3x (1920x1584)|4x (2560x2112)|5x (3200x2640)|6x (3840x3168)|7x (4480x3696)|8x (5120x4224)|9x (5760x4752)|10x (6400x5280)|11x (7040x5808)|12x (7680x6336)|Custom"},
+                                 {"dolphin_internal_resolution", "Internal resolution (restart); 1x (640x528)|1.5x (960x792)|2x (1280x1056)|2.5x (1600x1320)|3x (1920x1584)|4x (2560x2112)|5x (3200x2640)|6x (3840x3168)|7x (4480x3696)|8x (5120x4224)|9x (5760x4752)|10x (6400x5280)|11x (7040x5808)|12x (7680x6336)|13x (8320x6864)|14x (8960x7392)|15x (9600x7920)|16x (10240x8448)|Custom"},
                                  {"dolphin_skip_efb_access_from_cpu", "Skip EFB Access From CPU; OFF|ON"},
                                  {"dolphin_efb_ignore_format_changes", "Ignore EFB Format Changes; ON|OFF"},
                                  {"dolphin_store_efb_copies_to_texture_only", "Store EFB Copies To Texture Only; ON|OFF"},
@@ -83,7 +83,11 @@ struct resolution_list resolutions[] =
    {"10x (6400x5280)",	13},
    {"11x (7040x5808)",	14},
    {"12x (7680x6336)",	15},
-   {"Custom",           16},
+   {"13x (8320x6864)",	16},
+   {"14x (8960x7392)",	17},
+   {"15x (9600x7920)",	18},
+   {"16x (10240x8448)",	19},
+   {"Custom",           20},
 };
 
 bool should_override_efb_scale(void)
