@@ -78,8 +78,8 @@ struct resolution_list resolutions[] =
    {"5x (3200x2640)",   8},
    {"6x (3840x3168)",   9},
    {"7x (4480x3696)",   10},
-   {"8x (5120x4224",    11},
-   {"Custom",           0},
+   {"8x (5120x4224)",   11},
+   {"Custom",           12},
 };
 
 bool should_override_efb_scale(void)
