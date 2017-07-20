@@ -150,7 +150,22 @@ void rescale_video(void)
          FBO_WIDTH  = 5120;
          FBO_HEIGHT = 4224;
          break;
-
+      case 12:
+	 FBO_WIDTH = 5760;
+	 FBO_HEIGHT = 4752;
+	 break;
+      case 13:
+	 FBO_WIDTH = 6400;
+	 FBO_HEIGHT = 5280;
+	 break;
+      case 14:
+	 FBO_WIDTH = 7040;
+	 FBO_HEIGHT = 5808;
+	 break;
+      case 15:
+	 FBO_WIDTH = 7680;
+	 FBO_HEIGHT = 6336;
+	 break;
    }
 
    struct retro_system_av_info av_info;
