@@ -195,9 +195,7 @@ void retro_get_system_av_info(struct retro_system_av_info* info)
 
   info->geometry.aspect_ratio = (float)(4.0 / 3.0);
 
-  info->timing.fps = 60.0;
-  //   info->timing.fps = 60.0 / 1.001;
-  //   info->timing.fps = VideoInterface::GetTargetRefreshRate();
+  info->timing.fps = 59.88814 ;
 
   info->timing.sample_rate = 32000.0;
 }
