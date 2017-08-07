@@ -35,6 +35,7 @@ bool retro_load_game(const struct retro_game_info* game)
   std::string system_dir_str;
   std::string system_dir_title;
 
+  environ_cb(RETRO_ENVIRONMENT_SET_HW_SHARED_CONTEXT, NULL);
   environ_cb(RETRO_ENVIRONMENT_GET_SAVE_DIRECTORY, &save_dir);
   environ_cb(RETRO_ENVIRONMENT_GET_SYSTEM_DIRECTORY, &system_dir);
   environ_cb(RETRO_ENVIRONMENT_GET_CORE_ASSETS_DIRECTORY, &core_assets_dir);
