@@ -34,3 +34,15 @@ CMakeLists.txt.user
 *.kdev4
 # Ignore IDEA/Clion files/dirs
 /.idea/
+**/*.cmake
+**/CMakeFiles
+**/*.a
+**/Makefile
+.cproject
+.project
+.settings/
+Binaries/
+CMakeCache.txt
+exports/
+dolphin_libretro.so
+
