@@ -42,6 +42,9 @@ namespace Memory
 // Store the MemArena here
 u8* physical_base = nullptr;
 u8* logical_base = nullptr;
+#ifdef __LIBRETRO__
+u8* single_physical_base = nullptr;
+#endif
 
 // The MemArena class
 static Common::MemArena g_arena;
@@ -55,6 +58,10 @@ u8* m_pRAM;
 u8* m_pL1Cache;
 u8* m_pEXRAM;
 u8* m_pFakeVMEM;
+#ifdef __LIBRETRO__
+u8* m_pContiguousRAM;
+u32 m_TotalMemorySize ;
+#endif
 
 // MMIO mapping object.
 std::unique_ptr<MMIO::Mapping> mmio_mapping;
@@ -207,6 +214,18 @@ void Init()
     }
   }
 
+#ifdef __LIBRETRO__
+  m_TotalMemorySize = mem_size ;
+  single_physical_base = Common::MemArena::GetMemoryBase(m_TotalMemorySize);
+  m_pContiguousRAM = (u8*)g_arena.CreateView(0, m_TotalMemorySize, single_physical_base);
+
+  if (!m_pContiguousRAM)
+  {
+    PanicAlert("MemoryMap_Setup: Failed finding a single memory base.");
+    exit(0);
+  }
+#endif
+
 #ifndef _ARCH_32
   logical_base = physical_base + 0x200000000;
 #endif
@@ -292,6 +311,10 @@ void Shutdown()
     g_arena.ReleaseView(*region.out_pointer, region.size);
     *region.out_pointer = nullptr;
   }
+#ifdef __LIBRETRO__
+  g_arena.ReleaseView(m_pContiguousRAM, m_TotalMemorySize);
+  m_pContiguousRAM = nullptr;
+#endif
   for (auto& entry : logical_mapped_entries)
   {
     g_arena.ReleaseView(entry.mapped_pointer, entry.mapped_size);
@@ -300,6 +323,9 @@ void Shutdown()
   g_arena.ReleaseSHMSegment();
   physical_base = nullptr;
   logical_base = nullptr;
+#ifdef __LIBRETRO__
+  single_physical_base = nullptr;
+#endif
   mmio_mapping.reset();
   INFO_LOG(MEMMAP, "Memory system shut down.");
 }

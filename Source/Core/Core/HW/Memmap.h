@@ -36,6 +36,10 @@ extern u8* m_pRAM;
 extern u8* m_pEXRAM;
 extern u8* m_pL1Cache;
 extern u8* m_pFakeVMEM;
+#ifdef __LIBRETRO__
+extern u8* m_pContiguousRAM;
+extern u32 m_TotalMemorySize ;
+#endif
 
 enum
 {
