@@ -1,4 +1,0 @@
-﻿  imgui.cpp
-  imgui_draw.cpp
-  imgui_widgets.cpp
-  imgui.vcxproj -> C:\msys64\home\raph\lr-dolphin\Source\..\Build\x64\Release\imgui\bin\imgui.lib
