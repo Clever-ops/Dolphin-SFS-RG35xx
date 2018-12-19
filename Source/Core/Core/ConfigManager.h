@@ -123,7 +123,6 @@ struct SConfig
   bool bRunCompareClient = false;
 
   bool bMMU = false;
-  bool bDCBZOFF = false;
   bool bLowDCBZHack = false;
   int iBBDumpPort = 0;
   bool bFastDiscSpeed = false;
@@ -213,7 +212,7 @@ struct SConfig
   static const char* GetDirectoryForRegion(DiscIO::Region region);
   std::string GetBootROMPath(const std::string& region_directory) const;
   bool SetPathsAndGameMetadata(const BootParameters& boot);
-  void CheckMemcardPath(std::string& memcardPath, const std::string& gameRegion, bool isSlotA);
+  static DiscIO::Region GetFallbackRegion();
   DiscIO::Language GetCurrentLanguage(bool wii) const;
 
   IniFile LoadDefaultGameIni() const;
@@ -224,8 +223,6 @@ struct SConfig
   static IniFile LoadLocalGameIni(const std::string& id, std::optional<u16> revision);
   static IniFile LoadGameIni(const std::string& id, std::optional<u16> revision);
 
-  std::string m_strMemoryCardA;
-  std::string m_strMemoryCardB;
   std::string m_strGbaCartA;
   std::string m_strGbaCartB;
   ExpansionInterface::TEXIDevices m_EXIDevice[3];
@@ -274,6 +271,7 @@ struct SConfig
   bool m_showIDColumn;
   bool m_showRegionColumn;
   bool m_showSizeColumn;
+  bool m_showTagsColumn;
 
   std::string m_WirelessMac;
   bool m_PauseMovie;
@@ -281,7 +279,6 @@ struct SConfig
   bool m_ShowFrameCount;
   bool m_ShowRTC;
   std::string m_strMovieAuthor;
-  unsigned int m_FrameSkip;
   bool m_DumpFrames;
   bool m_DumpFramesSilent;
   bool m_ShowInputDisplay;

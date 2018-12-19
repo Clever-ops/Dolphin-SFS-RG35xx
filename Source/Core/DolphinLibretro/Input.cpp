@@ -35,6 +35,11 @@
 
 namespace Libretro
 {
+namespace Video
+{
+extern WindowSystemInfo wsi;
+}
+
 extern retro_environment_t environ_cb;
 namespace Input
 {
@@ -358,7 +363,7 @@ void Init()
 {
   environ_cb(RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE, &rumble);
 
-  g_controller_interface.Initialize(nullptr);
+  g_controller_interface.Initialize(Libretro::Video::wsi);
 
   g_controller_interface.AddDevice(std::make_shared<Device>(RETRO_DEVICE_JOYPAD, 0));
   g_controller_interface.AddDevice(std::make_shared<Device>(RETRO_DEVICE_JOYPAD, 1));

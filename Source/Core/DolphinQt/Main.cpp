@@ -20,7 +20,7 @@
 #include "Common/MsgHandler.h"
 #include "Core/Analytics.h"
 #include "Core/Boot/Boot.h"
-#include "Core/BootManager.h"
+#include "Core/ConfigManager.h"
 #include "Core/Core.h"
 #include "DolphinQt/Host.h"
 #include "DolphinQt/MainWindow.h"
@@ -184,7 +184,7 @@ int main(int argc, char* argv[])
 
       analytics_prompt.setIcon(QMessageBox::Question);
       analytics_prompt.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-      analytics_prompt.setWindowTitle(QObject::tr("Allow analytics"));
+      analytics_prompt.setWindowTitle(QObject::tr("Allow Usage Statistics Reporting"));
       analytics_prompt.setText(
           QObject::tr("Do you authorize Dolphin to report information to Dolphin's developers?"));
       analytics_prompt.setInformativeText(

@@ -27,7 +27,7 @@
 #include "Core/HW/ProcessorInterface.h"
 #include "Core/PatchEngine.h"
 #include "Core/PowerPC/Jit64/JitAsm.h"
-#include "Core/PowerPC/Jit64/JitRegCache.h"
+#include "Core/PowerPC/Jit64/RegCache/JitRegCache.h"
 #include "Core/PowerPC/Jit64Common/FarCodeCache.h"
 #include "Core/PowerPC/Jit64Common/Jit64PowerPCState.h"
 #include "Core/PowerPC/Jit64Common/TrampolineCache.h"
@@ -382,7 +382,7 @@ bool Jit64::Cleanup()
     did_something = true;
   }
 
-  if (Profiler::g_ProfileBlocks)
+  if (jo.profile_blocks)
   {
     ABI_PushRegistersAndAdjustStack({}, 0);
     // get end tic
@@ -608,7 +608,7 @@ void Jit64::Jit(u32 em_address)
     EnableOptimization();
 
     // Comment out the following to disable breakpoints (speed-up)
-    if (!Profiler::g_ProfileBlocks)
+    if (!jo.profile_blocks)
     {
       if (CPU::IsStepping())
       {
@@ -646,7 +646,7 @@ void Jit64::Jit(u32 em_address)
   blocks.FinalizeBlock(*b, jo.enableBlocklink, code_block.m_physical_addresses);
 }
 
-const u8* Jit64::DoJit(u32 em_address, JitBlock* b, u32 nextPC)
+u8* Jit64::DoJit(u32 em_address, JitBlock* b, u32 nextPC)
 {
   js.firstFPInstructionFound = false;
   js.isLastInstruction = false;
@@ -657,8 +657,8 @@ const u8* Jit64::DoJit(u32 em_address, JitBlock* b, u32 nextPC)
   js.numLoadStoreInst = 0;
   js.numFloatingPointInst = 0;
 
-  const u8* start =
-      AlignCode4();  // TODO: Test if this or AlignCode16 make a difference from GetCodePtr
+  // TODO: Test if this or AlignCode16 make a difference from GetCodePtr
+  u8* const start = AlignCode4();
   b->checkedEntry = start;
 
   // Downcount flag check. The last block decremented downcounter, and the flag should still be
@@ -668,8 +668,8 @@ const u8* Jit64::DoJit(u32 em_address, JitBlock* b, u32 nextPC)
   JMP(asm_routines.do_timing, true);  // downcount hit zero - go do_timing.
   SetJumpTarget(skip);
 
-  const u8* normalEntry = GetCodePtr();
-  b->normalEntry = normalEntry;
+  u8* const normal_entry = GetWritableCodePtr();
+  b->normalEntry = normal_entry;
 
   // Used to get a trace of the last few blocks before a crash, sometimes VERY useful
   if (ImHereDebug)
@@ -680,7 +680,7 @@ const u8* Jit64::DoJit(u32 em_address, JitBlock* b, u32 nextPC)
   }
 
   // Conditionally add profiling code.
-  if (Profiler::g_ProfileBlocks)
+  if (jo.profile_blocks)
   {
     // get start tic
     MOV(64, R(ABI_PARAM1), ImmPtr(&b->profile_data.ticStart));
@@ -756,8 +756,6 @@ const u8* Jit64::DoJit(u32 em_address, JitBlock* b, u32 nextPC)
     js.downcountAmount += opinfo->numCycles;
     js.fastmemLoadStore = nullptr;
     js.fixupExceptionHandler = false;
-    js.revertGprLoad = -1;
-    js.revertFprLoad = -1;
 
     if (!SConfig::GetInstance().bEnableDebugging)
       js.downcountAmount += PatchEngine::GetSpeedhackCycles(js.compilerPC);
@@ -800,13 +798,17 @@ const u8* Jit64::DoJit(u32 em_address, JitBlock* b, u32 nextPC)
                  ProcessorInterface::INT_CAUSE_PE_FINISH));
       FixupBranch noCPInt = J_CC(CC_Z, true);
 
-      gpr.Flush(RegCache::FlushMode::MaintainState);
-      fpr.Flush(RegCache::FlushMode::MaintainState);
+      {
+        RCForkGuard gpr_guard = gpr.Fork();
+        RCForkGuard fpr_guard = fpr.Fork();
 
-      MOV(32, PPCSTATE(pc), Imm32(op.address));
-      WriteExternalExceptionExit();
+        gpr.Flush();
+        fpr.Flush();
+
+        MOV(32, PPCSTATE(pc), Imm32(op.address));
+        WriteExternalExceptionExit();
+      }
       SwitchToNearCode();
-
       SetJumpTarget(noCPInt);
       SetJumpTarget(noExtIntEnable);
     }
@@ -824,14 +826,19 @@ const u8* Jit64::DoJit(u32 em_address, JitBlock* b, u32 nextPC)
 
         SwitchToFarCode();
         SetJumpTarget(b1);
-        gpr.Flush(RegCache::FlushMode::MaintainState);
-        fpr.Flush(RegCache::FlushMode::MaintainState);
+        {
+          RCForkGuard gpr_guard = gpr.Fork();
+          RCForkGuard fpr_guard = fpr.Fork();
 
-        // If a FPU exception occurs, the exception handler will read
-        // from PC.  Update PC with the latest value in case that happens.
-        MOV(32, PPCSTATE(pc), Imm32(op.address));
-        OR(32, PPCSTATE(Exceptions), Imm32(EXCEPTION_FPU_UNAVAILABLE));
-        WriteExceptionExit();
+          gpr.Flush();
+          fpr.Flush();
+
+          // If a FPU exception occurs, the exception handler will read
+          // from PC.  Update PC with the latest value in case that happens.
+          MOV(32, PPCSTATE(pc), Imm32(op.address));
+          OR(32, PPCSTATE(Exceptions), Imm32(EXCEPTION_FPU_UNAVAILABLE));
+          WriteExceptionExit();
+        }
         SwitchToNearCode();
 
         js.firstFPInstructionFound = true;
@@ -866,20 +873,8 @@ const u8* Jit64::DoJit(u32 em_address, JitBlock* b, u32 nextPC)
       // output, which needs to be bound in the actual instruction compilation.
       // TODO: make this smarter in the case that we're actually register-starved, i.e.
       // prioritize the more important registers.
-      for (int reg : op.regsIn)
-      {
-        if (gpr.NumFreeRegisters() < 2)
-          break;
-        if (op.gprInReg[reg] && !gpr.R(reg).IsImm())
-          gpr.BindToRegister(reg, true, false);
-      }
-      for (int reg : op.fregsIn)
-      {
-        if (fpr.NumFreeRegisters() < 2)
-          break;
-        if (op.fprInXmm[reg])
-          fpr.BindToRegister(reg, true, false);
-      }
+      gpr.PreloadRegisters(op.regsIn & op.gprInReg);
+      fpr.PreloadRegisters(op.fregsIn & op.fprInXmm);
 
       CompileInstruction(op);
 
@@ -908,24 +903,25 @@ const u8* Jit64::DoJit(u32 em_address, JitBlock* b, u32 nextPC)
           m_exception_handler_at_loc[js.fastmemLoadStore] = GetWritableCodePtr();
         }
 
-        BitSet32 gprToFlush = BitSet32::AllTrue(32);
-        BitSet32 fprToFlush = BitSet32::AllTrue(32);
-        if (js.revertGprLoad >= 0)
-          gprToFlush[js.revertGprLoad] = false;
-        if (js.revertFprLoad >= 0)
-          fprToFlush[js.revertFprLoad] = false;
-        gpr.Flush(RegCache::FlushMode::MaintainState, gprToFlush);
-        fpr.Flush(RegCache::FlushMode::MaintainState, fprToFlush);
+        RCForkGuard gpr_guard = gpr.Fork();
+        RCForkGuard fpr_guard = fpr.Fork();
+
+        gpr.Revert();
+        fpr.Revert();
+        gpr.Flush();
+        fpr.Flush();
+
         MOV(32, PPCSTATE(pc), Imm32(op.address));
         WriteExceptionExit();
         SwitchToNearCode();
       }
 
+      gpr.Commit();
+      fpr.Commit();
+
       // If we have a register that will never be used again, flush it.
-      for (int j : ~op.gprInUse)
-        gpr.StoreFromRegister(j);
-      for (int j : ~op.fprInUse)
-        fpr.StoreFromRegister(j);
+      gpr.Flush(~op.gprInUse);
+      fpr.Flush(~op.fprInUse);
 
       if (opinfo->flags & FL_LOADSTORE)
         ++js.numLoadStoreInst;
@@ -935,10 +931,10 @@ const u8* Jit64::DoJit(u32 em_address, JitBlock* b, u32 nextPC)
     }
 
 #if defined(_DEBUG) || defined(DEBUGFAST)
-    if (gpr.SanityCheck() || fpr.SanityCheck())
+    if (!gpr.SanityCheck() || !fpr.SanityCheck())
     {
       std::string ppc_inst = Common::GekkoDisassembler::Disassemble(op.inst.hex, em_address);
-      // NOTICE_LOG(DYNA_REC, "Unflushed register: %s", ppc_inst.c_str());
+      NOTICE_LOG(DYNA_REC, "Unflushed register: %s", ppc_inst.c_str());
     }
 #endif
     i += js.skipInstructions;
@@ -959,7 +955,7 @@ const u8* Jit64::DoJit(u32 em_address, JitBlock* b, u32 nextPC)
   LogGeneratedX86(code_block.m_num_instructions, m_code_buffer, start, b);
 #endif
 
-  return normalEntry;
+  return normal_entry;
 }
 
 BitSet8 Jit64::ComputeStaticGQRs(const PPCAnalyst::CodeBlock& cb) const
@@ -969,15 +965,8 @@ BitSet8 Jit64::ComputeStaticGQRs(const PPCAnalyst::CodeBlock& cb) const
 
 BitSet32 Jit64::CallerSavedRegistersInUse() const
 {
-  BitSet32 result;
-  for (size_t i = 0; i < RegCache::NUM_XREGS; i++)
-  {
-    if (!gpr.IsFreeX(i))
-      result[i] = true;
-    if (!fpr.IsFreeX(i))
-      result[16 + i] = true;
-  }
-  return result & ABI_ALL_CALLER_SAVED;
+  BitSet32 in_use = gpr.RegistersInUse() | (fpr.RegistersInUse() << 16);
+  return in_use & ABI_ALL_CALLER_SAVED;
 }
 
 void Jit64::EnableBlockLink()

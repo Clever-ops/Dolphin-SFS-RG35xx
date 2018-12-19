@@ -17,6 +17,8 @@ namespace Config
 {
 // Main.Core
 
+extern const ConfigInfo<bool> MAIN_SKIP_IPL;
+extern const ConfigInfo<bool> MAIN_LOAD_IPL_DUMP;
 extern const ConfigInfo<PowerPC::CPUCore> MAIN_CPU_CORE;
 extern const ConfigInfo<bool> MAIN_JIT_FOLLOW_BRANCH;
 extern const ConfigInfo<bool> MAIN_FASTMEM;
@@ -37,6 +39,10 @@ extern const ConfigInfo<std::string> MAIN_MEMCARD_A_PATH;
 extern const ConfigInfo<std::string> MAIN_MEMCARD_B_PATH;
 extern const ConfigInfo<std::string> MAIN_AGP_CART_A_PATH;
 extern const ConfigInfo<std::string> MAIN_AGP_CART_B_PATH;
+extern const ConfigInfo<std::string> MAIN_GCI_FOLDER_A_PATH_OVERRIDE;
+extern const ConfigInfo<std::string> MAIN_GCI_FOLDER_B_PATH_OVERRIDE;
+extern const ConfigInfo<bool> MAIN_CODE_SYNC_OVERRIDE;
+extern const ConfigInfo<bool> MAIN_GCI_FOLDER_CURRENT_GAME_ONLY;
 extern const ConfigInfo<int> MAIN_SLOT_A;
 extern const ConfigInfo<int> MAIN_SLOT_B;
 extern const ConfigInfo<int> MAIN_SERIAL_PORT_1;
@@ -58,7 +64,6 @@ extern const ConfigInfo<int> MAIN_SYNC_GPU_MAX_DISTANCE;
 extern const ConfigInfo<int> MAIN_SYNC_GPU_MIN_DISTANCE;
 extern const ConfigInfo<float> MAIN_SYNC_GPU_OVERCLOCK;
 extern const ConfigInfo<bool> MAIN_FAST_DISC_SPEED;
-extern const ConfigInfo<bool> MAIN_DCBZ;
 extern const ConfigInfo<bool> MAIN_LOW_DCBZ_HACK;
 extern const ConfigInfo<bool> MAIN_FPRF;
 extern const ConfigInfo<bool> MAIN_ACCURATE_NANS;

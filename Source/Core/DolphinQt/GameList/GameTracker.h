@@ -41,6 +41,7 @@ public:
   void AddDirectory(const QString& dir);
   void RemoveDirectory(const QString& dir);
   void RefreshAll();
+  void PurgeCache();
 
 signals:
   void GameLoaded(const std::shared_ptr<const UICommon::GameFile>& game);
@@ -70,6 +71,8 @@ private:
     RemoveDirectory,
     UpdateDirectory,
     UpdateFile,
+    UpdateMetadata,
+    PurgeCache
   };
 
   struct Command

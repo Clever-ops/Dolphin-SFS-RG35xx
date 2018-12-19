@@ -95,6 +95,15 @@ public:
     return *this;
   }
 
+  template <typename T>
+  AnalyticsReportBuilder& AddData(const std::string& key, const std::vector<T>& value)
+  {
+    std::lock_guard<std::mutex> lk(m_lock);
+    AppendSerializedValue(&m_report, key);
+    AppendSerializedValueVector(&m_report, value);
+    return *this;
+  }
+
   std::string Get() const
   {
     std::lock_guard<std::mutex> lk(m_lock);
@@ -117,6 +126,8 @@ protected:
   static void AppendSerializedValue(std::string* report, u32 v);
   static void AppendSerializedValue(std::string* report, s32 v);
   static void AppendSerializedValue(std::string* report, float v);
+
+  static void AppendSerializedValueVector(std::string* report, const std::vector<u32>& v);
 
   // Should really be a std::shared_mutex, unfortunately that's C++17 only.
   mutable std::mutex m_lock;
@@ -183,5 +194,4 @@ protected:
   std::string m_endpoint;
   HttpRequest m_http{std::chrono::seconds{5}};
 };
-
 }  // namespace Common

@@ -26,10 +26,12 @@ PerfQuery::PerfQuery()
 
 PerfQuery::~PerfQuery()
 {
-  g_command_buffer_mgr->RemoveFencePointCallback(this);
-
   if (m_query_pool != VK_NULL_HANDLE)
+  {
+    g_command_buffer_mgr->RemoveFencePointCallback(this);
+
     vkDestroyQueryPool(g_vulkan_context->GetDevice(), m_query_pool, nullptr);
+  }
 }
 
 Vulkan::PerfQuery* PerfQuery::GetInstance()

@@ -3,6 +3,7 @@
 // Refer to the license.txt file included.
 
 #include <EGL/egl.h>
+#include <UICommon/GameFile.h>
 #include <android/log.h>
 #include <android/native_window_jni.h>
 #include <cinttypes>
@@ -16,16 +17,18 @@
 #include <thread>
 #include <utility>
 
+#include "Common/AndroidAnalytics.h"
 #include "Common/CPUDetect.h"
 #include "Common/CommonPaths.h"
 #include "Common/CommonTypes.h"
 #include "Common/Event.h"
 #include "Common/FileUtil.h"
-#include "Common/GL/GLInterfaceBase.h"
 #include "Common/Logging/LogManager.h"
 #include "Common/MsgHandler.h"
 #include "Common/Version.h"
+#include "Common/WindowSystemInfo.h"
 
+#include "Core/Analytics.h"
 #include "Core/Boot/Boot.h"
 #include "Core/BootManager.h"
 #include "Core/ConfigLoaders/GameConfigLoader.h"
@@ -58,6 +61,7 @@ namespace
 static constexpr char DOLPHIN_TAG[] = "DolphinEmuNative";
 
 ANativeWindow* s_surf;
+IniFile s_ini;
 
 // The Core only supports using a single Host thread.
 // If multiple threads want to call host functions then they need to queue
@@ -86,11 +90,6 @@ void Host_Message(HostMessageID id)
     if (Core::IsRunning())
       Core::QueueHostJob(&Core::Stop);
   }
-}
-
-void* Host_GetRenderHandle()
-{
-  return s_surf;
 }
 
 void Host_UpdateTitle(const std::string& title)
@@ -125,10 +124,6 @@ bool Host_RendererIsFullscreen()
   return false;
 }
 
-void Host_ShowVideoConfig(void*, const std::string&)
-{
-}
-
 void Host_YieldToUI()
 {
 }
@@ -154,6 +149,47 @@ static bool MsgAlert(const char* caption, const char* text, bool yes_no, MsgType
   IDCache::GetJavaVM()->DetachCurrentThread();
 
   return result != JNI_FALSE;
+}
+
+static void ReportSend(std::string endpoint, std::string report)
+{
+  // Associate the current Thread with the Java VM.
+  JNIEnv* env;
+  IDCache::GetJavaVM()->AttachCurrentThread(&env, nullptr);
+
+  jbyteArray output_array = env->NewByteArray(report.size());
+  jbyte* output = env->GetByteArrayElements(output_array, nullptr);
+  memcpy(output, report.data(), report.size());
+  env->ReleaseByteArrayElements(output_array, output, 0);
+  env->CallStaticVoidMethod(IDCache::GetAnalyticsClass(), IDCache::GetSendAnalyticsReport(),
+                            ToJString(env, endpoint), output_array);
+
+  IDCache::GetJavaVM()->DetachCurrentThread();
+}
+
+static std::string GetAnalyticValue(std::string key)
+{
+  // Associate the current Thread with the Java VM.
+  JNIEnv* env;
+  bool attached = false;
+  int getEnvStat =
+      IDCache::GetJavaVM()->GetEnv(reinterpret_cast<void**>(&env), IDCache::JNI_VERSION);
+  if (getEnvStat == JNI_EDETACHED)
+  {
+    IDCache::GetJavaVM()->AttachCurrentThread(&env, nullptr);
+    attached = true;
+  }
+
+  jstring value = reinterpret_cast<jstring>(env->CallStaticObjectMethod(
+      IDCache::GetAnalyticsClass(), IDCache::GetAnalyticsValue(), ToJString(env, key)));
+
+  std::string stdvalue = GetJString(env, value);
+
+  // Only detach the thread if it wasn't already attached
+  if (attached)
+    IDCache::GetJavaVM()->DetachCurrentThread();
+
+  return stdvalue;
 }
 
 #ifdef __cplusplus
@@ -203,8 +239,8 @@ JNIEXPORT void JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_LoadStateAs(
                                                                                 jobject obj,
                                                                                 jstring path);
 JNIEXPORT void JNICALL
-Java_org_dolphinemu_dolphinemu_services_DirectoryInitializationService_CreateUserDirectories(
-    JNIEnv* env, jobject obj);
+Java_org_dolphinemu_dolphinemu_utils_DirectoryInitialization_CreateUserDirectories(JNIEnv* env,
+                                                                                   jobject obj);
 JNIEXPORT void JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_SetUserDirectory(
     JNIEnv* env, jobject obj, jstring jDirectory);
 JNIEXPORT jstring JNICALL
@@ -216,8 +252,10 @@ JNIEXPORT void JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_SetProfiling
                                                                                  jboolean enable);
 JNIEXPORT void JNICALL
 Java_org_dolphinemu_dolphinemu_NativeLibrary_WriteProfileResults(JNIEnv* env, jobject obj);
-JNIEXPORT void JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_Run__Ljava_lang_String_2(
-    JNIEnv* env, jobject obj, jstring jFile);
+
+JNIEXPORT void JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_Run__Ljava_lang_String_2Z(
+    JNIEnv* env, jobject obj, jstring jFile, jboolean jfirstOpen);
+
 JNIEXPORT void JNICALL
 Java_org_dolphinemu_dolphinemu_NativeLibrary_Run__Ljava_lang_String_2Ljava_lang_String_2Z(
     JNIEnv* env, jobject obj, jstring jFile, jstring jSavestate, jboolean jDeleteSavestate);
@@ -244,7 +282,6 @@ JNIEXPORT void JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_StopEmulatio
                                                                                   jobject obj)
 {
   std::lock_guard<std::mutex> guard(s_host_identity_lock);
-  Core::SaveScreenShot("thumb", true);
   Core::Stop();
   s_update_main_frame_event.Set();  // Kick the waiting event
 }
@@ -325,16 +362,50 @@ JNIEXPORT jstring JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_GetUserSe
   return ToJString(env, value.c_str());
 }
 
+JNIEXPORT void JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_LoadGameIniFile(JNIEnv* env,
+                                                                                    jobject obj,
+                                                                                    jstring jGameID)
+{
+  std::string gameid = GetJString(env, jGameID);
+  s_ini.Load(File::GetUserPath(D_GAMESETTINGS_IDX) + gameid + ".ini");
+}
+
+JNIEXPORT void JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_SaveGameIniFile(JNIEnv* env,
+                                                                                    jobject obj,
+                                                                                    jstring jGameID)
+{
+  std::string gameid = GetJString(env, jGameID);
+  s_ini.Save(File::GetUserPath(D_GAMESETTINGS_IDX) + gameid + ".ini");
+}
+
 JNIEXPORT void JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_SetUserSetting(
     JNIEnv* env, jobject obj, jstring jGameID, jstring jSection, jstring jKey, jstring jValue)
 {
-  IniFile ini;
   std::string gameid = GetJString(env, jGameID);
   std::string section = GetJString(env, jSection);
   std::string key = GetJString(env, jKey);
   std::string val = GetJString(env, jValue);
 
-  ini.Load(File::GetUserPath(D_GAMESETTINGS_IDX) + gameid + ".ini");
+  if (val != "-1")
+  {
+    s_ini.GetOrCreateSection(section)->Set(key, val);
+  }
+  else
+  {
+    s_ini.GetOrCreateSection(section)->Delete(key);
+  }
+}
+
+JNIEXPORT void JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_SetProfileSetting(
+    JNIEnv* env, jobject obj, jstring jProfile, jstring jSection, jstring jKey, jstring jValue)
+{
+  IniFile ini;
+  std::string profile = GetJString(env, jProfile);
+  std::string section = GetJString(env, jSection);
+  std::string key = GetJString(env, jKey);
+  std::string val = GetJString(env, jValue);
+
+  ini.Load(File::GetUserPath(D_CONFIG_IDX) + "Profiles/Wiimote/" + profile + ".ini");
 
   if (val != "-1")
   {
@@ -345,7 +416,7 @@ JNIEXPORT void JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_SetUserSetti
     ini.GetOrCreateSection(section)->Delete(key);
   }
 
-  ini.Save(File::GetUserPath(D_GAMESETTINGS_IDX) + gameid + ".ini");
+  ini.Save(File::GetUserPath(D_CONFIG_IDX) + "Profiles/Wiimote/" + profile + ".ini");
 }
 
 JNIEXPORT jstring JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_GetConfig(
@@ -414,8 +485,7 @@ JNIEXPORT void JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_LoadStateAs(
   State::LoadAs(GetJString(env, path));
 }
 
-JNIEXPORT void JNICALL
-Java_org_dolphinemu_dolphinemu_services_DirectoryInitializationService_SetSysDirectory(
+JNIEXPORT void JNICALL Java_org_dolphinemu_dolphinemu_utils_DirectoryInitialization_SetSysDirectory(
     JNIEnv* env, jobject obj, jstring jPath)
 {
   const std::string path = GetJString(env, jPath);
@@ -423,8 +493,8 @@ Java_org_dolphinemu_dolphinemu_services_DirectoryInitializationService_SetSysDir
 }
 
 JNIEXPORT void JNICALL
-Java_org_dolphinemu_dolphinemu_services_DirectoryInitializationService_CreateUserDirectories(
-    JNIEnv* env, jobject obj)
+Java_org_dolphinemu_dolphinemu_utils_DirectoryInitialization_CreateUserDirectories(JNIEnv* env,
+                                                                                   jobject obj)
 {
   UICommon::CreateDirectories();
 }
@@ -455,7 +525,8 @@ JNIEXPORT void JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_SetProfiling
   std::lock_guard<std::mutex> guard(s_host_identity_lock);
   Core::SetState(Core::State::Paused);
   JitInterface::ClearCache();
-  Profiler::g_ProfileBlocks = enable;
+  JitInterface::SetProfilingState(enable ? JitInterface::ProfilingState::Enabled :
+                                           JitInterface::ProfilingState::Disabled);
   Core::SetState(Core::State::Running);
 }
 
@@ -500,19 +571,25 @@ JNIEXPORT void JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_RefreshWiimo
   WiimoteReal::Refresh();
 }
 
-static void Run(const std::string& path, std::optional<std::string> savestate_path = {},
-                bool delete_savestate = false)
+static void Run(const std::string& path, bool first_open,
+                std::optional<std::string> savestate_path = {}, bool delete_savestate = false)
 {
   __android_log_print(ANDROID_LOG_INFO, DOLPHIN_TAG, "Running : %s", path.c_str());
 
   // Install our callbacks
-  OSD::AddCallback(OSD::CallbackType::Initialization, ButtonManager::Init);
   OSD::AddCallback(OSD::CallbackType::Shutdown, ButtonManager::Shutdown);
 
   RegisterMsgAlertHandler(&MsgAlert);
+  Common::AndroidSetReportHandler(&ReportSend);
+  DolphinAnalytics::AndroidSetGetValFunc(&GetAnalyticValue);
 
   std::unique_lock<std::mutex> guard(s_host_identity_lock);
   UICommon::Init();
+
+  if (first_open)
+  {
+    DolphinAnalytics::Instance()->ReportDolphinStart(GetAnalyticValue("DEVICE_TYPE"));
+  }
 
   WiimoteReal::InitAdapterClass();
 
@@ -520,8 +597,10 @@ static void Run(const std::string& path, std::optional<std::string> savestate_pa
   s_have_wm_user_stop = false;
   std::unique_ptr<BootParameters> boot = BootParameters::GenerateFromFile(path, savestate_path);
   boot->delete_savestate = delete_savestate;
-  if (BootManager::BootCore(std::move(boot)))
+  WindowSystemInfo wsi(WindowSystemType::Android, nullptr, s_surf);
+  if (BootManager::BootCore(std::move(boot), wsi))
   {
+    ButtonManager::Init(SConfig::GetInstance().GetGameID());
     static constexpr int TIMEOUT = 10000;
     static constexpr int WAIT_STEP = 25;
     int time_waited = 0;
@@ -551,17 +630,17 @@ static void Run(const std::string& path, std::optional<std::string> savestate_pa
   }
 }
 
-JNIEXPORT void JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_Run__Ljava_lang_String_2(
-    JNIEnv* env, jobject obj, jstring jFile)
+JNIEXPORT void JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_Run__Ljava_lang_String_2Z(
+    JNIEnv* env, jobject obj, jstring jFile, jboolean jfirstOpen)
 {
-  Run(GetJString(env, jFile));
+  Run(GetJString(env, jFile), jfirstOpen);
 }
 
 JNIEXPORT void JNICALL
 Java_org_dolphinemu_dolphinemu_NativeLibrary_Run__Ljava_lang_String_2Ljava_lang_String_2Z(
     JNIEnv* env, jobject obj, jstring jFile, jstring jSavestate, jboolean jDeleteSavestate)
 {
-  Run(GetJString(env, jFile), GetJString(env, jSavestate), jDeleteSavestate);
+  Run(GetJString(env, jFile), false, GetJString(env, jSavestate), jDeleteSavestate);
 }
 
 JNIEXPORT void JNICALL Java_org_dolphinemu_dolphinemu_NativeLibrary_ChangeDisc(JNIEnv* env,

@@ -85,7 +85,7 @@ bool retro_load_game(const struct retro_game_info* game)
   SConfig::GetInstance().sBackend = BACKEND_NULLSOUND;
   SConfig::GetInstance().m_DumpAudio = false;
   SConfig::GetInstance().bDPL2Decoder = false;
-  SConfig::GetInstance().iLatency = 0;
+  SConfig::GetInstance().iLatency = 20;
   SConfig::GetInstance().m_audio_stretch = false;
 
   Config::SetBase(Config::SYSCONF_LANGUAGE, (u32)(DiscIO::Language)Libretro::Options::Language);
@@ -113,7 +113,7 @@ bool retro_load_game(const struct retro_game_info* game)
   Libretro::Video::Init();
   NOTICE_LOG(VIDEO, "Using GFX backend: %s", SConfig::GetInstance().m_strVideoBackend.c_str());
 
-  if (!BootManager::BootCore(BootParameters::GenerateFromFile(game->path)))
+  if (!BootManager::BootCore(BootParameters::GenerateFromFile(game->path), Libretro::Video::wsi))
   {
     ERROR_LOG(BOOT, "Could not boot %s\n", game->path);
     return false;

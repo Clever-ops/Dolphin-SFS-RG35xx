@@ -21,7 +21,6 @@
 #include <algorithm>
 #include <array>
 #include <string>
-#include <vector>
 
 #include "Common/CommonTypes.h"
 #include "Common/Config/Config.h"
@@ -72,15 +71,18 @@ public:
 private:
   bool valid;
   bool bCPUThread;
+  bool bJITFollowBranch;
   bool bEnableCheats;
   bool bSyncGPUOnSkipIdleHack;
   bool bFPRF;
   bool bAccurateNaNs;
   bool bMMU;
-  bool bDCBZOFF;
   bool bLowDCBZHack;
   bool m_EnableJIT;
   bool bSyncGPU;
+  int iSyncGpuMaxDistance;
+  int iSyncGpuMinDistance;
+  float fSyncGpuOverclock;
   bool bFastDiscSpeed;
   bool bDSPHLE;
   bool bHLE_BS2;
@@ -103,14 +105,17 @@ void ConfigCache::SaveConfig(const SConfig& config)
   valid = true;
 
   bCPUThread = config.bCPUThread;
+  bJITFollowBranch = config.bJITFollowBranch;
   bEnableCheats = config.bEnableCheats;
   bSyncGPUOnSkipIdleHack = config.bSyncGPUOnSkipIdleHack;
   bFPRF = config.bFPRF;
   bAccurateNaNs = config.bAccurateNaNs;
   bMMU = config.bMMU;
-  bDCBZOFF = config.bDCBZOFF;
   m_EnableJIT = config.m_DSPEnableJIT;
   bSyncGPU = config.bSyncGPU;
+  iSyncGpuMaxDistance = config.iSyncGpuMaxDistance;
+  iSyncGpuMinDistance = config.iSyncGpuMinDistance;
+  fSyncGpuOverclock = config.fSyncGpuOverclock;
   bFastDiscSpeed = config.bFastDiscSpeed;
   bDSPHLE = config.bDSPHLE;
   bHLE_BS2 = config.bHLE_BS2;
@@ -143,15 +148,18 @@ void ConfigCache::RestoreConfig(SConfig* config)
   valid = false;
 
   config->bCPUThread = bCPUThread;
+  config->bJITFollowBranch = bJITFollowBranch;
   config->bEnableCheats = bEnableCheats;
   config->bSyncGPUOnSkipIdleHack = bSyncGPUOnSkipIdleHack;
   config->bFPRF = bFPRF;
   config->bAccurateNaNs = bAccurateNaNs;
   config->bMMU = bMMU;
-  config->bDCBZOFF = bDCBZOFF;
   config->bLowDCBZHack = bLowDCBZHack;
   config->m_DSPEnableJIT = m_EnableJIT;
   config->bSyncGPU = bSyncGPU;
+  config->iSyncGpuMaxDistance = iSyncGpuMaxDistance;
+  config->iSyncGpuMinDistance = iSyncGpuMinDistance;
+  config->fSyncGpuOverclock = fSyncGpuOverclock;
   config->bFastDiscSpeed = bFastDiscSpeed;
   config->bDSPHLE = bDSPHLE;
   config->bHLE_BS2 = bHLE_BS2;
@@ -214,7 +222,7 @@ static GPUDeterminismMode ParseGPUDeterminismMode(const std::string& mode)
 }
 
 // Boot the ISO or file
-bool BootCore(std::unique_ptr<BootParameters> boot)
+bool BootCore(std::unique_ptr<BootParameters> boot, const WindowSystemInfo& wsi)
 {
   if (!boot)
     return false;
@@ -240,7 +248,6 @@ bool BootCore(std::unique_ptr<BootParameters> boot)
     IniFile::Section* controls_section = game_ini.GetOrCreateSection("Controls");
 
     core_section->Get("CPUThread", &StartUp.bCPUThread, StartUp.bCPUThread);
-
     core_section->Get("JITFollowBranch", &StartUp.bJITFollowBranch, StartUp.bJITFollowBranch);
     core_section->Get("EnableCheats", &StartUp.bEnableCheats, StartUp.bEnableCheats);
     core_section->Get("SyncOnSkipIdle", &StartUp.bSyncGPUOnSkipIdleHack,
@@ -248,7 +255,6 @@ bool BootCore(std::unique_ptr<BootParameters> boot)
     core_section->Get("FPRF", &StartUp.bFPRF, StartUp.bFPRF);
     core_section->Get("AccurateNaNs", &StartUp.bAccurateNaNs, StartUp.bAccurateNaNs);
     core_section->Get("MMU", &StartUp.bMMU, StartUp.bMMU);
-    core_section->Get("DCBZ", &StartUp.bDCBZOFF, StartUp.bDCBZOFF);
     core_section->Get("LowDCBZHack", &StartUp.bLowDCBZHack, StartUp.bLowDCBZHack);
     core_section->Get("SyncGPU", &StartUp.bSyncGPU, StartUp.bSyncGPU);
     core_section->Get("FastDiscSpeed", &StartUp.bFastDiscSpeed, StartUp.bFastDiscSpeed);
@@ -314,6 +320,7 @@ bool BootCore(std::unique_ptr<BootParameters> boot)
   {
     // TODO: remove this once ConfigManager starts using OnionConfig.
     StartUp.bCPUThread = Config::Get(Config::MAIN_CPU_THREAD);
+    StartUp.bJITFollowBranch = Config::Get(Config::MAIN_JIT_FOLLOW_BRANCH);
     StartUp.bDSPHLE = Config::Get(Config::MAIN_DSP_HLE);
     StartUp.bFastDiscSpeed = Config::Get(Config::MAIN_FAST_DISC_SPEED);
     StartUp.cpu_core = Config::Get(Config::MAIN_CPU_CORE);
@@ -353,6 +360,20 @@ bool BootCore(std::unique_ptr<BootParameters> boot)
     StartUp.m_EXIDevice[1] = netplay_settings.m_EXIDevice[1];
     config_cache.bSetEXIDevice[0] = true;
     config_cache.bSetEXIDevice[1] = true;
+    StartUp.bFPRF = netplay_settings.m_FPRF;
+    StartUp.bAccurateNaNs = netplay_settings.m_AccurateNaNs;
+    StartUp.bSyncGPUOnSkipIdleHack = netplay_settings.m_SyncOnSkipIdle;
+    StartUp.bSyncGPU = netplay_settings.m_SyncGPU;
+    StartUp.iSyncGpuMaxDistance = netplay_settings.m_SyncGpuMaxDistance;
+    StartUp.iSyncGpuMinDistance = netplay_settings.m_SyncGpuMinDistance;
+    StartUp.fSyncGpuOverclock = netplay_settings.m_SyncGpuOverclock;
+    StartUp.bJITFollowBranch = netplay_settings.m_JITFollowBranch;
+    StartUp.bFastDiscSpeed = netplay_settings.m_FastDiscSpeed;
+    StartUp.bMMU = netplay_settings.m_MMU;
+    StartUp.bFastmem = netplay_settings.m_Fastmem;
+    StartUp.bHLE_BS2 = netplay_settings.m_SkipIPL;
+    if (netplay_settings.m_HostInputAuthority && !netplay_settings.m_IsHosting)
+      config_cache.bSetEmulationSpeed = true;
   }
   else
   {
@@ -382,12 +403,14 @@ bool BootCore(std::unique_ptr<BootParameters> boot)
                         std::holds_alternative<BootParameters::Disc>(boot->parameters);
   if (load_ipl)
   {
-    return Core::Init(std::make_unique<BootParameters>(
-        BootParameters::IPL{StartUp.m_region,
-                            std::move(std::get<BootParameters::Disc>(boot->parameters))},
-        boot->savestate_path));
+    return Core::Init(
+        std::make_unique<BootParameters>(
+            BootParameters::IPL{StartUp.m_region,
+                                std::move(std::get<BootParameters::Disc>(boot->parameters))},
+            boot->savestate_path),
+        wsi);
   }
-  return Core::Init(std::move(boot));
+  return Core::Init(std::move(boot), wsi);
 }
 
 // SYSCONF can be modified during emulation by the user and internally, which makes it
@@ -432,4 +455,4 @@ void RestoreConfig()
   config_cache.RestoreConfig(&SConfig::GetInstance());
 }
 
-}  // namespace
+}  // namespace BootManager

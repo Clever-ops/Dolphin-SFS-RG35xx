@@ -5,11 +5,15 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <vector>
 
 #if defined(_WIN32)
 #include <windows.h>
 #elif defined(__APPLE__)
 #include <CoreServices/CoreServices.h>
+#elif defined(ANDROID)
+#include <functional>
+#include "Common/AndroidAnalytics.h"
 #endif
 
 #include "Common/Analytics.h"
@@ -17,6 +21,7 @@
 #include "Common/CommonTypes.h"
 #include "Common/Random.h"
 #include "Common/StringUtil.h"
+#include "Common/Timer.h"
 #include "Common/Version.h"
 #include "Core/ConfigManager.h"
 #include "Core/HW/GCPad.h"
@@ -34,6 +39,14 @@ constexpr const char* ANALYTICS_ENDPOINT = "https://analytics.dolphin-emu.org/re
 
 std::mutex DolphinAnalytics::s_instance_mutex;
 std::shared_ptr<DolphinAnalytics> DolphinAnalytics::s_instance;
+
+#if defined(ANDROID)
+static std::function<std::string(std::string)> s_get_val_func;
+void DolphinAnalytics::AndroidSetGetValFunc(std::function<std::string(std::string)> func)
+{
+  s_get_val_func = std::move(func);
+}
+#endif
 
 DolphinAnalytics::DolphinAnalytics()
 {
@@ -59,7 +72,11 @@ void DolphinAnalytics::ReloadConfig()
   std::unique_ptr<Common::AnalyticsReportingBackend> new_backend;
   if (SConfig::GetInstance().m_analytics_enabled)
   {
+#if defined(ANDROID)
+    new_backend = std::make_unique<Common::AndroidAnalyticsBackend>(ANALYTICS_ENDPOINT);
+#else
     new_backend = std::make_unique<Common::HttpAnalyticsBackend>(ANALYTICS_ENDPOINT);
+#endif
   }
   m_reporter.SetBackend(std::move(new_backend));
 
@@ -113,6 +130,96 @@ void DolphinAnalytics::ReportGameStart()
   Common::AnalyticsReportBuilder builder(m_per_game_builder);
   builder.AddData("type", "game-start");
   Send(builder);
+
+  // Reset per-game state.
+  m_reported_quirks.fill(false);
+  InitializePerformanceSampling();
+}
+
+// Keep in sync with enum class GameQuirk definition.
+const char* GAME_QUIRKS_NAMES[] = {
+    "icache-matters",  // ICACHE_MATTERS
+};
+static_assert(sizeof(GAME_QUIRKS_NAMES) / sizeof(GAME_QUIRKS_NAMES[0]) ==
+                  static_cast<u32>(GameQuirk::COUNT),
+              "Game quirks names and enum definition are out of sync.");
+
+void DolphinAnalytics::ReportGameQuirk(GameQuirk quirk)
+{
+  u32 quirk_idx = static_cast<u32>(quirk);
+
+  // Only report once per run.
+  if (m_reported_quirks[quirk_idx])
+    return;
+  m_reported_quirks[quirk_idx] = true;
+
+  Common::AnalyticsReportBuilder builder(m_per_game_builder);
+  builder.AddData("type", "quirk");
+  builder.AddData("quirk", GAME_QUIRKS_NAMES[quirk_idx]);
+  Send(builder);
+}
+
+void DolphinAnalytics::ReportPerformanceInfo(PerformanceSample&& sample)
+{
+  if (ShouldStartPerformanceSampling())
+  {
+    m_sampling_performance_info = true;
+  }
+
+  if (m_sampling_performance_info)
+  {
+    m_performance_samples.emplace_back(std::move(sample));
+  }
+
+  if (m_performance_samples.size() >= NUM_PERFORMANCE_SAMPLES_PER_REPORT)
+  {
+    std::vector<u32> speed_times_1000(m_performance_samples.size());
+    std::vector<u32> num_prims(m_performance_samples.size());
+    std::vector<u32> num_draw_calls(m_performance_samples.size());
+    for (size_t i = 0; i < m_performance_samples.size(); ++i)
+    {
+      speed_times_1000[i] = static_cast<u32>(m_performance_samples[i].speed_ratio * 1000);
+      num_prims[i] = m_performance_samples[i].num_prims;
+      num_draw_calls[i] = m_performance_samples[i].num_draw_calls;
+    }
+
+    // The per game builder should already exist -- there is no way we can be reporting performance
+    // info without a game start event having been generated.
+    Common::AnalyticsReportBuilder builder(m_per_game_builder);
+    builder.AddData("type", "performance");
+    builder.AddData("speed", speed_times_1000);
+    builder.AddData("prims", num_prims);
+    builder.AddData("draw-calls", num_draw_calls);
+
+    Send(builder);
+
+    // Clear up and stop sampling until next time ShouldStartPerformanceSampling() says so.
+    m_performance_samples.clear();
+    m_sampling_performance_info = false;
+  }
+}
+
+void DolphinAnalytics::InitializePerformanceSampling()
+{
+  m_performance_samples.clear();
+  m_sampling_performance_info = false;
+
+  u64 wait_us =
+      PERFORMANCE_SAMPLING_INITIAL_WAIT_TIME_SECS * 1000000 +
+      Common::Random::GenerateValue<u64>() % (PERFORMANCE_SAMPLING_WAIT_TIME_JITTER_SECS * 1000000);
+  m_sampling_next_start_us = Common::Timer::GetTimeUs() + wait_us;
+}
+
+bool DolphinAnalytics::ShouldStartPerformanceSampling()
+{
+  if (Common::Timer::GetTimeUs() < m_sampling_next_start_us)
+    return false;
+
+  u64 wait_us =
+      PERFORMANCE_SAMPLING_INTERVAL_SECS * 1000000 +
+      Common::Random::GenerateValue<u64>() % (PERFORMANCE_SAMPLING_WAIT_TIME_JITTER_SECS * 1000000);
+  m_sampling_next_start_us = Common::Timer::GetTimeUs() + wait_us;
+  return true;
 }
 
 void DolphinAnalytics::MakeBaseBuilder()
@@ -152,6 +259,9 @@ void DolphinAnalytics::MakeBaseBuilder()
   }
 #elif defined(ANDROID)
   builder.AddData("os-type", "android");
+  builder.AddData("android-manufacturer", s_get_val_func("DEVICE_MANUFACTURER"));
+  builder.AddData("android-model", s_get_val_func("DEVICE_MODEL"));
+  builder.AddData("android-version", s_get_val_func("DEVICE_OS"));
 #elif defined(__APPLE__)
   builder.AddData("os-type", "osx");
 
@@ -232,6 +342,7 @@ void DolphinAnalytics::MakePerGameBuilder()
   builder.AddData("cfg-gfx-efb-copy-format-changes", g_Config.bEFBEmulateFormatChanges);
   builder.AddData("cfg-gfx-efb-copy-ram", !g_Config.bSkipEFBCopyToRam);
   builder.AddData("cfg-gfx-xfb-copy-ram", !g_Config.bSkipXFBCopyToRam);
+  builder.AddData("cfg-gfx-defer-efb-copies", g_Config.bDeferEFBCopies);
   builder.AddData("cfg-gfx-immediate-xfb", !g_Config.bImmediateXFB);
   builder.AddData("cfg-gfx-efb-copy-scaled", g_Config.bCopyEFBScaled);
   builder.AddData("cfg-gfx-internal-resolution", g_Config.iEFBScale);
