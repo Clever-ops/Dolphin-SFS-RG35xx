@@ -19,6 +19,7 @@
 #include <QWidget>
 
 #include "Core/Analytics.h"
+#include "Core/Config/MainSettings.h"
 #include "Core/Config/UISettings.h"
 #include "Core/ConfigManager.h"
 #include "Core/Core.h"
@@ -289,9 +290,12 @@ void GeneralPane::OnSaveConfig()
 
 #if defined(USE_ANALYTICS) && USE_ANALYTICS
   Settings::Instance().SetAnalyticsEnabled(m_checkbox_enable_analytics->isChecked());
+  DolphinAnalytics::Instance()->ReloadConfig();
 #endif
   settings.bCPUThread = m_checkbox_dualcore->isChecked();
+  Config::SetBaseOrCurrent(Config::MAIN_CPU_THREAD, m_checkbox_dualcore->isChecked());
   Settings::Instance().SetCheatsEnabled(m_checkbox_cheats->isChecked());
+  Config::SetBaseOrCurrent(Config::MAIN_ENABLE_CHEATS, m_checkbox_cheats->isChecked());
   settings.m_EmulationSpeed = m_combobox_speedlimit->currentIndex() * 0.1f;
 
   for (size_t i = 0; i < m_cpu_cores.size(); ++i)
@@ -299,6 +303,7 @@ void GeneralPane::OnSaveConfig()
     if (m_cpu_cores[i]->isChecked())
     {
       settings.cpu_core = PowerPC::AvailableCPUCores()[i];
+      Config::SetBaseOrCurrent(Config::MAIN_CPU_CORE, PowerPC::AvailableCPUCores()[i]);
       break;
     }
   }
@@ -310,7 +315,8 @@ void GeneralPane::OnSaveConfig()
 void GeneralPane::GenerateNewIdentity()
 {
   DolphinAnalytics::Instance()->GenerateNewIdentity();
-  QMessageBox message_box;
+  DolphinAnalytics::Instance()->ReloadConfig();
+  QMessageBox message_box(this);
   message_box.setIcon(QMessageBox::Information);
   message_box.setWindowTitle(tr("Identity Generation"));
   message_box.setText(tr("New identity generated."));

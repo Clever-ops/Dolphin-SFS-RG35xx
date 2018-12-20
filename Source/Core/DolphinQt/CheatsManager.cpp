@@ -163,7 +163,7 @@ void CheatsManager::OnWatchContextMenu()
   QMenu* menu = new QMenu(this);
 
   menu->addAction(tr("Remove from Watch"), this, [this] {
-    auto* item = m_match_table->selectedItems()[0];
+    auto* item = m_watch_table->selectedItems()[0];
 
     int index = item->data(INDEX_ROLE).toInt();
 
@@ -334,6 +334,7 @@ QWidget* CheatsManager::CreateCheatSearch()
   auto* group_layout = new QHBoxLayout;
   group_box->setLayout(group_layout);
 
+  // i18n: The base 10 numeral system. Not related to non-integer numbers
   m_match_decimal = new QRadioButton(tr("Decimal"));
   m_match_hexadecimal = new QRadioButton(tr("Hexadecimal"));
   m_match_octal = new QRadioButton(tr("Octal"));
@@ -396,11 +397,11 @@ static bool Compare(T mem_value, T value, CompareType op)
   case CompareType::Less:
     return mem_value < value;
   case CompareType::LessEqual:
-    return mem_value <= mem_value;
+    return mem_value <= value;
   case CompareType::More:
-    return value > mem_value;
+    return mem_value > value;
   case CompareType::MoreEqual:
-    return value >= mem_value;
+    return mem_value >= value;
   default:
     return false;
   }

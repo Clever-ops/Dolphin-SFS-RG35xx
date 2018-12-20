@@ -24,6 +24,7 @@
 #include "Core/Core.h"
 #include "Core/IOS/IOS.h"
 
+#include "DolphinQt/Settings.h"
 #include "DolphinQt/Settings/USBDeviceAddToWhitelistDialog.h"
 
 #include "UICommon/USBUtils.h"
@@ -73,6 +74,8 @@ void WiiPane::ConnectLayout()
   connect(m_pal60_mode_checkbox, &QCheckBox::toggled, this, &WiiPane::OnSaveConfig);
   connect(m_sd_card_checkbox, &QCheckBox::toggled, this, &WiiPane::OnSaveConfig);
   connect(m_connect_keyboard_checkbox, &QCheckBox::toggled, this, &WiiPane::OnSaveConfig);
+  connect(&Settings::Instance(), &Settings::USBKeyboardConnectionChanged,
+          m_connect_keyboard_checkbox, &QCheckBox::setChecked);
 
   // Whitelisted USB Passthrough Devices
   connect(m_whitelist_usb_list, &QListWidget::itemClicked, this, &WiiPane::ValidateSelectionState);
@@ -165,6 +168,7 @@ void WiiPane::CreateWiiRemoteSettings()
   m_wiimote_ir_sensor_position->addItem(tr("Bottom"));
 
   // IR Sensitivity Slider
+  // i18n: IR stands for infrared and refers to the pointer functionality of Wii Remotes
   m_wiimote_ir_sensitivity_label = new QLabel(tr("IR Sensitivity:"));
   m_wiimote_ir_sensitivity = new QSlider(Qt::Horizontal);
   m_wiimote_ir_sensitivity->setMinimum(4);
@@ -189,8 +193,6 @@ void WiiPane::OnEmulationStateChanged(bool running)
 {
   m_screensaver_checkbox->setEnabled(!running);
   m_pal60_mode_checkbox->setEnabled(!running);
-  m_sd_card_checkbox->setEnabled(!running);
-  m_connect_keyboard_checkbox->setEnabled(!running);
   m_system_language_choice->setEnabled(!running);
   m_aspect_ratio_choice->setEnabled(!running);
   m_wiimote_motor->setEnabled(!running);
@@ -203,7 +205,7 @@ void WiiPane::LoadConfig()
 {
   m_screensaver_checkbox->setChecked(Config::Get(Config::SYSCONF_SCREENSAVER));
   m_pal60_mode_checkbox->setChecked(Config::Get(Config::SYSCONF_PAL60));
-  m_connect_keyboard_checkbox->setChecked(SConfig::GetInstance().m_WiiKeyboard);
+  m_connect_keyboard_checkbox->setChecked(Settings::Instance().IsUSBKeyboardConnected());
   m_sd_card_checkbox->setChecked(SConfig::GetInstance().m_WiiSDCard);
   m_aspect_ratio_choice->setCurrentIndex(Config::Get(Config::SYSCONF_WIDESCREEN));
   m_system_language_choice->setCurrentIndex(Config::Get(Config::SYSCONF_LANGUAGE));
@@ -221,8 +223,16 @@ void WiiPane::OnSaveConfig()
 {
   Config::SetBase(Config::SYSCONF_SCREENSAVER, m_screensaver_checkbox->isChecked());
   Config::SetBase(Config::SYSCONF_PAL60, m_pal60_mode_checkbox->isChecked());
-  SConfig::GetInstance().m_WiiKeyboard = m_connect_keyboard_checkbox->isChecked();
-  SConfig::GetInstance().m_WiiSDCard = m_sd_card_checkbox->isChecked();
+  Settings::Instance().SetUSBKeyboardConnected(m_connect_keyboard_checkbox->isChecked());
+
+  if (SConfig::GetInstance().m_WiiSDCard != m_sd_card_checkbox->isChecked())
+  {
+    SConfig::GetInstance().m_WiiSDCard = m_sd_card_checkbox->isChecked();
+    auto* ios = IOS::HLE::GetIOS();
+    if (ios)
+      ios->SDIO_EventNotify();
+  }
+
   Config::SetBase<u32>(Config::SYSCONF_SENSOR_BAR_POSITION,
                        TranslateSensorBarPosition(m_wiimote_ir_sensor_position->currentIndex()));
   Config::SetBase<u32>(Config::SYSCONF_SENSOR_BAR_SENSITIVITY, m_wiimote_ir_sensitivity->value());
@@ -239,11 +249,10 @@ void WiiPane::ValidateSelectionState()
 
 void WiiPane::OnUSBWhitelistAddButton()
 {
-  USBDeviceAddToWhitelistDialog* usb_whitelist_dialog = new USBDeviceAddToWhitelistDialog(this);
-  connect(usb_whitelist_dialog, &USBDeviceAddToWhitelistDialog::accepted, this,
+  USBDeviceAddToWhitelistDialog usb_whitelist_dialog(this);
+  connect(&usb_whitelist_dialog, &USBDeviceAddToWhitelistDialog::accepted, this,
           &WiiPane::PopulateUSBPassthroughListWidget);
-  usb_whitelist_dialog->setModal(true);
-  usb_whitelist_dialog->show();
+  usb_whitelist_dialog.exec();
 }
 
 void WiiPane::OnUSBWhitelistRemoveButton()

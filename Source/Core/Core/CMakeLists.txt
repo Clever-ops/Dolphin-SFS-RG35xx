@@ -202,7 +202,6 @@ add_library(core
   PowerPC/PPCCache.cpp
   PowerPC/PPCSymbolDB.cpp
   PowerPC/PPCTables.cpp
-  PowerPC/Profiler.cpp
   PowerPC/SignatureDB/CSVSignatureDB.cpp
   PowerPC/SignatureDB/DSYSignatureDB.cpp
   PowerPC/SignatureDB/MEGASignatureDB.cpp
@@ -237,20 +236,20 @@ if(_M_X86)
     DSP/Jit/x64/DSPJitMultiplier.cpp
     DSP/Jit/x64/DSPJitTables.cpp
     DSP/Jit/x64/DSPJitUtil.cpp
-    PowerPC/Jit64/FPURegCache.cpp
-    PowerPC/Jit64/GPRRegCache.cpp
-    PowerPC/Jit64/Jit64_Tables.cpp
-    PowerPC/Jit64/JitAsm.cpp
-    PowerPC/Jit64/Jit_Branch.cpp
     PowerPC/Jit64/Jit.cpp
+    PowerPC/Jit64/Jit64_Tables.cpp
+    PowerPC/Jit64/Jit_Branch.cpp
     PowerPC/Jit64/Jit_FloatingPoint.cpp
     PowerPC/Jit64/Jit_Integer.cpp
     PowerPC/Jit64/Jit_LoadStore.cpp
     PowerPC/Jit64/Jit_LoadStoreFloating.cpp
     PowerPC/Jit64/Jit_LoadStorePaired.cpp
     PowerPC/Jit64/Jit_Paired.cpp
-    PowerPC/Jit64/JitRegCache.cpp
     PowerPC/Jit64/Jit_SystemRegisters.cpp
+    PowerPC/Jit64/JitAsm.cpp
+    PowerPC/Jit64/RegCache/FPURegCache.cpp
+    PowerPC/Jit64/RegCache/GPRRegCache.cpp
+    PowerPC/Jit64/RegCache/JitRegCache.cpp
     PowerPC/Jit64Common/BlockCache.cpp
     PowerPC/Jit64Common/ConstantPool.cpp
     PowerPC/Jit64Common/EmuCodeBlock.cpp
@@ -294,12 +293,17 @@ PUBLIC
   videonull
   videoogl
   videosoftware
+  videovulkan
 
 PRIVATE
-  bdisasm
   ${LZO}
   ZLIB::ZLIB
 )
+
+if ((DEFINED CMAKE_ANDROID_ARCH_ABI AND CMAKE_ANDROID_ARCH_ABI MATCHES "x86|x86_64") OR
+    (NOT DEFINED CMAKE_ANDROID_ARCH_ABI AND _M_X86))
+  target_link_libraries(core PRIVATE bdisasm)
+endif()
 
 if (APPLE)
   target_link_libraries(core
@@ -317,10 +321,6 @@ if(LIBUSB_FOUND)
     IOS/USB/LibusbDevice.cpp
     IOS/USB/Bluetooth/BTReal.cpp
   )
-endif()
-
-if(NOT APPLE)
-  target_link_libraries(core PUBLIC videovulkan)
 endif()
 
 if(WIN32)

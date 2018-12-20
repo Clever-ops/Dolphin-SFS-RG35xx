@@ -27,6 +27,10 @@ InputConfig::~InputConfig() = default;
 
 bool InputConfig::LoadConfig(bool isGC)
 {
+#ifdef __LIBRETRO__
+	// Do not override input settings
+	return false;
+#endif
   IniFile inifile;
   bool useProfile[MAX_BBMOTES] = {false, false, false, false, false};
   std::string num[MAX_BBMOTES] = {"1", "2", "3", "4", "BB"};
@@ -62,10 +66,8 @@ bool InputConfig::LoadConfig(bool isGC)
 
           if (profiles.empty())
           {
-            const std::string error =
-                "No profiles found for game setting '" + profile_setting + "'";
             // TODO: PanicAlert shouldn't be used for this.
-            PanicAlertT("%s", error.c_str());
+            PanicAlertT("No profiles found for game setting '%s'", profile_setting.c_str());
             continue;
           }
 

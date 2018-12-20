@@ -18,6 +18,7 @@
 #include "Common/CommonTypes.h"
 
 struct BootParameters;
+struct WindowSystemInfo;
 
 namespace Core
 {
@@ -35,7 +36,7 @@ enum class State
   Starting,
 };
 
-bool Init(std::unique_ptr<BootParameters> boot);
+bool Init(std::unique_ptr<BootParameters> boot, const WindowSystemInfo& wsi);
 void Stop();
 void Shutdown();
 
@@ -52,7 +53,7 @@ bool IsGPUThread();
 
 bool WantsDeterminism();
 
-void EmuThread();
+void EmuThread(WindowSystemInfo wsi);
 
 // [NOT THREADSAFE] For use by Host only
 void SetState(State state);
@@ -68,7 +69,6 @@ void DisplayMessage(const std::string& message, int time_in_ms);
 
 void FrameUpdateOnCPUThread();
 
-bool ShouldSkipFrame(int skipped);
 void VideoThrottle();
 void RequestRefreshInfo();
 
@@ -107,4 +107,4 @@ void HostDispatchJobs();
 
 void DoFrameStep();
 
-}  // namespace
+}  // namespace Core

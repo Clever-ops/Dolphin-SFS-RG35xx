@@ -459,24 +459,18 @@ void ControllersWindow::OnWiimoteConfigure()
   MappingWindow(this, type, static_cast<int>(index)).exec();
 }
 
-void ControllersWindow::UnimplementedButton()
-{
-  QMessageBox error_dialog(this);
-
-  error_dialog.setIcon(QMessageBox::Warning);
-  error_dialog.setWindowTitle(tr("Unimplemented"));
-  error_dialog.setText(tr("Not implemented yet."));
-  error_dialog.exec();
-}
-
 void ControllersWindow::LoadSettings()
 {
   for (size_t i = 0; i < m_wiimote_groups.size(); i++)
   {
     const std::optional<int> gc_index = ToGCMenuIndex(SConfig::GetInstance().m_SIDevice[i]);
     if (gc_index)
+    {
       m_gc_controller_boxes[i]->setCurrentIndex(*gc_index);
+      m_gc_buttons[i]->setEnabled(*gc_index != 0 && *gc_index != 6);
+    }
     m_wiimote_boxes[i]->setCurrentIndex(g_wiimote_sources[i]);
+    m_wiimote_buttons[i]->setEnabled(g_wiimote_sources[i] != 0 && g_wiimote_sources[i] != 2);
   }
   m_wiimote_real_balance_board->setChecked(g_wiimote_sources[WIIMOTE_BALANCE_BOARD] ==
                                            WIIMOTE_SRC_REAL);

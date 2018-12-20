@@ -78,11 +78,14 @@ void IOWindow::CreateMainLayout()
   m_main_layout->addLayout(range_hbox);
 
   // Options (Buttons, Outputs) and action buttons
+  // macOS style doesn't support expanding buttons
+#ifndef __APPLE__
   for (QPushButton* button : {m_select_button, m_detect_button, m_or_button, m_and_button,
                               m_add_button, m_not_button, m_test_button})
   {
     button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
   }
+#endif
 
   auto* hbox = new QHBoxLayout();
   auto* button_vbox = new QVBoxLayout();
@@ -115,6 +118,7 @@ void IOWindow::CreateMainLayout()
 void IOWindow::Update()
 {
   m_expression_text->setPlainText(QString::fromStdString(m_reference->GetExpression()));
+  m_expression_text->moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
   m_range_spinbox->setValue(m_reference->range * SLIDER_TICK_COUNT);
   m_range_slider->setValue(m_reference->range * SLIDER_TICK_COUNT);
 
@@ -187,7 +191,8 @@ void IOWindow::OnDetectButtonPressed()
     btn->setText(QStringLiteral("..."));
 
     const auto expr = MappingCommon::DetectExpression(
-        m_reference, g_controller_interface.FindDevice(m_devq).get(), m_devq);
+        m_reference, g_controller_interface.FindDevice(m_devq).get(), m_devq,
+        MappingCommon::Quote::Off);
 
     btn->setText(old_label);
 

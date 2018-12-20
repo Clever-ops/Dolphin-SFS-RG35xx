@@ -13,6 +13,7 @@
 #include "Common/CommonTypes.h"
 #include "Common/MsgHandler.h"
 #include "Common/Thread.h"
+#include "Common/Logging/Log.h"
 
 #include "Core/MachineContext.h"
 #include "Core/PowerPC/JitInterface.h"
@@ -266,6 +267,11 @@ static void sigsegv_handler(int sig, siginfo_t* info, void* raw_context)
 #endif
                                  ))
   {
+    ERROR_LOG(MASTER_LOG, "Unhandled SIGSEGV at address %lx\n", (u64)bad_address);
+	kill(getpid(), SIGABRT);
+	return;
+
+#if 0
     // retry and crash
     // According to the sigaction man page, if sa_flags "SA_SIGINFO" is set to the sigaction
     // function pointer, otherwise sa_handler contains one of:
@@ -299,6 +305,7 @@ static void sigsegv_handler(int sig, siginfo_t* info, void* raw_context)
       return;
     }
     old_sa->sa_handler(sig);
+#endif
   }
 }
 

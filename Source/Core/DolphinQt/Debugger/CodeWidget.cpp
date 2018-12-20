@@ -85,6 +85,9 @@ void CodeWidget::CreateWidgets()
 {
   auto* layout = new QGridLayout;
 
+  layout->setContentsMargins(2, 2, 2, 2);
+  layout->setSpacing(0);
+
   m_search_address = new QLineEdit;
   m_search_symbols = new QLineEdit;
   m_code_view = new CodeViewWidget;
@@ -316,7 +319,7 @@ void CodeWidget::UpdateSymbols()
 
     item->setData(Qt::UserRole, symbol.second.address);
 
-    if (name.indexOf(m_symbol_filter) != -1)
+    if (name.toUpper().indexOf(m_symbol_filter.toUpper()) != -1)
       m_symbols_list->addItem(item);
   }
 

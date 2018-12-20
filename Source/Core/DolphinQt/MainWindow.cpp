@@ -14,7 +14,9 @@
 #include <QMessageBox>
 #include <QMimeData>
 #include <QProgressDialog>
+#include <QStackedWidget>
 #include <QVBoxLayout>
+#include <QWindow>
 
 #include <future>
 #include <optional>
@@ -25,7 +27,12 @@
 #include "QtUtils/SignalDaemon.h"
 #endif
 
+#ifndef WIN32
+#include <qpa/qplatformnativeinterface.h>
+#endif
+
 #include "Common/Version.h"
+#include "Common/WindowSystemInfo.h"
 
 #include "Core/Boot/Boot.h"
 #include "Core/BootManager.h"
@@ -66,21 +73,26 @@
 #include "DolphinQt/Debugger/MemoryWidget.h"
 #include "DolphinQt/Debugger/RegisterWidget.h"
 #include "DolphinQt/Debugger/WatchWidget.h"
+#include "DolphinQt/DiscordHandler.h"
 #include "DolphinQt/FIFO/FIFOPlayerWindow.h"
 #include "DolphinQt/GCMemcardManager.h"
+#include "DolphinQt/GameList/GameList.h"
 #include "DolphinQt/Host.h"
 #include "DolphinQt/HotkeyScheduler.h"
 #include "DolphinQt/MainWindow.h"
+#include "DolphinQt/MenuBar.h"
 #include "DolphinQt/NetPlay/NetPlayDialog.h"
 #include "DolphinQt/NetPlay/NetPlaySetupDialog.h"
 #include "DolphinQt/QtUtils/QueueOnObject.h"
 #include "DolphinQt/QtUtils/RunOnObject.h"
 #include "DolphinQt/QtUtils/WindowActivationEventFilter.h"
+#include "DolphinQt/RenderWidget.h"
 #include "DolphinQt/Resources.h"
 #include "DolphinQt/SearchBar.h"
 #include "DolphinQt/Settings.h"
 #include "DolphinQt/TAS/GCTASInputWindow.h"
 #include "DolphinQt/TAS/WiiTASInputWindow.h"
+#include "DolphinQt/ToolBar.h"
 #include "DolphinQt/WiiUpdate.h"
 
 #include "InputCommon/ControllerInterface/ControllerInterface.h"
@@ -92,7 +104,6 @@
 #include "VideoCommon/VideoConfig.h"
 
 #if defined(HAVE_XRANDR) && HAVE_XRANDR
-#include <qpa/qplatformnativeinterface.h>
 #include "UICommon/X11Utils.h"
 #endif
 
@@ -113,12 +124,52 @@ static void InstallSignalHandler()
 }
 #endif
 
+static WindowSystemType GetWindowSystemType()
+{
+  // Determine WSI type based on Qt platform.
+  QString platform_name = QGuiApplication::platformName();
+  if (platform_name == QStringLiteral("windows"))
+    return WindowSystemType::Windows;
+  else if (platform_name == QStringLiteral("cocoa"))
+    return WindowSystemType::MacOS;
+  else if (platform_name == QStringLiteral("xcb"))
+    return WindowSystemType::X11;
+  else if (platform_name == QStringLiteral("wayland"))
+    return WindowSystemType::Wayland;
+
+  QMessageBox::critical(
+      nullptr, QStringLiteral("Error"),
+      QString::asprintf("Unknown Qt platform: %s", platform_name.toStdString().c_str()));
+  return WindowSystemType::Headless;
+}
+
+static WindowSystemInfo GetWindowSystemInfo(QWindow* window)
+{
+  WindowSystemInfo wsi;
+  wsi.type = GetWindowSystemType();
+
+  // Our Win32 Qt external doesn't have the private API.
+#if defined(WIN32) || defined(__APPLE__)
+  wsi.render_surface = window ? reinterpret_cast<void*>(window->winId()) : nullptr;
+#else
+  QPlatformNativeInterface* pni = QGuiApplication::platformNativeInterface();
+  wsi.display_connection = pni->nativeResourceForWindow("display", window);
+  if (wsi.type == WindowSystemType::Wayland)
+    wsi.render_surface = window ? pni->nativeResourceForWindow("surface", window) : nullptr;
+  else
+    wsi.render_surface = window ? reinterpret_cast<void*>(window->winId()) : nullptr;
+#endif
+
+  return wsi;
+}
+
 MainWindow::MainWindow(std::unique_ptr<BootParameters> boot_parameters) : QMainWindow(nullptr)
 {
   setWindowTitle(QString::fromStdString(Common::scm_rev_str));
   setWindowIcon(Resources::GetAppIcon());
   setUnifiedTitleAndToolBarOnMac(true);
   setAcceptDrops(true);
+  setAttribute(Qt::WA_NativeWindow);
 
   InitControllers();
 
@@ -153,6 +204,10 @@ MainWindow::MainWindow(std::unique_ptr<BootParameters> boot_parameters) : QMainW
   restoreGeometry(settings.value(QStringLiteral("mainwindow/geometry")).toByteArray());
 
   m_render_widget_geometry = settings.value(QStringLiteral("renderwidget/geometry")).toByteArray();
+
+  // Restoring of window states can sometimes go wrong, resulting in widgets being visible when they
+  // shouldn't be so we have to reapply all our rules afterwards.
+  Settings::Instance().RefreshWidgetVisibility();
 }
 
 MainWindow::~MainWindow()
@@ -183,7 +238,7 @@ void MainWindow::InitControllers()
   if (g_controller_interface.IsInit())
     return;
 
-  g_controller_interface.Initialize(reinterpret_cast<void*>(winId()));
+  g_controller_interface.Initialize(GetWindowSystemInfo(windowHandle()));
   Pad::Initialize();
   Keyboard::Initialize();
   Wiimote::Initialize(Wiimote::InitializeMode::DO_NOT_WAIT_FOR_WIIMOTES);
@@ -220,6 +275,8 @@ void MainWindow::InitCoreCallbacks()
   connect(&Settings::Instance(), &Settings::EmulationStateChanged, this, [=](Core::State state) {
     if (state == Core::State::Uninitialized)
       OnStopComplete();
+    if (state != Core::State::Uninitialized && NetPlay::IsNetPlayRunning() && m_controllers_window)
+      m_controllers_window->reject();
 
     if (state == Core::State::Running && m_fullscreen_requested)
     {
@@ -250,8 +307,6 @@ void MainWindow::CreateComponents()
   m_game_list = new GameList(this);
   m_render_widget = new RenderWidget;
   m_stack = new QStackedWidget(this);
-  m_controllers_window = new ControllersWindow(this);
-  m_settings_window = new SettingsWindow(this);
 
   for (int i = 0; i < 4; i++)
   {
@@ -271,11 +326,7 @@ void MainWindow::CreateComponents()
   m_jit_widget = new JITWidget(this);
   m_log_widget = new LogWidget(this);
   m_log_config_widget = new LogConfigWidget(this);
-  m_fifo_window = new FIFOPlayerWindow(this);
   m_memory_widget = new MemoryWidget(this);
-
-  connect(m_fifo_window, &FIFOPlayerWindow::LoadFIFORequested, this,
-          [this](const QString& path) { StartGame(path); });
   m_register_widget = new RegisterWidget(this);
   m_watch_widget = new WatchWidget(this);
   m_breakpoint_widget = new BreakpointWidget(this);
@@ -301,20 +352,6 @@ void MainWindow::CreateComponents()
     if (Core::GetState() == Core::State::Paused)
       m_code_widget->SetAddress(address, CodeViewWidget::SetAddressUpdate::WithUpdate);
   });
-
-#if defined(HAVE_XRANDR) && HAVE_XRANDR
-  m_xrr_config = std::make_unique<X11Utils::XRRConfiguration>(
-      static_cast<Display*>(QGuiApplication::platformNativeInterface()->nativeResourceForWindow(
-          "display", windowHandle())),
-      winId());
-  m_graphics_window = new GraphicsWindow(m_xrr_config.get(), this);
-#else
-  m_graphics_window = new GraphicsWindow(nullptr, this);
-#endif
-
-  InstallHotkeyFilter(m_controllers_window);
-  InstallHotkeyFilter(m_settings_window);
-  InstallHotkeyFilter(m_graphics_window);
 }
 
 void MainWindow::ConnectMenuBar()
@@ -375,6 +412,7 @@ void MainWindow::ConnectMenuBar()
   // View
   connect(m_menu_bar, &MenuBar::ShowList, m_game_list, &GameList::SetListView);
   connect(m_menu_bar, &MenuBar::ShowGrid, m_game_list, &GameList::SetGridView);
+  connect(m_menu_bar, &MenuBar::PurgeGameListCache, m_game_list, &GameList::PurgeCache);
   connect(m_menu_bar, &MenuBar::ToggleSearch, m_search_bar, &SearchBar::Toggle);
 
   connect(m_menu_bar, &MenuBar::ColumnVisibilityToggled, m_game_list,
@@ -520,6 +558,7 @@ void MainWindow::ConnectStack()
 
   setCentralWidget(m_stack);
 
+  setDockOptions(DockOption::AllowNestedDocks);
   setTabPosition(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea, QTabWidget::North);
   addDockWidget(Qt::LeftDockWidgetArea, m_log_widget);
   addDockWidget(Qt::LeftDockWidgetArea, m_log_config_widget);
@@ -551,7 +590,7 @@ QString MainWindow::PromptFileName()
   QString path = QFileDialog::getOpenFileName(
       this, tr("Select a File"),
       settings.value(QStringLiteral("mainwindow/lastdir"), QStringLiteral("")).toString(),
-      tr("All GC/Wii files (*.elf *.dol *.gcm *.iso *.tgc *.wbfs *.ciso *.gcz *.wad);;"
+      tr("All GC/Wii files (*.elf *.dol *.gcm *.iso *.tgc *.wbfs *.ciso *.gcz *.wad *.dff);;"
          "All Files (*)"));
 
   if (!path.isEmpty())
@@ -641,7 +680,8 @@ void MainWindow::OnStopComplete()
   HideRenderWidget();
   EnableScreenSaver(true);
 #ifdef USE_DISCORD_PRESENCE
-  Discord::UpdateDiscordPresence();
+  if (!m_netplay_dialog->isVisible())
+    Discord::UpdateDiscordPresence();
 #endif
 
   SetFullScreenResolution(false);
@@ -675,7 +715,7 @@ bool MainWindow::RequestStop()
     const Core::State state = Core::GetState();
 
     // Only pause the game, if NetPlay is not running
-    bool pause = Settings::Instance().GetNetPlayClient() == nullptr;
+    bool pause = !Settings::Instance().GetNetPlayClient();
 
     if (pause)
       Core::SetState(Core::State::Paused);
@@ -706,6 +746,10 @@ bool MainWindow::RequestStop()
     // TODO: Do not unpause in debug mode to allow debugging until the complete shutdown.
     if (Core::GetState() == Core::State::Paused)
       Core::SetState(Core::State::Running);
+
+    // Tell NetPlay about the power event
+    if (NetPlay::IsNetPlayRunning())
+      NetPlay::SendPowerButtonEvent();
 
     return true;
   }
@@ -786,16 +830,22 @@ void MainWindow::StartGame(std::unique_ptr<BootParameters>&& parameters)
     m_pending_boot = std::move(parameters);
     return;
   }
+
+  // We need the render widget before booting.
+  ShowRenderWidget();
+
   // Boot up, show an error if it fails to load the game.
-  if (!BootManager::BootCore(std::move(parameters)))
+  if (!BootManager::BootCore(std::move(parameters),
+                             GetWindowSystemInfo(m_render_widget->windowHandle())))
   {
     QMessageBox::critical(this, tr("Error"), tr("Failed to init core"), QMessageBox::Ok);
+    HideRenderWidget();
     return;
   }
 
-  ShowRenderWidget();
 #ifdef USE_DISCORD_PRESENCE
-  Discord::UpdateDiscordPresence();
+  if (!NetPlay::IsNetPlayRunning())
+    Discord::UpdateDiscordPresence();
 #endif
 
   if (SConfig::GetInstance().bFullscreen)
@@ -832,7 +882,8 @@ void MainWindow::SetFullScreenResolution(bool fullscreen)
   // Try To Set Selected Mode And Get Results.  NOTE: CDS_FULLSCREEN Gets Rid Of Start Bar.
   ChangeDisplaySettings(&screen_settings, CDS_FULLSCREEN);
 #elif defined(HAVE_XRANDR) && HAVE_XRANDR
-  m_xrr_config->ToggleDisplayMode(fullscreen);
+  if (m_xrr_config)
+    m_xrr_config->ToggleDisplayMode(fullscreen);
 #endif
 }
 
@@ -896,11 +947,22 @@ void MainWindow::HideRenderWidget(bool reinit)
       if (m_render_widget->isFullScreen())
         SetFullScreenResolution(focus);
     });
+
+    // The controller interface will still be registered to the old render widget, if the core
+    // has booted. Therefore, we should re-bind it to the main window for now. When the core
+    // is next started, it will be swapped back to the new render widget.
+    g_controller_interface.ChangeWindow(GetWindowSystemInfo(windowHandle()).render_surface);
   }
 }
 
 void MainWindow::ShowControllersWindow()
 {
+  if (!m_controllers_window)
+  {
+    m_controllers_window = new ControllersWindow(this);
+    InstallHotkeyFilter(m_controllers_window);
+  }
+
   m_controllers_window->show();
   m_controllers_window->raise();
   m_controllers_window->activateWindow();
@@ -908,6 +970,12 @@ void MainWindow::ShowControllersWindow()
 
 void MainWindow::ShowSettingsWindow()
 {
+  if (!m_settings_window)
+  {
+    m_settings_window = new SettingsWindow(this);
+    InstallHotkeyFilter(m_settings_window);
+  }
+
   m_settings_window->show();
   m_settings_window->raise();
   m_settings_window->activateWindow();
@@ -915,14 +983,14 @@ void MainWindow::ShowSettingsWindow()
 
 void MainWindow::ShowAudioWindow()
 {
-  m_settings_window->SelectAudioPane();
   ShowSettingsWindow();
+  m_settings_window->SelectAudioPane();
 }
 
 void MainWindow::ShowGeneralWindow()
 {
-  m_settings_window->SelectGeneralPane();
   ShowSettingsWindow();
+  m_settings_window->SelectGeneralPane();
 }
 
 void MainWindow::ShowAboutDialog()
@@ -933,18 +1001,36 @@ void MainWindow::ShowAboutDialog()
 
 void MainWindow::ShowHotkeyDialog()
 {
-  auto* hotkey_window = new MappingWindow(this, MappingWindow::Type::MAPPING_HOTKEYS, 0);
+  if (!m_hotkey_window)
+  {
+    m_hotkey_window = new MappingWindow(this, MappingWindow::Type::MAPPING_HOTKEYS, 0);
+    InstallHotkeyFilter(m_hotkey_window);
+  }
 
-  InstallHotkeyFilter(hotkey_window);
-
-  hotkey_window->show();
-  hotkey_window->raise();
-  hotkey_window->activateWindow();
+  m_hotkey_window->show();
+  m_hotkey_window->raise();
+  m_hotkey_window->activateWindow();
 }
 
 void MainWindow::ShowGraphicsWindow()
 {
-  m_graphics_window->Initialize();
+  if (!m_graphics_window)
+  {
+#if defined(HAVE_XRANDR) && HAVE_XRANDR
+    if (GetWindowSystemType() == WindowSystemType::X11)
+    {
+      m_xrr_config = std::make_unique<X11Utils::XRRConfiguration>(
+          static_cast<Display*>(QGuiApplication::platformNativeInterface()->nativeResourceForWindow(
+              "display", windowHandle())),
+          winId());
+    }
+    m_graphics_window = new GraphicsWindow(m_xrr_config.get(), this);
+#else
+    m_graphics_window = new GraphicsWindow(nullptr, this);
+#endif
+    InstallHotkeyFilter(m_graphics_window);
+  }
+
   m_graphics_window->show();
   m_graphics_window->raise();
   m_graphics_window->activateWindow();
@@ -959,6 +1045,13 @@ void MainWindow::ShowNetPlaySetupDialog()
 
 void MainWindow::ShowFIFOPlayer()
 {
+  if (!m_fifo_window)
+  {
+    m_fifo_window = new FIFOPlayerWindow(this);
+    connect(m_fifo_window, &FIFOPlayerWindow::LoadFIFORequested, this,
+            [this](const QString& path) { StartGame(path); });
+  }
+
   m_fifo_window->show();
   m_fifo_window->raise();
   m_fifo_window->activateWindow();
@@ -1046,6 +1139,9 @@ void MainWindow::NetPlayInit()
 {
   m_netplay_setup_dialog = new NetPlaySetupDialog(this);
   m_netplay_dialog = new NetPlayDialog;
+#ifdef USE_DISCORD_PRESENCE
+  m_netplay_discord = new DiscordHandler(this);
+#endif
 
   connect(m_netplay_dialog, &NetPlayDialog::Boot, this,
           [this](const QString& path) { StartGame(path); });
@@ -1053,6 +1149,12 @@ void MainWindow::NetPlayInit()
   connect(m_netplay_dialog, &NetPlayDialog::rejected, this, &MainWindow::NetPlayQuit);
   connect(m_netplay_setup_dialog, &NetPlaySetupDialog::Join, this, &MainWindow::NetPlayJoin);
   connect(m_netplay_setup_dialog, &NetPlaySetupDialog::Host, this, &MainWindow::NetPlayHost);
+#ifdef USE_DISCORD_PRESENCE
+  connect(m_netplay_discord, &DiscordHandler::Join, this, &MainWindow::NetPlayJoin);
+
+  Discord::InitNetPlayFunctionality(*m_netplay_discord);
+  m_netplay_discord->Start();
+#endif
 }
 
 bool MainWindow::NetPlayJoin()
@@ -1072,16 +1174,18 @@ bool MainWindow::NetPlayJoin()
     return false;
   }
 
+  auto server = Settings::Instance().GetNetPlayServer();
+
   // Settings
   const std::string traversal_choice = Config::Get(Config::NETPLAY_TRAVERSAL_CHOICE);
   const bool is_traversal = traversal_choice == "traversal";
 
   std::string host_ip;
   u16 host_port;
-  if (Settings::Instance().GetNetPlayServer() != nullptr)
+  if (server)
   {
     host_ip = "127.0.0.1";
-    host_port = Settings::Instance().GetNetPlayServer()->GetPort();
+    host_port = server->GetPort();
   }
   else
   {
@@ -1093,9 +1197,17 @@ bool MainWindow::NetPlayJoin()
   const std::string traversal_host = Config::Get(Config::NETPLAY_TRAVERSAL_SERVER);
   const u16 traversal_port = Config::Get(Config::NETPLAY_TRAVERSAL_PORT);
   const std::string nickname = Config::Get(Config::NETPLAY_NICKNAME);
+  const bool host_input_authority = Config::Get(Config::NETPLAY_HOST_INPUT_AUTHORITY);
+
+  if (server)
+  {
+    server->SetHostInputAuthority(host_input_authority);
+    if (!host_input_authority)
+      server->AdjustPadBufferSize(Config::Get(Config::NETPLAY_BUFFER_SIZE));
+  }
 
   // Create Client
-  const bool is_hosting_netplay = Settings::Instance().GetNetPlayServer() != nullptr;
+  const bool is_hosting_netplay = server != nullptr;
   Settings::Instance().ResetNetPlayClient(new NetPlay::NetPlayClient(
       host_ip, host_port, m_netplay_dialog, nickname,
       NetPlay::NetTraversalConfig{is_hosting_netplay ? false : is_traversal, traversal_host,
@@ -1106,6 +1218,9 @@ bool MainWindow::NetPlayJoin()
     NetPlayQuit();
     return false;
   }
+
+  if (server != nullptr)
+    server->SetNetPlayUI(m_netplay_dialog);
 
   m_netplay_setup_dialog->close();
   m_netplay_dialog->show(nickname, is_traversal);
@@ -1168,12 +1283,16 @@ void MainWindow::NetPlayQuit()
 {
   Settings::Instance().ResetNetPlayClient();
   Settings::Instance().ResetNetPlayServer();
+#ifdef USE_DISCORD_PRESENCE
+  Discord::UpdateDiscordPresence();
+#endif
 }
 
 void MainWindow::EnableScreenSaver(bool enable)
 {
 #if defined(HAVE_XRANDR) && HAVE_XRANDR
-  UICommon::EnableScreenSaver(winId(), enable);
+  if (GetWindowSystemType() == WindowSystemType::X11)
+    UICommon::EnableScreenSaver(winId(), enable);
 #else
   UICommon::EnableScreenSaver(enable);
 #endif
@@ -1446,13 +1565,14 @@ void MainWindow::OnUpdateProgressDialog(QString title, int progress, int total)
 {
   if (!m_progress_dialog)
   {
-    m_progress_dialog = new QProgressDialog(m_render_widget);
+    m_progress_dialog = new QProgressDialog(m_render_widget, Qt::WindowTitleHint);
     m_progress_dialog->show();
+    m_progress_dialog->setCancelButton(nullptr);
+    m_progress_dialog->setWindowTitle(tr("Dolphin"));
   }
 
   m_progress_dialog->setValue(progress);
   m_progress_dialog->setLabelText(title);
-  m_progress_dialog->setWindowTitle(title);
   m_progress_dialog->setMaximum(total);
 
   if (total < 0 || progress >= total)

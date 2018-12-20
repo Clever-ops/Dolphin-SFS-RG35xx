@@ -6,6 +6,7 @@ add_library(dolphin_libretro SHARED
   Log.cpp
   Main.cpp
   Options.cpp
+  RetroGLContext.cpp
   Video.cpp
 )
 

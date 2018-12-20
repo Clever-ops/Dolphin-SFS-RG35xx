@@ -137,6 +137,16 @@ void Settings::RefreshGameList()
   emit GameListRefreshRequested();
 }
 
+void Settings::RefreshMetadata()
+{
+  emit MetadataRefreshRequested();
+}
+
+void Settings::NotifyMetadataRefreshComplete()
+{
+  emit MetadataRefreshCompleted();
+}
+
 void Settings::ReloadTitleDB()
 {
   emit TitleDBReloadRequested();
@@ -276,9 +286,9 @@ GameListModel* Settings::GetGameListModel() const
   return model;
 }
 
-NetPlay::NetPlayClient* Settings::GetNetPlayClient()
+std::shared_ptr<NetPlay::NetPlayClient> Settings::GetNetPlayClient()
 {
-  return m_client.get();
+  return m_client;
 }
 
 void Settings::ResetNetPlayClient(NetPlay::NetPlayClient* client)
@@ -286,9 +296,9 @@ void Settings::ResetNetPlayClient(NetPlay::NetPlayClient* client)
   m_client.reset(client);
 }
 
-NetPlay::NetPlayServer* Settings::GetNetPlayServer()
+std::shared_ptr<NetPlay::NetPlayServer> Settings::GetNetPlayServer()
 {
-  return m_server.get();
+  return m_server;
 }
 
 void Settings::ResetNetPlayServer(NetPlay::NetPlayServer* server)
@@ -424,6 +434,13 @@ bool Settings::IsJITVisible() const
   return QSettings().value(QStringLiteral("debugger/showjit")).toBool();
 }
 
+void Settings::RefreshWidgetVisibility()
+{
+  emit DebugModeToggled(IsDebugModeEnabled());
+  emit LogVisibilityChanged(IsLogVisible());
+  emit LogConfigVisibilityChanged(IsLogConfigVisible());
+}
+
 void Settings::SetDebugFont(QFont font)
 {
   if (GetDebugFont() != font)
@@ -509,4 +526,18 @@ bool Settings::IsBatchModeEnabled() const
 void Settings::SetBatchModeEnabled(bool batch)
 {
   m_batch = batch;
+}
+
+bool Settings::IsUSBKeyboardConnected() const
+{
+  return SConfig::GetInstance().m_WiiKeyboard;
+}
+
+void Settings::SetUSBKeyboardConnected(bool connected)
+{
+  if (IsUSBKeyboardConnected() != connected)
+  {
+    SConfig::GetInstance().m_WiiKeyboard = connected;
+    emit USBKeyboardConnectionChanged(connected);
+  }
 }

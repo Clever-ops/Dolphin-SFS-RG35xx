@@ -29,6 +29,7 @@ enum
                           // settings (per game)
   D_MAPS_IDX,
   D_CACHE_IDX,
+  D_COVERCACHE_IDX,
   D_SHADERCACHE_IDX,
   D_SHADERS_IDX,
   D_STATESAVES_IDX,
@@ -200,7 +201,7 @@ bool ReadFileToString(const std::string& filename, std::string& str);
 template <typename T>
 void OpenFStream(T& fstream, const std::string& filename, std::ios_base::openmode openmode)
 {
-#ifdef _MSV_VER
+#ifdef _MSC_VER
   fstream.open(UTF8ToTStr(filename).c_str(), openmode);
 #else
   fstream.open(filename.c_str(), openmode);

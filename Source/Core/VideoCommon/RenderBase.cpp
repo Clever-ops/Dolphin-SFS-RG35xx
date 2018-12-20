@@ -34,10 +34,12 @@
 #include "Common/Thread.h"
 #include "Common/Timer.h"
 
+#include "Core/Analytics.h"
 #include "Core/Config/SYSCONFSettings.h"
 #include "Core/ConfigManager.h"
 #include "Core/Core.h"
 #include "Core/FifoPlayer/FifoRecorder.h"
+#include "Core/HW/SystemTimers.h"
 #include "Core/HW/VideoInterface.h"
 #include "Core/Host.h"
 #include "Core/Movie.h"
@@ -76,22 +78,27 @@ static float AspectToWidescreen(float aspect)
   return aspect * ((16.0f / 9.0f) / (4.0f / 3.0f));
 }
 
-Renderer::Renderer(int backbuffer_width, int backbuffer_height)
-    : m_backbuffer_width(backbuffer_width), m_backbuffer_height(backbuffer_height)
+Renderer::Renderer(int backbuffer_width, int backbuffer_height,
+                   AbstractTextureFormat backbuffer_format)
+    : m_backbuffer_width(backbuffer_width), m_backbuffer_height(backbuffer_height),
+      m_backbuffer_format(backbuffer_format)
 {
   UpdateActiveConfig();
   UpdateDrawRectangle();
   CalculateTargetSize();
 
-  if (SConfig::GetInstance().bWii)
-    m_aspect_wide = Config::Get(Config::SYSCONF_WIDESCREEN);
+  m_aspect_wide = SConfig::GetInstance().bWii && Config::Get(Config::SYSCONF_WIDESCREEN);
 
-  m_surface_handle = Host_GetRenderHandle();
   m_last_host_config_bits = ShaderHostConfig::GetCurrent().bits;
   m_last_efb_multisamples = g_ActiveConfig.iMultisamples;
 }
 
 Renderer::~Renderer() = default;
+
+bool Renderer::Initialize()
+{
+  return true;
+}
 
 void Renderer::Shutdown()
 {
@@ -408,7 +415,7 @@ float Renderer::CalculateDrawAspectRatio() const
 
 bool Renderer::IsHeadless() const
 {
-  return !m_surface_handle;
+  return true;
 }
 
 void Renderer::ChangeSurface(void* new_surface_handle)
@@ -418,11 +425,9 @@ void Renderer::ChangeSurface(void* new_surface_handle)
   m_surface_changed.Set();
 }
 
-void Renderer::ResizeSurface(int new_width, int new_height)
+void Renderer::ResizeSurface()
 {
   std::lock_guard<std::mutex> lock(m_swap_mutex);
-  m_new_backbuffer_width = new_width;
-  m_new_backbuffer_height = new_height;
   m_surface_resized.Set();
 }
 
@@ -640,9 +645,19 @@ void Renderer::RecordVideoMemory()
 void Renderer::Swap(u32 xfbAddr, u32 fbWidth, u32 fbStride, u32 fbHeight, const EFBRectangle& rc,
                     u64 ticks)
 {
-  // Heuristic to detect if a GameCube game is in 16:9 anamorphic widescreen mode.
-  if (!SConfig::GetInstance().bWii)
+  const AspectMode suggested = g_ActiveConfig.suggested_aspect_mode;
+  if (suggested == AspectMode::Analog || suggested == AspectMode::AnalogWide)
   {
+    m_aspect_wide = suggested == AspectMode::AnalogWide;
+  }
+  else if (SConfig::GetInstance().bWii)
+  {
+    m_aspect_wide = Config::Get(Config::SYSCONF_WIDESCREEN);
+  }
+  else
+  {
+    // Heuristic to detect if a GameCube game is in 16:9 anamorphic widescreen mode.
+
     size_t flush_count_4_3, flush_count_anamorphic;
     std::tie(flush_count_4_3, flush_count_anamorphic) =
         g_vertex_manager->ResetFlushAspectRatioCount();
@@ -676,9 +691,23 @@ void Renderer::Swap(u32 xfbAddr, u32 fbWidth, u32 fbStride, u32 fbHeight, const 
       m_last_xfb_ticks = ticks;
 
       auto xfb_rect = texture_config.GetRect();
-      xfb_rect.right -= EFBToScaledX(fbStride - fbWidth);
+
+      // It's possible that the returned XFB texture is native resolution
+      // even when we're rendering at higher than native resolution
+      // if the XFB was was loaded entirely from console memory.
+      // If so, adjust the rectangle by native resolution instead of scaled resolution.
+      const u32 native_stride_width_difference = fbStride - fbWidth;
+      if (texture_config.width == xfb_entry->native_width)
+        xfb_rect.right -= native_stride_width_difference;
+      else
+        xfb_rect.right -= EFBToScaledX(native_stride_width_difference);
 
       m_last_xfb_region = xfb_rect;
+
+      // Since we use the common pipelines here and draw vertices if a batch is currently being
+      // built by the vertex loader, we end up trampling over its pointer, as we share the buffer
+      // with the loader, and it has not been unmapped yet. Force a pipeline flush to avoid this.
+      g_vertex_manager->Flush();
 
       // TODO: merge more generic parts into VideoCommon
       {
@@ -691,6 +720,12 @@ void Renderer::Swap(u32 xfbAddr, u32 fbWidth, u32 fbStride, u32 fbHeight, const 
       SetWindowSize(texture_config.width, texture_config.height);
 
       m_fps_counter.Update();
+
+      DolphinAnalytics::PerformanceSample perf_sample;
+      perf_sample.speed_ratio = SystemTimers::GetEstimatedEmulationPerformance();
+      perf_sample.num_prims = stats.thisFrame.numPrims + stats.thisFrame.numDLPrims;
+      perf_sample.num_draw_calls = stats.thisFrame.numDrawCalls;
+      DolphinAnalytics::Instance()->ReportPerformanceInfo(std::move(perf_sample));
 
       if (IsFrameDumping())
         DumpCurrentFrame();
@@ -709,6 +744,10 @@ void Renderer::Swap(u32 xfbAddr, u32 fbWidth, u32 fbStride, u32 fbHeight, const 
       // and hybrid ubershaders have compiled the specialized shader, but without any
       // state changes the specialized shader will not take over.
       g_vertex_manager->InvalidatePipelineObject();
+
+      // Flush any outstanding EFB copies to RAM, in case the game is running at an uncapped frame
+      // rate and not waiting for vblank. Otherwise, we'd end up with a huge list of pending copies.
+      g_texture_cache->FlushEFBCopies();
 
       Core::Callback_VideoCopiedToXFB(true);
     }

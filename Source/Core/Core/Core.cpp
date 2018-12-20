@@ -76,6 +76,7 @@
 #include "VideoCommon/OnScreenDisplay.h"
 #include "VideoCommon/RenderBase.h"
 #include "VideoCommon/VideoBackendBase.h"
+#include "VideoCommon/VideoConfig.h"
 
 namespace Core
 {
@@ -90,7 +91,6 @@ static bool s_is_stopping = false;
 static bool s_hardware_initialized = false;
 static bool s_is_started = false;
 static Common::Flag s_is_booting;
-static void* s_window_handle = nullptr;
 
 static std::thread::id s_gpu_thread_id;
 static std::vector<Common::ScopeGuard> s_emu_thread_scope_guards;
@@ -197,7 +197,7 @@ bool WantsDeterminism()
 
 // This is called from the GUI thread. See the booting call schedule in
 // BootManager.cpp
-bool Init(std::unique_ptr<BootParameters> boot)
+bool Init(std::unique_ptr<BootParameters> boot, const WindowSystemInfo& wsi)
 {
   if (s_emu_thread.joinable())
   {
@@ -221,7 +221,8 @@ bool Init(std::unique_ptr<BootParameters> boot)
 
   Host_UpdateMainFrame();  // Disable any menus or buttons at boot
 
-  s_window_handle = Host_GetRenderHandle();
+  // Issue any API calls which must occur on the main thread for the graphics backend.
+  g_video_backend->PrepareWindow(wsi);
 
   boot_params = std::move(boot);
 
@@ -231,7 +232,7 @@ bool Init(std::unique_ptr<BootParameters> boot)
   if (SConfig::GetInstance().bEMUThread)
   {
     // Start the emu thread
-    s_emu_thread = std::thread(EmuThread);
+    s_emu_thread = std::thread(EmuThread, wsi);
   }
   return true;
 }
@@ -258,6 +259,10 @@ void Stop()  // - Hammertime!
   const SConfig& _CoreParameter = SConfig::GetInstance();
 
   s_is_stopping = true;
+
+  // Notify state changed callback
+  if (s_on_state_changed_callback)
+    s_on_state_changed_callback(State::Stopping);
 
   // Dump left over jobs
   HostDispatchJobs();
@@ -404,7 +409,7 @@ static void FifoPlayerThread(const std::optional<std::string>& savestate_path,
 // Initialize and create emulation thread
 // Call browser: Init():s_emu_thread().
 // See the BootManager.cpp file description for a complete call schedule.
-void EmuThread()
+void EmuThread(WindowSystemInfo wsi)
 {
   const SConfig& core_parameter = SConfig::GetInstance();
   s_is_booting.Set();
@@ -451,13 +456,21 @@ void EmuThread()
   }};
 
   bool init_video = !g_renderer;
-  if (init_video && !g_video_backend->Initialize(s_window_handle))
+  if (init_video)
   {
-    PanicAlert("Failed to initialize video backend!");
-    return;
+	// Backend info has to be initialized before we can initialize the backend.
+	// This is because when we load the config, we validate it against the current backend info.
+	// We also should have the correct adapter selected for creating the device in Initialize().
+	g_video_backend->InitBackendInfo();
+	g_Config.Refresh();
+	if (!g_video_backend->Initialize(wsi))
+    {
+      PanicAlert("Failed to initialize video backend!");
+      return;
+    }
   }
   Common::ScopeGuard video_guard{[init_video] {
-    if (init_video)
+	if (init_video)
       g_video_backend->Shutdown();
   }};
 
@@ -472,10 +485,14 @@ void EmuThread()
     return;
   }
 
+  // The frontend will likely have initialized the controller interface, as it needs
+  // it to provide the configuration dialogs. In this case, instead of re-initializing
+  // entirely, we switch the window used for inputs to the render window. This way, the
+  // cursor position is relative to the render window, instead of the main window.
   bool init_controllers = false;
   if (!g_controller_interface.IsInit())
   {
-    g_controller_interface.Initialize(s_window_handle);
+    g_controller_interface.Initialize(wsi);
     Pad::Initialize();
     Keyboard::Initialize();
     init_controllers = true;
@@ -483,6 +500,7 @@ void EmuThread()
   else
   {
     // Update references in case controllers were refreshed
+    g_controller_interface.ChangeWindow(wsi.render_surface);
     Pad::LoadConfig();
     Keyboard::LoadConfig();
   }
@@ -789,20 +807,6 @@ void VideoThrottle()
   s_drawn_video++;
 }
 
-// Executed from GPU thread
-// reports if a frame should be skipped or not
-// depending on the emulation speed set
-bool ShouldSkipFrame(int skipped)
-{
-  u32 TargetFPS = VideoInterface::GetTargetRefreshRate();
-  if (SConfig::GetInstance().m_EmulationSpeed > 0.0f)
-    TargetFPS = u32(TargetFPS * SConfig::GetInstance().m_EmulationSpeed);
-  const u32 frames = s_drawn_frame.load();
-  const bool fps_slow = !(s_timer.GetTimeDifference() < (frames + skipped) * 1000 / TargetFPS);
-
-  return fps_slow;
-}
-
 // --- Callbacks for backends / engine ---
 
 // Should be called from GPU thread when a frame is drawn
@@ -1006,7 +1010,7 @@ void DoFrameStep()
   {
     // if already paused, frame advance for 1 frame
     s_frame_step = true;
-    RequestRefreshInfo();
+    //RequestRefreshInfo();
     SetState(State::Running);
   }
   else if (!s_frame_step)

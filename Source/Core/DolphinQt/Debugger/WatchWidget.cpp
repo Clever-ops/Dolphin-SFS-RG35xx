@@ -74,10 +74,12 @@ WatchWidget::~WatchWidget()
 void WatchWidget::CreateWidgets()
 {
   m_toolbar = new QToolBar;
+  m_toolbar->setContentsMargins(0, 0, 0, 0);
   m_toolbar->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
 
   m_table = new QTableWidget;
 
+  m_table->setContentsMargins(0, 0, 0, 0);
   m_table->setColumnCount(5);
   m_table->verticalHeader()->setHidden(true);
   m_table->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -90,6 +92,8 @@ void WatchWidget::CreateWidgets()
   m_save->setEnabled(false);
 
   auto* layout = new QVBoxLayout;
+  layout->setContentsMargins(2, 2, 2, 2);
+  layout->setSpacing(0);
   layout->addWidget(m_toolbar);
   layout->addWidget(m_table);
 
@@ -121,9 +125,12 @@ void WatchWidget::Update()
 
   m_table->setRowCount(size + 1);
 
-  m_table->setHorizontalHeaderLabels({tr("Label"), tr("Address"), tr("Hexadecimal"), tr("Decimal"),
-                                      // i18n: Data type used in computing
-                                      tr("String")});
+  m_table->setHorizontalHeaderLabels(
+      {tr("Label"), tr("Address"), tr("Hexadecimal"),
+       // i18n: The base 10 numeral system. Not related to non-integer numbers
+       tr("Decimal"),
+       // i18n: Data type used in computing
+       tr("String")});
 
   for (int i = 0; i < size; i++)
   {

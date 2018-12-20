@@ -17,6 +17,7 @@
 #include "Common/StringUtil.h"
 #include "Core/ConfigManager.h"
 #include "Core/HW/WiiSave.h"
+#include "Core/IOS/ES/ES.h"
 #include "Core/IOS/FS/FileSystem.h"
 #include "Core/IOS/IOS.h"
 #include "Core/IOS/Uids.h"
@@ -26,9 +27,19 @@
 
 namespace Core
 {
+namespace FS = IOS::HLE::FS;
+
 static std::string s_temp_wii_root;
 
-namespace FS = IOS::HLE::FS;
+static void CopySave(FS::FileSystem* source, FS::FileSystem* dest, const u64 title_id)
+{
+  dest->CreateDirectory(IOS::PID_KERNEL, IOS::PID_KERNEL, Common::GetTitleDataPath(title_id), 0,
+                        {IOS::HLE::FS::Mode::ReadWrite, IOS::HLE::FS::Mode::ReadWrite,
+                         IOS::HLE::FS::Mode::ReadWrite});
+  const auto source_save = WiiSave::MakeNandStorage(source, title_id);
+  const auto dest_save = WiiSave::MakeNandStorage(dest, title_id);
+  WiiSave::Copy(source_save.get(), dest_save.get());
+}
 
 static void InitializeDeterministicWiiSaves(FS::FileSystem* session_fs)
 {
@@ -52,9 +63,29 @@ static void InitializeDeterministicWiiSaves(FS::FileSystem* session_fs)
       (Movie::IsMovieActive() && !Movie::IsStartingFromClearSave()))
   {
     // Copy the current user's save to the Blank NAND
-    const auto user_save = WiiSave::MakeNandStorage(configured_fs.get(), title_id);
-    const auto session_save = WiiSave::MakeNandStorage(session_fs, title_id);
-    WiiSave::Copy(user_save.get(), session_save.get());
+    auto* sync_fs = NetPlay::GetWiiSyncFS();
+    auto& sync_titles = NetPlay::GetWiiSyncTitles();
+    if (sync_fs)
+    {
+      for (const u64 title : sync_titles)
+      {
+        CopySave(sync_fs, session_fs, title);
+      }
+    }
+    else
+    {
+      if (NetPlay::IsSyncingAllWiiSaves())
+      {
+        for (const u64 title : sync_titles)
+        {
+          CopySave(configured_fs.get(), session_fs, title);
+        }
+      }
+      else
+      {
+        CopySave(configured_fs.get(), session_fs, title_id);
+      }
+    }
   }
 }
 
@@ -62,13 +93,26 @@ void InitializeWiiRoot(bool use_temporary)
 {
   if (use_temporary)
   {
-    s_temp_wii_root = File::CreateTempDir();
-    if (s_temp_wii_root.empty())
-    {
-      ERROR_LOG(IOS_FS, "Could not create temporary directory");
-      return;
-    }
+    s_temp_wii_root = File::GetUserPath(D_USER_IDX) + "WiiSession" DIR_SEP;
     WARN_LOG(IOS_FS, "Using temporary directory %s for minimal Wii FS", s_temp_wii_root.c_str());
+
+    // If directory exists, make a backup
+    if (File::Exists(s_temp_wii_root))
+    {
+      const std::string backup_path =
+          s_temp_wii_root.substr(0, s_temp_wii_root.size() - 1) + ".backup" DIR_SEP;
+      WARN_LOG(IOS_FS, "Temporary Wii FS directory exists, moving to backup...");
+
+      // If backup exists, delete it as we don't want a mess
+      if (File::Exists(backup_path))
+      {
+        WARN_LOG(IOS_FS, "Temporary Wii FS backup directory exists, deleting...");
+        File::DeleteDirRecursively(backup_path);
+      }
+
+      File::CopyDir(s_temp_wii_root, backup_path, true);
+    }
+
     File::SetUserPath(D_SESSION_WIIROOT_IDX, s_temp_wii_root);
   }
   else
@@ -148,8 +192,11 @@ void InitializeWiiFileSystemContents()
 
 void CleanUpWiiFileSystemContents()
 {
-  if (s_temp_wii_root.empty() || !SConfig::GetInstance().bEnableMemcardSdWriting)
+  if (s_temp_wii_root.empty() || !SConfig::GetInstance().bEnableMemcardSdWriting ||
+      NetPlay::GetWiiSyncFS())
+  {
     return;
+  }
 
   const u64 title_id = SConfig::GetInstance().GetTitleID();
 
@@ -157,6 +204,16 @@ void CleanUpWiiFileSystemContents()
   const auto session_save = WiiSave::MakeNandStorage(ios->GetFS().get(), title_id);
 
   const auto configured_fs = FS::MakeFileSystem(FS::Location::Configured);
+
+  // FS won't write the save if the directory doesn't exist
+  const std::string title_path = Common::GetTitleDataPath(title_id);
+  if (!configured_fs->GetMetadata(IOS::PID_KERNEL, IOS::PID_KERNEL, title_path))
+  {
+    configured_fs->CreateDirectory(IOS::PID_KERNEL, IOS::PID_KERNEL, title_path, 0,
+                                   {IOS::HLE::FS::Mode::ReadWrite, IOS::HLE::FS::Mode::ReadWrite,
+                                    IOS::HLE::FS::Mode::ReadWrite});
+  }
+
   const auto user_save = WiiSave::MakeNandStorage(configured_fs.get(), title_id);
 
   const std::string backup_path =

@@ -24,6 +24,10 @@
 #include "VideoCommon/VideoBackendBase.h"
 #include "VideoCommon/VideoConfig.h"
 
+#if defined(VK_USE_PLATFORM_MACOS_MVK)
+#include <objc/message.h>
+#endif
+
 namespace Vulkan
 {
 void VideoBackend::InitBackendInfo()
@@ -89,7 +93,7 @@ static bool ShouldEnableDebugReports(bool enable_validation_layers)
   return enable_validation_layers || IsHostGPULoggingEnabled();
 }
 
-bool VideoBackend::Initialize(void* window_handle)
+bool VideoBackend::Initialize(const WindowSystemInfo& wsi)
 {
   if (!g_vulkan_context)
   {
@@ -109,7 +113,7 @@ bool VideoBackend::Initialize(void* window_handle)
 
     // Create Vulkan instance, needed before we can create a surface, or enumerate devices.
     // We use this instance to fill in backend info, then re-use it for the actual device.
-    bool enable_surface = window_handle != nullptr;
+    bool enable_surface = wsi.render_surface != nullptr;
     bool enable_debug_reports = ShouldEnableDebugReports(enable_validation_layer);
     VkInstance instance = VulkanContext::CreateVulkanInstance(enable_surface, enable_debug_reports,
                                                               enable_validation_layer);
@@ -140,7 +144,7 @@ bool VideoBackend::Initialize(void* window_handle)
       return false;
     }
 
-    // Populate BackendInfo with as much information as we can at this point.
+	// Populate BackendInfo with as much information as we can at this point.
     VulkanContext::PopulateBackendInfo(&g_Config);
     VulkanContext::PopulateBackendInfoAdapters(&g_Config, gpu_list);
 
@@ -148,7 +152,7 @@ bool VideoBackend::Initialize(void* window_handle)
     VkSurfaceKHR surface = VK_NULL_HANDLE;
     if (enable_surface)
     {
-      surface = SwapChain::CreateVulkanSurface(instance, window_handle);
+      surface = SwapChain::CreateVulkanSurface(instance, wsi.display_connection, wsi.render_surface);
       if (surface == VK_NULL_HANDLE)
       {
         PanicAlert("Failed to create Vulkan surface.");
@@ -167,10 +171,9 @@ bool VideoBackend::Initialize(void* window_handle)
       selected_adapter_index = 0;
     }
 
-    // Now we can create the Vulkan device. VulkanContext takes ownership of the instance and
-    // surface.
+    // Now we can create the Vulkan device. VulkanContext takes ownership of the instance and surface.
     g_vulkan_context = VulkanContext::Create(instance, gpu_list[selected_adapter_index], surface,
-                                             enable_debug_reports, enable_validation_layer);
+                                           enable_debug_reports, enable_validation_layer);
     if (!g_vulkan_context)
     {
       PanicAlert("Failed to create Vulkan device");
@@ -214,7 +217,7 @@ bool VideoBackend::Initialize(void* window_handle)
   if (g_vulkan_context->GetSurface() != VK_NULL_HANDLE)
   {
     swap_chain =
-        SwapChain::Create(window_handle, g_vulkan_context->GetSurface(), g_Config.IsVSync());
+        SwapChain::Create(wsi.display_connection, wsi.render_surface, g_vulkan_context->GetSurface(), g_Config.IsVSync());
     if (!swap_chain)
     {
       PanicAlert("Failed to create Vulkan swap chain.");
@@ -275,5 +278,34 @@ void VideoBackend::Shutdown()
   g_vulkan_context.reset();
   ShutdownShared();
   UnloadVulkanLibrary();
+}
+
+void VideoBackend::PrepareWindow(const WindowSystemInfo& wsi)
+{
+#if defined(VK_USE_PLATFORM_MACOS_MVK)
+  // This is kinda messy, but it avoids having to write Objective C++ just to create a metal layer.
+  id view = reinterpret_cast<id>(wsi.render_surface);
+  Class clsCAMetalLayer = objc_getClass("CAMetalLayer");
+  if (!clsCAMetalLayer)
+  {
+    ERROR_LOG(VIDEO, "Failed to get CAMetalLayer class.");
+    return;
+  }
+
+  // [CAMetalLayer layer]
+  id layer = reinterpret_cast<id (*)(Class, SEL)>(objc_msgSend)(objc_getClass("CAMetalLayer"),
+                                                                sel_getUid("layer"));
+  if (!layer)
+  {
+    ERROR_LOG(VIDEO, "Failed to create Metal layer.");
+    return;
+  }
+
+  // [view setWantsLayer:YES]
+  reinterpret_cast<void (*)(id, SEL, BOOL)>(objc_msgSend)(view, sel_getUid("setWantsLayer:"), YES);
+
+  // [view setLayer:layer]
+  reinterpret_cast<void (*)(id, SEL, id)>(objc_msgSend)(view, sel_getUid("setLayer:"), layer);
+#endif
 }
 }  // namespace Vulkan

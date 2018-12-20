@@ -41,6 +41,8 @@ public:
 
   void resizeEvent(QResizeEvent* event) override;
 
+  void PurgeCache();
+
 signals:
   void GameSelected();
   void NetPlayHost(const QString& game_id);
@@ -60,7 +62,12 @@ private:
   void ExportWiiSave();
   void CompressISO(bool decompress);
   void ChangeDisc();
+  void NewTag();
+  void DeleteTag();
   void UpdateColumnVisibility();
+
+  void ZoomIn();
+  void ZoomOut();
 
   void OnHeaderViewChanged();
   void OnSectionResized(int index, int, int);
@@ -71,6 +78,7 @@ private:
   // We only have two views, just use a bool to distinguish.
   void SetPreferredView(bool list);
   void ConsiderViewChange();
+  void UpdateFont();
 
   GameListModel* m_model;
   QSortFilterProxyModel* m_list_proxy;

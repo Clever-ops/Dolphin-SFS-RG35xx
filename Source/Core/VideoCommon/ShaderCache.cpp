@@ -35,7 +35,7 @@ bool ShaderCache::Initialize()
   m_async_shader_compiler->ResizeWorkerThreads(g_ActiveConfig.GetShaderPrecompilerThreads());
 
   // Load shader and UID caches.
-  if (g_ActiveConfig.bShaderCache)
+  if (g_ActiveConfig.bShaderCache && m_api_type != APIType::Nothing)
   {
     LoadShaderCaches();
     LoadPipelineUIDCache();
@@ -96,7 +96,8 @@ void ShaderCache::Shutdown()
 {
   // This may leave shaders uncommitted to the cache, but it's better than blocking shutdown
   // until everything has finished compiling.
-  m_async_shader_compiler->StopWorkerThreads();
+	if (m_async_shader_compiler != nullptr)
+		m_async_shader_compiler->StopWorkerThreads();
   ClosePipelineUIDCache();
   ClearShaderCaches();
   ClearPipelineCaches();

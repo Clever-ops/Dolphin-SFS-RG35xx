@@ -2,6 +2,7 @@
 #pragma once
 
 #include <libretro.h>
+#include "Common/WindowSystemInfo.h"
 #include "VideoBackends/Null/Render.h"
 #include "VideoBackends/Software/SWRenderer.h"
 #include "VideoBackends/Software/SWTexture.h"
@@ -28,6 +29,7 @@ namespace Video
 void Init(void);
 extern retro_video_refresh_t video_cb;
 extern struct retro_hw_render_callback hw_render;
+extern WindowSystemInfo wsi;
 
 #ifndef __APPLE__
 namespace Vk
@@ -42,17 +44,6 @@ void Shutdown();
 void WaitForPresentation();
 }  // namespace Vk
 #endif
-
-class SWRenderer : public ::SWRenderer
-{
-public:
-  void SwapImpl(AbstractTexture* texture, const EFBRectangle& rc, u64 ticks) override
-  {
-    SW::SWTexture* sw_image = static_cast<SW::SWTexture*>(texture);
-    video_cb(sw_image->GetData(), rc.GetWidth(), rc.GetHeight(), sw_image->GetWidth() * 4);
-    UpdateActiveConfig();
-  }
-};
 
 class NullRenderer : public Null::Renderer
 {
