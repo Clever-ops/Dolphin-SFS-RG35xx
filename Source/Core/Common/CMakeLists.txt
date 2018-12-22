@@ -125,9 +125,11 @@ if(ENABLE_EGL AND EGL_FOUND)
 endif()
 
 if(WIN32)
-  target_sources(common PRIVATE
-    GL/GLInterface/WGL.cpp
-  )
+  if(NOT LIBRETRO)
+    target_sources(common PRIVATE
+      GL/GLInterface/WGL.cpp
+    )
+  endif()
   if(MSVC)
     target_sources(common PRIVATE
       LdrWatcher.cpp
