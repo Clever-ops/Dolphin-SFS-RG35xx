@@ -27,7 +27,9 @@ struct CrtDebugBreak
 };
 // CrtDebugBreak breakAt(614);
 #endif  // end DEBUG/FAST
-
+#ifdef __LIBRETRO__
+#include <Windows.h>
+#endif	// __LIBRETRO__
 #endif
 
 // Windows compatibility

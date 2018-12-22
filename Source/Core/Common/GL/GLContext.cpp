@@ -6,6 +6,9 @@
 
 #include "Common/GL/GLContext.h"
 
+#ifdef __LIBRETRO__
+#include "DolphinLibretro/RetroGLContext.h"
+#else
 #if defined(__APPLE__)
 #include "Common/GL/GLInterface/AGL.h"
 #endif
@@ -24,9 +27,7 @@
 #include "Common/GL/GLInterface/EGLAndroid.h"
 #endif
 #endif
-#ifdef __LIBRETRO__
-#include "DolphinLibretro/RetroGLContext.h"
-#endif
+#endif	// !__LIBRETRO__
 
 const std::array<std::pair<int, int>, 9> GLContext::s_desktop_opengl_versions = {
     {{4, 6}, {4, 5}, {4, 4}, {4, 3}, {4, 2}, {4, 1}, {4, 0}, {3, 3}, {3, 2}}};
@@ -86,7 +87,7 @@ std::unique_ptr<GLContext> GLContext::Create(const WindowSystemInfo& wsi, bool s
 #ifdef __LIBRETRO__
   if (wsi.type == WindowSystemType::Libretro)
     context = std::make_unique<Libretro::Video::RetroGLContext>();
-#endif
+#else
 #if defined(__APPLE__)
   if (wsi.type == WindowSystemType::MacOS || wsi.type == WindowSystemType::Headless)
     context = std::make_unique<GLContextAGL>();
@@ -118,6 +119,7 @@ std::unique_ptr<GLContext> GLContext::Create(const WindowSystemInfo& wsi, bool s
   if (wsi.type == WindowSystemType::Headless)
     context = std::make_unique<GLContextEGL>();
 #endif
+#endif	// !__LIBRETRO__
   if (!context)
     return nullptr;
 
