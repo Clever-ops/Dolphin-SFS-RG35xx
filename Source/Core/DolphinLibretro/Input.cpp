@@ -297,10 +297,8 @@ Device::Device(unsigned device, unsigned p) : m_device(device), m_port(p)
     AddAxis(RETRO_DEVICE_ID_ANALOG_X, 0x7FFF, "X1+", RETRO_DEVICE_INDEX_ANALOG_RIGHT);
     AddAxis(RETRO_DEVICE_ID_ANALOG_Y, -0x8000, "Y1-", RETRO_DEVICE_INDEX_ANALOG_RIGHT);
     AddAxis(RETRO_DEVICE_ID_ANALOG_Y, 0x7FFF, "Y1+", RETRO_DEVICE_INDEX_ANALOG_RIGHT);
-    AddAxis(RETRO_DEVICE_ID_ANALOG_X, -0x8000, "Trigger0-", RETRO_DEVICE_INDEX_ANALOG_BUTTON);
-    AddAxis(RETRO_DEVICE_ID_ANALOG_X, 0x7FFF, "Trigger0+", RETRO_DEVICE_INDEX_ANALOG_BUTTON);
-    AddAxis(RETRO_DEVICE_ID_ANALOG_Y, -0x8000, "Trigger1-", RETRO_DEVICE_INDEX_ANALOG_BUTTON);
-    AddAxis(RETRO_DEVICE_ID_ANALOG_Y, 0x7FFF, "Trigger1+", RETRO_DEVICE_INDEX_ANALOG_BUTTON);
+    AddAxis(RETRO_DEVICE_ID_JOYPAD_L2, 0x7FFF, "Trigger0+", RETRO_DEVICE_INDEX_ANALOG_BUTTON);
+    AddAxis(RETRO_DEVICE_ID_JOYPAD_R2, 0x7FFF, "Trigger1+", RETRO_DEVICE_INDEX_ANALOG_BUTTON);
     return;
   case RETRO_DEVICE_MOUSE:
     // TODO: handle last poll_cb relative coordinates correctly.
@@ -486,7 +484,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
     gcButtons->SetControlExpression(1, "B");                              // B
     gcButtons->SetControlExpression(2, "X");                              // X
     gcButtons->SetControlExpression(3, "Y");                              // Y
-    gcButtons->SetControlExpression(4, "R2");                             // Z
+    gcButtons->SetControlExpression(4, "R");                              // Z
     gcButtons->SetControlExpression(5, "Start");                          // Start
     gcMainStick->SetControlExpression(0, "`" + devAnalog + ":Y0-`");      // Up
     gcMainStick->SetControlExpression(1, "`" + devAnalog + ":Y0+`");      // Down
@@ -500,10 +498,10 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
     gcDPad->SetControlExpression(1, "Down");                              // Down
     gcDPad->SetControlExpression(2, "Left");                              // Left
     gcDPad->SetControlExpression(3, "Right");                             // Right
-    gcTriggers->SetControlExpression(0, "L");                             // L
-    gcTriggers->SetControlExpression(1, "R");                             // R
-    gcTriggers->SetControlExpression(2, "`" + devAnalog + "Trigger0+`");  // L-trigger Analog
-    gcTriggers->SetControlExpression(3, "`" + devAnalog + "Trigger1+`");  // R-trigger Analog
+    gcTriggers->SetControlExpression(0, "`" + devAnalog + ":Trigger0+`"); // L
+    gcTriggers->SetControlExpression(1, "`" + devAnalog + ":Trigger1+`"); // R
+    gcTriggers->SetControlExpression(2, "`" + devAnalog + ":Trigger0+`"); // L-trigger Analog
+    gcTriggers->SetControlExpression(3, "`" + devAnalog + ":Trigger1+`"); // R-trigger Analog
     gcRumble->SetControlExpression(0, "Rumble");
 
     gcPad->UpdateReferences(g_controller_interface);
@@ -536,10 +534,10 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
       ccButtons->SetControlExpression(6, "Select");                         // -
       ccButtons->SetControlExpression(7, "Start");                          // +
       ccButtons->SetControlExpression(8, "R3");                             // Home
-      ccTriggers->SetControlExpression(0, "L");                             // L-trigger
-      ccTriggers->SetControlExpression(1, "R");                             // R-trigger
-      ccTriggers->SetControlExpression(2, "`" + devAnalog + "Trigger0+`");  // L-trigger Analog
-      ccTriggers->SetControlExpression(3, "`" + devAnalog + "Trigger1+`");  // R-trigger Analog
+      ccTriggers->SetControlExpression(0, "`" + devAnalog + ":Trigger0+`"); // L-trigger
+      ccTriggers->SetControlExpression(1, "`" + devAnalog + ":Trigger1+`"); // R-trigger
+      ccTriggers->SetControlExpression(2, "`" + devAnalog + ":Trigger0+`"); // L-trigger Analog
+      ccTriggers->SetControlExpression(3, "`" + devAnalog + ":Trigger1+`"); // R-trigger Analog
       ccDpad->SetControlExpression(0, "Up");                                // Up
       ccDpad->SetControlExpression(1, "Down");                              // Down
       ccDpad->SetControlExpression(2, "Left");                              // Left
