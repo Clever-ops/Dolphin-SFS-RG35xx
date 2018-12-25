@@ -47,6 +47,7 @@ static retro_input_poll_t poll_cb;
 static retro_input_state_t input_cb;
 struct retro_rumble_interface rumble;
 static const std::string source = "Libretro";
+static unsigned input_types[4];
 
 static struct retro_input_descriptor descGC[] = {
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_LEFT, "Left"},
@@ -112,6 +113,10 @@ static struct retro_input_descriptor descWiimote[] = {
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "+"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "-"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3, "Home"},
+    {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X,
+     "Tilt Left/Right"},
+    {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y,
+     "Tilt Forward/Backward"},
     {0},
 };
 
@@ -128,6 +133,10 @@ static struct retro_input_descriptor descWiimoteSideways[] = {
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "+"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "-"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3, "Home"},
+    {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X,
+     "Tilt Left/Right"},
+    {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y,
+     "Tilt Forward/Backward"},
     {0},
 };
 
@@ -258,6 +267,7 @@ public:
   }
   std::string GetName() const override { return GetDeviceName(m_device); }
   std::string GetSource() const override { return source; }
+  unsigned GetPort() const { return m_port; }
 
 private:
   unsigned m_device;
@@ -317,20 +327,10 @@ Device::Device(unsigned device, unsigned p) : m_device(device), m_port(p)
     return;
   case RETRO_DEVICE_POINTER:
     AddButton(RETRO_DEVICE_ID_POINTER_PRESSED, "Pressed0", 0);
-    AddButton(RETRO_DEVICE_ID_POINTER_PRESSED, "Pressed1", 1);
-    AddButton(RETRO_DEVICE_ID_POINTER_PRESSED, "Pressed2", 2);
     AddAxis(RETRO_DEVICE_ID_POINTER_X, -0x8000, "X0-", 0);
     AddAxis(RETRO_DEVICE_ID_POINTER_X, 0x7FFF, "X0+", 0);
     AddAxis(RETRO_DEVICE_ID_POINTER_Y, -0x8000, "Y0-", 0);
     AddAxis(RETRO_DEVICE_ID_POINTER_Y, 0x7FFF, "Y0+", 0);
-    AddAxis(RETRO_DEVICE_ID_POINTER_X, -0x8000, "X1-", 1);
-    AddAxis(RETRO_DEVICE_ID_POINTER_X, 0x7FFF, "X1+", 1);
-    AddAxis(RETRO_DEVICE_ID_POINTER_Y, -0x8000, "Y1-", 1);
-    AddAxis(RETRO_DEVICE_ID_POINTER_Y, 0x7FFF, "Y1+", 1);
-    AddAxis(RETRO_DEVICE_ID_POINTER_X, -0x8000, "X2-", 2);
-    AddAxis(RETRO_DEVICE_ID_POINTER_X, 0x7FFF, "X2+", 2);
-    AddAxis(RETRO_DEVICE_ID_POINTER_Y, -0x8000, "Y2-", 2);
-    AddAxis(RETRO_DEVICE_ID_POINTER_Y, 0x7FFF, "Y2+", 2);
     return;
   case RETRO_DEVICE_KEYBOARD:
     return;
@@ -356,26 +356,31 @@ Device::Device(unsigned device, unsigned p) : m_device(device), m_port(p)
   }
 }
 
+static void AddDevicesForPort(unsigned port)
+{
+  g_controller_interface.AddDevice(std::make_shared<Device>(RETRO_DEVICE_JOYPAD, port));
+  g_controller_interface.AddDevice(std::make_shared<Device>(RETRO_DEVICE_ANALOG, port));
+  g_controller_interface.AddDevice(std::make_shared<Device>(RETRO_DEVICE_POINTER, port));
+}
+
+static void RemoveDevicesForPort(unsigned port)
+{
+  g_controller_interface.RemoveDevice([&port](const auto& device) {
+    return device->GetSource() == source
+        && (device->GetName() == GetDeviceName(RETRO_DEVICE_ANALOG)
+            || device->GetName() == GetDeviceName(RETRO_DEVICE_JOYPAD)
+            || device->GetName() == GetDeviceName(RETRO_DEVICE_POINTER))
+        && dynamic_cast<const Device *>(device)->GetPort() == port;
+  });
+}
+
 void Init()
 {
   environ_cb(RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE, &rumble);
 
   g_controller_interface.Initialize(Libretro::Video::wsi);
 
-  g_controller_interface.AddDevice(std::make_shared<Device>(RETRO_DEVICE_JOYPAD, 0));
-  g_controller_interface.AddDevice(std::make_shared<Device>(RETRO_DEVICE_JOYPAD, 1));
-  g_controller_interface.AddDevice(std::make_shared<Device>(RETRO_DEVICE_JOYPAD, 2));
-  g_controller_interface.AddDevice(std::make_shared<Device>(RETRO_DEVICE_JOYPAD, 3));
-
-  g_controller_interface.AddDevice(std::make_shared<Device>(RETRO_DEVICE_ANALOG, 0));
-  g_controller_interface.AddDevice(std::make_shared<Device>(RETRO_DEVICE_ANALOG, 1));
-  g_controller_interface.AddDevice(std::make_shared<Device>(RETRO_DEVICE_ANALOG, 2));
-  g_controller_interface.AddDevice(std::make_shared<Device>(RETRO_DEVICE_ANALOG, 3));
-
-  g_controller_interface.AddDevice(std::make_shared<Device>(RETRO_DEVICE_MOUSE, 0));
   g_controller_interface.AddDevice(std::make_shared<Device>(RETRO_DEVICE_KEYBOARD, 0));
-  g_controller_interface.AddDevice(std::make_shared<Device>(RETRO_DEVICE_LIGHTGUN, 0));
-  g_controller_interface.AddDevice(std::make_shared<Device>(RETRO_DEVICE_POINTER, 0));
 
   Pad::Initialize();
   Keyboard::Initialize();
@@ -404,10 +409,19 @@ void Init()
   }
   else
   {
-    retro_set_controller_port_device(0, RETRO_DEVICE_JOYPAD);
-    retro_set_controller_port_device(1, RETRO_DEVICE_JOYPAD);
-    retro_set_controller_port_device(2, RETRO_DEVICE_JOYPAD);
-    retro_set_controller_port_device(3, RETRO_DEVICE_JOYPAD);
+    static const struct retro_controller_description gcpad_desc[] = {
+        {"GameCube Controller", RETRO_DEVICE_JOYPAD},
+    };
+
+    static const struct retro_controller_info ports[] = {
+        {gcpad_desc, sizeof(gcpad_desc) / sizeof(*gcpad_desc)},
+        {gcpad_desc, sizeof(gcpad_desc) / sizeof(*gcpad_desc)},
+        {gcpad_desc, sizeof(gcpad_desc) / sizeof(*gcpad_desc)},
+        {gcpad_desc, sizeof(gcpad_desc) / sizeof(*gcpad_desc)},
+        {0},
+    };
+
+    environ_cb(RETRO_ENVIRONMENT_SET_CONTROLLER_INFO, (void*)ports);
   }
 }
 
@@ -447,20 +461,25 @@ void retro_set_input_state(retro_input_state_t cb)
 
 void retro_set_controller_port_device(unsigned port, unsigned device)
 {
-  if (port > 4)
+  if (port > 3)
     return;
+
+  Libretro::Input::input_types[port] = device;
 
   std::string devJoypad = Libretro::Input::GetQualifiedName(port, RETRO_DEVICE_JOYPAD);
   std::string devAnalog = Libretro::Input::GetQualifiedName(port, RETRO_DEVICE_ANALOG);
-  std::string devMouse = Libretro::Input::GetQualifiedName(port, RETRO_DEVICE_MOUSE);
   std::string devPointer = Libretro::Input::GetQualifiedName(port, RETRO_DEVICE_POINTER);
 #if 0
+  std::string devMouse = Libretro::Input::GetQualifiedName(port, RETRO_DEVICE_MOUSE);
   std::string devKeyboard = Libretro::Input::GetQualifiedName(port, RETRO_DEVICE_KEYBOARD);
   std::string devLightgun = Libretro::Input::GetQualifiedName(port, RETRO_DEVICE_LIGHTGUN);
 #endif
 
-  retro_input_descriptor* desc = Libretro::Input::descGC;
+  Libretro::Input::RemoveDevicesForPort(port);
+  if (device != RETRO_DEVICE_NONE)
+    Libretro::Input::AddDevicesForPort(port);
 
+  if (!SConfig::GetInstance().bWii)
   {
     GCPad* gcPad = (GCPad*)Pad::GetConfig()->GetController(port);
     // load an empty inifile section, clears everything
@@ -556,14 +575,14 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
       ControllerEmu::ControlGroup* wmDPad = wm->GetWiimoteGroup(WiimoteGroup::DPad);
       ControllerEmu::ControlGroup* wmIR = wm->GetWiimoteGroup(WiimoteGroup::IR);
       ControllerEmu::ControlGroup* wmShake = wm->GetWiimoteGroup(WiimoteGroup::Shake);
-#if 0
       ControllerEmu::ControlGroup* wmTilt = wm->GetWiimoteGroup(WiimoteGroup::Tilt);
+#if 0
       ControllerEmu::ControlGroup* wmSwing = wm->GetWiimoteGroup(WiimoteGroup::Swing);
       ControllerEmu::ControlGroup* wmHotkeys = wm->GetWiimoteGroup(WiimoteGroup::Hotkeys);
 #endif
 
-      wmButtons->SetControlExpression(0, "A | `" + devMouse + ":Left`");   // A
-      wmButtons->SetControlExpression(1, "B | `" + devMouse + ":Right`");  // B
+      wmButtons->SetControlExpression(0, "A | `" + devPointer + ":Pressed0`");  // A
+      wmButtons->SetControlExpression(1, "B");                                  // B
 
       if (device == RETRO_DEVICE_WIIMOTE_NC)
       {
@@ -596,6 +615,10 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
         wmButtons->SetControlExpression(3, "Y");       // 2
         wmButtons->SetControlExpression(4, "Select");  // -
         wmButtons->SetControlExpression(5, "Start");   // +
+        wmTilt->SetControlExpression(0, "`" + devAnalog + ":Y0-`");  // Forward
+        wmTilt->SetControlExpression(1, "`" + devAnalog + ":Y0+`");  // Backward
+        wmTilt->SetControlExpression(2, "`" + devAnalog + ":X0-`");  // Left
+        wmTilt->SetControlExpression(3, "`" + devAnalog + ":X0+`");  // Right
       }
 
       wmButtons->SetControlExpression(6, "R3");                   // Home
@@ -636,33 +659,28 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
     switch (device)
     {
     case RETRO_DEVICE_WIIMOTE:
-      desc = Libretro::Input::descWiimote;
       wmExtension->switch_extension = EXT_NONE;
       WiimoteReal::ChangeWiimoteSource(port, WIIMOTE_SRC_EMU);
       break;
 
     case RETRO_DEVICE_WIIMOTE_SW:
-      desc = Libretro::Input::descWiimoteSideways;
       wmExtension->switch_extension = EXT_NONE;
       wmOptions->boolean_settings[2]->SetValue(true);  // Sideways Wiimote
       WiimoteReal::ChangeWiimoteSource(port, WIIMOTE_SRC_EMU);
       break;
 
     case RETRO_DEVICE_WIIMOTE_NC:
-      desc = Libretro::Input::descWiimoteNunchuk;
       wmExtension->switch_extension = EXT_NUNCHUK;
       WiimoteReal::ChangeWiimoteSource(port, WIIMOTE_SRC_EMU);
       break;
 
     case RETRO_DEVICE_WIIMOTE_CC:
     case RETRO_DEVICE_WIIMOTE_CC_PRO:
-      desc = Libretro::Input::descWiimoteCC;
       wmExtension->switch_extension = EXT_CLASSIC;
       WiimoteReal::ChangeWiimoteSource(port, WIIMOTE_SRC_EMU);
       break;
 
     default:
-      desc = Libretro::Input::descGC;
       WiimoteReal::ChangeWiimoteSource(port, WIIMOTE_SRC_NONE);
       break;
     }
@@ -671,9 +689,45 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
     ::Wiimote::GetConfig()->SaveConfig();
   }
 
-  retro_input_descriptor* desc_ptr = desc;
-  while (desc_ptr->description)
-    (desc_ptr++)->port = port;
+  std::vector<retro_input_descriptor> all_descs;
 
-  Libretro::environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, desc);
+  for (int i = 0; i < 4; i++)
+  {
+    retro_input_descriptor* desc;
+
+    switch (Libretro::Input::input_types[i])
+    {
+    case RETRO_DEVICE_WIIMOTE:
+      desc = Libretro::Input::descWiimote;
+      break;
+
+    case RETRO_DEVICE_WIIMOTE_SW:
+      desc = Libretro::Input::descWiimoteSideways;
+      break;
+
+    case RETRO_DEVICE_WIIMOTE_NC:
+      desc = Libretro::Input::descWiimoteNunchuk;
+      break;
+
+    case RETRO_DEVICE_WIIMOTE_CC:
+    case RETRO_DEVICE_WIIMOTE_CC_PRO:
+      desc = Libretro::Input::descWiimoteCC;
+      break;
+
+    case RETRO_DEVICE_NONE:
+      continue;
+
+    default:
+      desc = Libretro::Input::descGC;
+      break;
+    }
+    for (int j = 0; desc[j].device != 0; j++)
+    {
+      retro_input_descriptor new_desc = desc[j];
+      new_desc.port = i;
+      all_descs.push_back(new_desc);
+    }
+  }
+  all_descs.push_back({ 0 });
+  Libretro::environ_cb(RETRO_ENVIRONMENT_SET_INPUT_DESCRIPTORS, &all_descs[0]);
 }
