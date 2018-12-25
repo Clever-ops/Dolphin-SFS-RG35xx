@@ -94,10 +94,12 @@ void ControllerInterface::RefreshDevices()
   if (!m_is_init)
     return;
 
+#ifndef __LIBRETRO__
   {
     std::lock_guard<std::mutex> lk(m_devices_mutex);
     m_devices.clear();
   }
+#endif
 
   m_is_populating_devices = true;
 
