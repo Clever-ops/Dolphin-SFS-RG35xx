@@ -395,7 +395,9 @@ void RunGpuLoop()
       100);
 
   AsyncRequests::GetInstance()->SetEnable(false);
+#ifndef __LIBRETRO__
   AsyncRequests::GetInstance()->SetPassthrough(true);
+#endif
 }
 
 void FlushGpu()

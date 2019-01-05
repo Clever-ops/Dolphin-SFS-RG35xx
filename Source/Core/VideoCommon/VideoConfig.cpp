@@ -48,15 +48,18 @@ void VideoConfig::Refresh()
 {
   if (!s_has_registered_callback)
   {
+#ifdef __LIBRETRO__
+    Config::AddConfigChangedCallback([]() { g_Config.Refresh(); });
+#else
     // There was a race condition between the video thread and the host thread here, if
     // corrections need to be made by VerifyValidity(). Briefly, the config will contain
     // invalid values. Instead, pause emulation first, which will flush the video thread,
     // update the config and correct it, then resume emulation, after which the video
     // thread will detect the config has changed and act accordingly.
     Config::AddConfigChangedCallback([]() { Core::RunAsCPUThread([]() { g_Config.Refresh(); }); });
+#endif
     s_has_registered_callback = true;
   }
-
   bVSync = Config::Get(Config::GFX_VSYNC);
   iAdapter = Config::Get(Config::GFX_ADAPTER);
 
