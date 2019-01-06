@@ -516,8 +516,8 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
     gcDPad->SetControlExpression(1, "Down");                              // Down
     gcDPad->SetControlExpression(2, "Left");                              // Left
     gcDPad->SetControlExpression(3, "Right");                             // Right
-    gcTriggers->SetControlExpression(0, "`" + devAnalog + ":Trigger0+`"); // L
-    gcTriggers->SetControlExpression(1, "`" + devAnalog + ":Trigger1+`"); // R
+    gcTriggers->SetControlExpression(0, "L2");                            // L-trigger
+    gcTriggers->SetControlExpression(1, "R2");                            // R-trigger
     gcTriggers->SetControlExpression(2, "`" + devAnalog + ":Trigger0+`"); // L-trigger Analog
     gcTriggers->SetControlExpression(3, "`" + devAnalog + ":Trigger1+`"); // R-trigger Analog
     gcRumble->SetControlExpression(0, "Rumble");
@@ -552,8 +552,8 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
       ccButtons->SetControlExpression(6, "Select");                         // -
       ccButtons->SetControlExpression(7, "Start");                          // +
       ccButtons->SetControlExpression(8, "R3");                             // Home
-      ccTriggers->SetControlExpression(0, "`" + devAnalog + ":Trigger0+`"); // L-trigger
-      ccTriggers->SetControlExpression(1, "`" + devAnalog + ":Trigger1+`"); // R-trigger
+      ccTriggers->SetControlExpression(0, "L2");                            // L-trigger
+      ccTriggers->SetControlExpression(1, "R2");                            // R-trigger
       ccTriggers->SetControlExpression(2, "`" + devAnalog + ":Trigger0+`"); // L-trigger Analog
       ccTriggers->SetControlExpression(3, "`" + devAnalog + ":Trigger1+`"); // R-trigger Analog
       ccDpad->SetControlExpression(0, "Up");                                // Up

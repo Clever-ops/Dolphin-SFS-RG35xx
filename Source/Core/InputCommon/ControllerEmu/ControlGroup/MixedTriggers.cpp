@@ -29,6 +29,20 @@ void MixedTriggers::GetState(u16* const digital, const u16* bitmasks, ControlSta
 
   for (size_t i = 0; i < trigger_count; ++i, ++bitmasks, ++analog)
   {
+#ifdef __LIBRETRO__
+    // If the analog trigger is at 0 but the digital trigger is set, we assume there's no analog trigger.
+    // Otherwise the analog trigger value takes precedence over the digital one.
+    if (controls[i + trigger_count]->control_ref->State() > numeric_settings[0]->GetValue()  // analog trigger > threshold
+        || (controls[i + trigger_count]->control_ref->State() == 0 && controls[i]->control_ref->State() > numeric_settings[0]->GetValue())) // digital trigger > threshold
+    {
+      *analog = 1.0;
+      *digital |= *bitmasks;
+    }
+    else
+    {
+      *analog = controls[i + trigger_count]->control_ref->State();
+    }
+#else
     if (controls[i]->control_ref->State() > numeric_settings[0]->GetValue())  // threshold
     {
       *analog = 1.0;
@@ -38,6 +52,7 @@ void MixedTriggers::GetState(u16* const digital, const u16* bitmasks, ControlSta
     {
       *analog = controls[i + trigger_count]->control_ref->State();
     }
+#endif
   }
 }
 }  // namespace ControllerEmu
