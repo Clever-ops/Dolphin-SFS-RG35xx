@@ -80,6 +80,7 @@ extern Option<bool> efbToTexture;
 extern Option<bool> efbToVram;
 extern Option<bool> gpuTextureDecoding;
 extern Option<bool> waitForShaders;
+extern Option<bool> forceTextureFiltering;
 extern Option<bool> loadCustomTextures;
 }  // namespace Options
 }  // namespace Libretro

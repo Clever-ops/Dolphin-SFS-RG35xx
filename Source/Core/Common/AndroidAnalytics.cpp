@@ -22,6 +22,7 @@ AndroidAnalyticsBackend::~AndroidAnalyticsBackend() = default;
 
 void AndroidAnalyticsBackend::Send(std::string report)
 {
-  s_android_send_report(m_endpoint, report);
+  if (s_android_send_report != nullptr)
+    s_android_send_report(m_endpoint, report);
 }
 }  // namespace Common
