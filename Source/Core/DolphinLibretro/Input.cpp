@@ -626,10 +626,13 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
       wmDPad->SetControlExpression(1, "Down");                    // Down
       wmDPad->SetControlExpression(2, "Left");                    // Left
       wmDPad->SetControlExpression(3, "Right");                   // Right
-      wmIR->SetControlExpression(0, "`" + devPointer + ":Y0-`");  // Up
-      wmIR->SetControlExpression(1, "`" + devPointer + ":Y0+`");  // Down
-      wmIR->SetControlExpression(2, "`" + devPointer + ":X0-`");  // Left
-      wmIR->SetControlExpression(3, "`" + devPointer + ":X0+`");  // Right
+      
+      // Set right stick to control the IR
+      wmIR->SetControlExpression(0, "`" + devAnalog + ":Y1-`");     // Up
+      wmIR->SetControlExpression(1, "`" + devAnalog + ":Y1+`");     // Down
+      wmIR->SetControlExpression(2, "`" + devAnalog + ":X1-`");     // Left
+      wmIR->SetControlExpression(3, "`" + devAnalog + ":X1+`");     // Right
+      
       wmShake->SetControlExpression(0, "R2");                     // X
       wmShake->SetControlExpression(1, "R2");                     // Y
       wmShake->SetControlExpression(2, "R2");                     // Z

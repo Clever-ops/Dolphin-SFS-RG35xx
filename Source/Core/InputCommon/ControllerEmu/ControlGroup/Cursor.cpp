@@ -32,11 +32,11 @@ Cursor::Cursor(const std::string& name_) : ControlGroup(name_, GroupType::Cursor
   controls.emplace_back(std::make_unique<Input>(Translate, _trans("Recenter")));
 
   numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Center"), 0.5));
-  numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Width"), 0.5));
-  numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Height"), 0.5));
-  numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Dead Zone"), 0, 0, 20));
-  boolean_settings.emplace_back(std::make_unique<BooleanSetting>(_trans("Relative Input"), false));
-  boolean_settings.emplace_back(std::make_unique<BooleanSetting>(_trans("Auto-Hide"), false));
+  numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Width"), 0.1));
+  numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Height"), 0.2));
+  numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Dead Zone"), 0, 0, 4));
+  boolean_settings.emplace_back(std::make_unique<BooleanSetting>(_trans("Relative Input"), true));
+  boolean_settings.emplace_back(std::make_unique<BooleanSetting>(_trans("Auto-Hide"), true));
 }
 
 Cursor::StateData Cursor::GetState(const bool adjusted)
