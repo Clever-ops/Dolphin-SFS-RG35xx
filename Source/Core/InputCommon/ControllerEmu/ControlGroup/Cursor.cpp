@@ -47,8 +47,8 @@ Cursor::Cursor(const std::string& name_) : ControlGroup(name_, GroupType::Cursor
     numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Width"), 0.5));
     numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Height"), 0.5));
     numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Dead Zone"), 0, 0, 20));
-    boolean_settings.emplace_back(std::make_unique<BooleanSetting>(_trans("Relative Input"), true));
-    boolean_settings.emplace_back(std::make_unique<BooleanSetting>(_trans("Auto-Hide"), true));
+    boolean_settings.emplace_back(std::make_unique<BooleanSetting>(_trans("Relative Input"), false));
+    boolean_settings.emplace_back(std::make_unique<BooleanSetting>(_trans("Auto-Hide"), false));
   }
 
 }
