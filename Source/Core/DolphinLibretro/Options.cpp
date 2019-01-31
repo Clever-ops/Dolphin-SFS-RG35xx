@@ -149,7 +149,8 @@ Option<int> efbScale("dolphin_efb_scale", "EFB Scale", 1,
                      {"x1 (640 x 528)", "x2 (1280 x 1056)", "x3 (1920 x 1584)", "x4 (2560 * 2112)",
                       "x5 (3200 x 2640)", "x6 (3840 x 3168)"});
 Option<int> irMode("dolphin_ir_mode", "IR Mode", 1,
-                     {"Right Stick controls pointer", "Mouse controls pointer"});Option<LogTypes::LOG_LEVELS> logLevel("dolphin_log_level", "Log Level",
+                     {"Right Stick controls pointer", "Mouse controls pointer"});
+Option<LogTypes::LOG_LEVELS> logLevel("dolphin_log_level", "Log Level",
                                       {{"Info", LogTypes::LINFO},
 #if defined(_DEBUG) || defined(DEBUGFAST)
                                        {"Debug", LogTypes::LDEBUG},
