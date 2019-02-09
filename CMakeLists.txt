@@ -697,7 +697,7 @@ else()
   set(ICONV_LIBRARIES iconv)
 endif()
 
-if(NOT ANDROID AND NOT LIBRETRO)
+if(NOT ANDROID)
   find_package(HIDAPI)
   if(NOT HIDAPI_FOUND)
     message(STATUS "Using static HIDAPI from Externals")

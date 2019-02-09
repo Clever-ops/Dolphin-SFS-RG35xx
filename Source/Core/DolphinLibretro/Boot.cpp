@@ -114,6 +114,7 @@ bool retro_load_game(const struct retro_game_info* game)
   Config::SetBase(Config::GFX_SHADER_COMPILER_THREADS, 1);
   Config::SetBase(Config::GFX_SHADER_PRECOMPILER_THREADS, 1);
 #endif
+  SConfig::GetInstance().m_WiimoteContinuousScanning = Libretro::Options::bluetoothContinuousScan;
 
   Libretro::Video::Init();
   NOTICE_LOG(VIDEO, "Using GFX backend: %s", SConfig::GetInstance().m_strVideoBackend.c_str());
