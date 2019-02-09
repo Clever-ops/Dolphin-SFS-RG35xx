@@ -58,6 +58,7 @@ private:
   std::vector<std::pair<std::string, T>> m_list;
 };
 
+extern Option<int> irMode;
 extern Option<int> efbScale;
 extern Option<LogTypes::LOG_LEVELS> logLevel;
 extern Option<float> cpuClockRate;
