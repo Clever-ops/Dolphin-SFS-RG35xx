@@ -447,6 +447,12 @@ void Update()
 #endif
 }
 
+void ResetControllers()
+{
+  for (int port = 0; port < 4; port++)
+    retro_set_controller_port_device(port, input_types[port]);
+}
+
 }  // namespace Input
 }  // namespace Libretro
 
@@ -583,6 +589,9 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 
       wmButtons->SetControlExpression(0, "A | `" + devPointer + ":Pressed0`");  // A
       wmButtons->SetControlExpression(1, "B");                                  // B
+      wmIR->numeric_settings[0]->SetValue(Libretro::Options::irCenter / 100.0); // IR Center
+      wmIR->numeric_settings[1]->SetValue(Libretro::Options::irWidth / 100.0);  // IR Width
+      wmIR->numeric_settings[2]->SetValue(Libretro::Options::irHeight / 100.0); // IR Height
 
       if (device == RETRO_DEVICE_WIIMOTE_NC)
       {
@@ -627,19 +636,25 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
       wmDPad->SetControlExpression(2, "Left");                    // Left
       wmDPad->SetControlExpression(3, "Right");                   // Right
       
-      if(Libretro::Options::irMode==1){
+      if (Libretro::Options::irMode == 1)
+      {
         // Set right stick to control the IR
         wmIR->SetControlExpression(0, "`" + devAnalog + ":Y1-`");     // Up
         wmIR->SetControlExpression(1, "`" + devAnalog + ":Y1+`");     // Down
         wmIR->SetControlExpression(2, "`" + devAnalog + ":X1-`");     // Left
         wmIR->SetControlExpression(3, "`" + devAnalog + ":X1+`");     // Right
+        wmIR->boolean_settings[0]->SetValue(false);                   // Relative input
+        wmIR->boolean_settings[1]->SetValue(true);                    // Auto hide
       }
-      else {
+      else
+      {
         // Mouse controls IR
         wmIR->SetControlExpression(0, "`" + devPointer + ":Y0-`");  // Up
         wmIR->SetControlExpression(1, "`" + devPointer + ":Y0+`");  // Down
         wmIR->SetControlExpression(2, "`" + devPointer + ":X0-`");  // Left        
         wmIR->SetControlExpression(3, "`" + devPointer + ":X0+`");  // Right
+        wmIR->boolean_settings[0]->SetValue(false);                 // Relative input
+        wmIR->boolean_settings[1]->SetValue(false);                 // Auto hide
       }
       wmShake->SetControlExpression(0, "R2");                     // X
       wmShake->SetControlExpression(1, "R2");                     // Y
