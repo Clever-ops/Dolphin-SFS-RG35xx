@@ -19,8 +19,6 @@
 #include "InputCommon/ControllerEmu/Setting/BooleanSetting.h"
 #include "InputCommon/ControllerEmu/Setting/NumericSetting.h"
 
-#include "DolphinLibretro/Options.h"
-
 namespace ControllerEmu
 {
 Cursor::Cursor(const std::string& name_) : ControlGroup(name_, GroupType::Cursor)
@@ -32,25 +30,13 @@ Cursor::Cursor(const std::string& name_) : ControlGroup(name_, GroupType::Cursor
   controls.emplace_back(std::make_unique<Input>(Translate, _trans("Backward")));
   controls.emplace_back(std::make_unique<Input>(Translate, _trans("Hide")));
   controls.emplace_back(std::make_unique<Input>(Translate, _trans("Recenter")));
-  if(Libretro::Options::irMode==1){
-    // Set right stick to control the IR
-    numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Center"), 0.5));
-    numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Width"), 0.1));
-    numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Height"), 0.2));
-    numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Dead Zone"), 0, 0, 4));
-    boolean_settings.emplace_back(std::make_unique<BooleanSetting>(_trans("Relative Input"), true));
-    boolean_settings.emplace_back(std::make_unique<BooleanSetting>(_trans("Auto-Hide"), true));
-  }
-  else {
-    // Mouse controls IR
-    numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Center"), 0.5));
-    numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Width"), 0.5));
-    numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Height"), 0.5));
-    numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Dead Zone"), 0, 0, 20));
-    boolean_settings.emplace_back(std::make_unique<BooleanSetting>(_trans("Relative Input"), false));
-    boolean_settings.emplace_back(std::make_unique<BooleanSetting>(_trans("Auto-Hide"), false));
-  }
 
+  numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Center"), 0.5));
+  numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Width"), 0.5));
+  numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Height"), 0.5));
+  numeric_settings.emplace_back(std::make_unique<NumericSetting>(_trans("Dead Zone"), 0, 0, 20));
+  boolean_settings.emplace_back(std::make_unique<BooleanSetting>(_trans("Relative Input"), false));
+  boolean_settings.emplace_back(std::make_unique<BooleanSetting>(_trans("Auto-Hide"), false));
 }
 
 Cursor::StateData Cursor::GetState(const bool adjusted)
