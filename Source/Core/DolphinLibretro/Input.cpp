@@ -652,7 +652,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
         wmIR->SetControlExpression(1, "`" + devAnalog + ":Y1+`");     // Down
         wmIR->SetControlExpression(2, "`" + devAnalog + ":X1-`");     // Left
         wmIR->SetControlExpression(3, "`" + devAnalog + ":X1+`");     // Right
-        wmIR->boolean_settings[0]->SetValue(false);                   // Relative input
+        wmIR->boolean_settings[0]->SetValue(true);                    // Relative input
         wmIR->boolean_settings[1]->SetValue(true);                    // Auto hide
       }
       else
