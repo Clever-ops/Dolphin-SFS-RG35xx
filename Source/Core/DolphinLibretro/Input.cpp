@@ -161,6 +161,10 @@ static struct retro_input_descriptor descWiimoteNunchuk[] = {
      "Nunchuk Stick X"},
     {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_Y,
      "Nunchuk Stick Y"},
+    {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_X,
+      "Tilt Left/Right"},
+    {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_RIGHT, RETRO_DEVICE_ID_ANALOG_Y,
+      "Tilt Forward/Backward"},
     {0},
 };
 
@@ -617,6 +621,11 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
         wmButtons->SetControlExpression(3, "Select");  // 2
         wmButtons->SetControlExpression(4, "L");       // -
         wmButtons->SetControlExpression(5, "R");       // +
+
+        wmTilt->SetControlExpression(0, "`" + devAnalog + ":Y1-`");  // Forward
+        wmTilt->SetControlExpression(1, "`" + devAnalog + ":Y1+`");  // Backward
+        wmTilt->SetControlExpression(2, "`" + devAnalog + ":X1-`");  // Left
+        wmTilt->SetControlExpression(3, "`" + devAnalog + ":X1+`");  // Right
       }
       else
       {
