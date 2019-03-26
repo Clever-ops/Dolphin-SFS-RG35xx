@@ -574,10 +574,14 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
       ccLeftStick->SetControlExpression(1, "`" + devAnalog + ":Y0+`");      // Down
       ccLeftStick->SetControlExpression(2, "`" + devAnalog + ":X0-`");      // Left
       ccLeftStick->SetControlExpression(3, "`" + devAnalog + ":X0+`");      // Right
-      ccRightStick->SetControlExpression(0, "`" + devAnalog + ":Y1-`");     // Up
-      ccRightStick->SetControlExpression(1, "`" + devAnalog + ":Y1+`");     // Down
-      ccRightStick->SetControlExpression(2, "`" + devAnalog + ":X1-`");     // Left
-      ccRightStick->SetControlExpression(3, "`" + devAnalog + ":X1+`");     // Right
+
+      if (Libretro::Options::irMode != 1 && Libretro::Options::irMode != 2)
+      {
+        ccRightStick->SetControlExpression(0, "`" + devAnalog + ":Y1-`");     // Up
+        ccRightStick->SetControlExpression(1, "`" + devAnalog + ":Y1+`");     // Down
+        ccRightStick->SetControlExpression(2, "`" + devAnalog + ":X1-`");     // Left
+        ccRightStick->SetControlExpression(3, "`" + devAnalog + ":X1+`");     // Right
+      }
     }
     else
     {
@@ -622,10 +626,13 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
         wmButtons->SetControlExpression(4, "L");       // -
         wmButtons->SetControlExpression(5, "R");       // +
 
-        wmTilt->SetControlExpression(0, "`" + devAnalog + ":Y1-`");  // Forward
-        wmTilt->SetControlExpression(1, "`" + devAnalog + ":Y1+`");  // Backward
-        wmTilt->SetControlExpression(2, "`" + devAnalog + ":X1-`");  // Left
-        wmTilt->SetControlExpression(3, "`" + devAnalog + ":X1+`");  // Right
+        if (Libretro::Options::irMode != 1 && Libretro::Options::irMode != 2)
+        {
+          wmTilt->SetControlExpression(0, "`" + devAnalog + ":Y1-`");  // Forward
+          wmTilt->SetControlExpression(1, "`" + devAnalog + ":Y1+`");  // Backward
+          wmTilt->SetControlExpression(2, "`" + devAnalog + ":X1-`");  // Left
+          wmTilt->SetControlExpression(3, "`" + devAnalog + ":X1+`");  // Right
+        }
       }
       else
       {
