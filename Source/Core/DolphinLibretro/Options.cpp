@@ -149,7 +149,7 @@ Option<int> efbScale("dolphin_efb_scale", "EFB Scale", 1,
                      {"x1 (640 x 528)", "x2 (1280 x 1056)", "x3 (1920 x 1584)", "x4 (2560 * 2112)",
                       "x5 (3200 x 2640)", "x6 (3840 x 3168)"});
 Option<int> irMode("dolphin_ir_mode", "Wiimote IR Mode", 1,
-                     {"Right Stick controls pointer", "Mouse controls pointer"});
+                     {"Right Stick controls pointer (relative)", "Right Stick controls pointer (absolute)", "Mouse controls pointer"});
 Option<int> irCenter("dolphin_ir_center", "Wiimote IR Center",
   { {"50", 50}, {"60", 60}, {"70", 70}, {"80", 80}, {"90", 90}, {"100", 100}, {"0", 0}, {"10", 10}, {"20", 20}, {"30", 30}, {"40", 40} });
 Option<int> irWidth("dolphin_ir_width", "Wiimote IR Width",
