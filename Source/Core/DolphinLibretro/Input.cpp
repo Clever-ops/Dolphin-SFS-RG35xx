@@ -574,10 +574,14 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
       ccLeftStick->SetControlExpression(1, "`" + devAnalog + ":Y0+`");      // Down
       ccLeftStick->SetControlExpression(2, "`" + devAnalog + ":X0-`");      // Left
       ccLeftStick->SetControlExpression(3, "`" + devAnalog + ":X0+`");      // Right
-      ccRightStick->SetControlExpression(0, "`" + devAnalog + ":Y1-`");     // Up
-      ccRightStick->SetControlExpression(1, "`" + devAnalog + ":Y1+`");     // Down
-      ccRightStick->SetControlExpression(2, "`" + devAnalog + ":X1-`");     // Left
-      ccRightStick->SetControlExpression(3, "`" + devAnalog + ":X1+`");     // Right
+
+      if (Libretro::Options::irMode != 1 && Libretro::Options::irMode != 2)
+      {
+        ccRightStick->SetControlExpression(0, "`" + devAnalog + ":Y1-`");     // Up
+        ccRightStick->SetControlExpression(1, "`" + devAnalog + ":Y1+`");     // Down
+        ccRightStick->SetControlExpression(2, "`" + devAnalog + ":X1-`");     // Left
+        ccRightStick->SetControlExpression(3, "`" + devAnalog + ":X1+`");     // Right
+      }
     }
     else
     {
@@ -622,10 +626,13 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
         wmButtons->SetControlExpression(4, "L");       // -
         wmButtons->SetControlExpression(5, "R");       // +
 
-        wmTilt->SetControlExpression(0, "`" + devAnalog + ":Y1-`");  // Forward
-        wmTilt->SetControlExpression(1, "`" + devAnalog + ":Y1+`");  // Backward
-        wmTilt->SetControlExpression(2, "`" + devAnalog + ":X1-`");  // Left
-        wmTilt->SetControlExpression(3, "`" + devAnalog + ":X1+`");  // Right
+        if (Libretro::Options::irMode != 1 && Libretro::Options::irMode != 2)
+        {
+          wmTilt->SetControlExpression(0, "`" + devAnalog + ":Y1-`");  // Forward
+          wmTilt->SetControlExpression(1, "`" + devAnalog + ":Y1+`");  // Backward
+          wmTilt->SetControlExpression(2, "`" + devAnalog + ":X1-`");  // Left
+          wmTilt->SetControlExpression(3, "`" + devAnalog + ":X1+`");  // Right
+        }
       }
       else
       {
@@ -645,14 +652,14 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
       wmDPad->SetControlExpression(2, "Left");                    // Left
       wmDPad->SetControlExpression(3, "Right");                   // Right
       
-      if (Libretro::Options::irMode == 1)
+      if (Libretro::Options::irMode == 1 || Libretro::Options::irMode == 2)
       {
         // Set right stick to control the IR
         wmIR->SetControlExpression(0, "`" + devAnalog + ":Y1-`");     // Up
         wmIR->SetControlExpression(1, "`" + devAnalog + ":Y1+`");     // Down
         wmIR->SetControlExpression(2, "`" + devAnalog + ":X1-`");     // Left
         wmIR->SetControlExpression(3, "`" + devAnalog + ":X1+`");     // Right
-        wmIR->boolean_settings[0]->SetValue(true);                    // Relative input
+        wmIR->boolean_settings[0]->SetValue(Libretro::Options::irMode == 1); // Relative input
         wmIR->boolean_settings[1]->SetValue(true);                    // Auto hide
       }
       else
@@ -660,7 +667,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
         // Mouse controls IR
         wmIR->SetControlExpression(0, "`" + devPointer + ":Y0-`");  // Up
         wmIR->SetControlExpression(1, "`" + devPointer + ":Y0+`");  // Down
-        wmIR->SetControlExpression(2, "`" + devPointer + ":X0-`");  // Left        
+        wmIR->SetControlExpression(2, "`" + devPointer + ":X0-`");  // Left
         wmIR->SetControlExpression(3, "`" + devPointer + ":X0+`");  // Right
         wmIR->boolean_settings[0]->SetValue(false);                 // Relative input
         wmIR->boolean_settings[1]->SetValue(false);                 // Auto hide
