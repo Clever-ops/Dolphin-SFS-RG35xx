@@ -88,5 +88,6 @@ extern Option<bool> waitForShaders;
 extern Option<bool> forceTextureFiltering;
 extern Option<bool> loadCustomTextures;
 extern Option<bool> bluetoothContinuousScan;
+extern Option<bool> cheatsEnabled;
 }  // namespace Options
 }  // namespace Libretro
