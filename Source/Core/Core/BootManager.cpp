@@ -46,6 +46,8 @@
 
 #include "DiscIO/Enums.h"
 
+#include "DolphinLibretro/Options.h"
+
 #include "VideoCommon/VideoBackendBase.h"
 
 namespace BootManager
@@ -249,7 +251,7 @@ bool BootCore(std::unique_ptr<BootParameters> boot, const WindowSystemInfo& wsi)
 
     core_section->Get("CPUThread", &StartUp.bCPUThread, StartUp.bCPUThread);
     core_section->Get("JITFollowBranch", &StartUp.bJITFollowBranch, StartUp.bJITFollowBranch);
-    core_section->Get("EnableCheats", &StartUp.bEnableCheats, StartUp.bEnableCheats);
+    StartUp.bEnableCheats = Libretro::Options::cheatsEnabled;
     core_section->Get("SyncOnSkipIdle", &StartUp.bSyncGPUOnSkipIdleHack,
                       StartUp.bSyncGPUOnSkipIdleHack);
     core_section->Get("FPRF", &StartUp.bFPRF, StartUp.bFPRF);
