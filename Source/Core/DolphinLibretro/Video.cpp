@@ -218,17 +218,15 @@ void Init()
 {
   if (Options::renderer == "Hardware" || Options::renderer == "Software")
   {
-    std::vector<retro_hw_context_type> openglTypes = {
-        RETRO_HW_CONTEXT_OPENGL_CORE, RETRO_HW_CONTEXT_OPENGL, RETRO_HW_CONTEXT_OPENGLES3,
-        RETRO_HW_CONTEXT_OPENGLES2};
-    hw_render.version_major = 3;
-    hw_render.version_minor = 1;
-    hw_render.context_reset = ContextReset;
-    hw_render.context_destroy = ContextDestroy;
-    hw_render.bottom_left_origin = true;
-    for (retro_hw_context_type type : openglTypes)
-    {
-      hw_render.context_type = type;
+    unsigned preferred;
+    environ_cb(RETRO_ENVIRONMENT_GET_PREFERRED_HW_RENDER, &preferred);
+    if (preferred == RETRO_HW_CONTEXT_OPENGL || preferred == RETRO_HW_CONTEXT_OPENGL_CORE) {
+      hw_render.version_major = 3;
+      hw_render.version_minor = 1;
+      hw_render.context_reset = ContextReset;
+      hw_render.context_destroy = ContextDestroy;
+      hw_render.bottom_left_origin = true;
+      hw_render.context_type = preferred;
       if (environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
       {
         environ_cb(RETRO_ENVIRONMENT_SET_HW_SHARED_CONTEXT, nullptr);
@@ -239,35 +237,40 @@ void Init()
         return;
       }
     }
+	
 #ifdef _WIN32
-    hw_render.context_type = RETRO_HW_CONTEXT_DIRECT3D;
-    hw_render.version_major = 11;
-    hw_render.version_minor = 0;
+    if (preferred == RETRO_HW_CONTEXT_DIRECT3D) {
+      hw_render.context_type = RETRO_HW_CONTEXT_DIRECT3D;
+      hw_render.version_major = 11;
+      hw_render.version_minor = 0;
 
-    if (environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
-    {
-      SConfig::GetInstance().m_strVideoBackend = "D3D";
-      return;
+      if (environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
+      {
+          SConfig::GetInstance().m_strVideoBackend = "D3D";
+          return;
+      }
     }
 #endif
 #ifndef __APPLE__
-    hw_render.context_type = RETRO_HW_CONTEXT_VULKAN;
-    hw_render.version_major = VK_API_VERSION_1_0;
-    hw_render.version_minor = 0;
+    if (preferred == RETRO_HW_CONTEXT_VULKAN) {
+      hw_render.context_type = RETRO_HW_CONTEXT_VULKAN;
+      hw_render.version_major = VK_API_VERSION_1_0;
+      hw_render.version_minor = 0;
 
-    if (environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
-    {
-      static const struct retro_hw_render_context_negotiation_interface_vulkan iface = {
-          RETRO_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE_VULKAN,
-          RETRO_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE_VULKAN_VERSION,
-          Vk::GetApplicationInfo,
-          Vk::CreateDevice,
-          NULL,
-      };
-      environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE, (void*)&iface);
+      if (environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
+      {
+          static const struct retro_hw_render_context_negotiation_interface_vulkan iface = {
+             RETRO_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE_VULKAN,
+             RETRO_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE_VULKAN_VERSION,
+             Vk::GetApplicationInfo,
+             Vk::CreateDevice,
+             NULL,
+          };
+          environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER_CONTEXT_NEGOTIATION_INTERFACE, (void*)&iface);
 
-      SConfig::GetInstance().m_strVideoBackend = "Vulkan";
-      return;
+          SConfig::GetInstance().m_strVideoBackend = "Vulkan";
+          return;
+      }
     }
 #endif
   }
