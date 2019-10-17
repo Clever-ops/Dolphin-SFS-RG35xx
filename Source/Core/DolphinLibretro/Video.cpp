@@ -226,7 +226,7 @@ void Init()
       hw_render.context_reset = ContextReset;
       hw_render.context_destroy = ContextDestroy;
       hw_render.bottom_left_origin = true;
-      hw_render.context_type = preferred;
+      hw_render.context_type = (retro_hw_context_type)preferred;
       if (environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
       {
         environ_cb(RETRO_ENVIRONMENT_SET_HW_SHARED_CONTEXT, nullptr);
