@@ -219,27 +219,54 @@ void Init()
   if (Options::renderer == "Hardware" || Options::renderer == "Software")
   {
     unsigned preferred;
-    environ_cb(RETRO_ENVIRONMENT_GET_PREFERRED_HW_RENDER, &preferred);
-    if (preferred == RETRO_HW_CONTEXT_OPENGL || preferred == RETRO_HW_CONTEXT_OPENGL_CORE) {
-      hw_render.version_major = 3;
-      hw_render.version_minor = 1;
-      hw_render.context_reset = ContextReset;
-      hw_render.context_destroy = ContextDestroy;
-      hw_render.bottom_left_origin = true;
-      hw_render.context_type = (retro_hw_context_type)preferred;
-      if (environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
-      {
-        environ_cb(RETRO_ENVIRONMENT_SET_HW_SHARED_CONTEXT, nullptr);
-        if (Options::renderer == "Hardware")
-        	SConfig::GetInstance().m_strVideoBackend = "OGL";
-        else
-        	SConfig::GetInstance().m_strVideoBackend = "Software Renderer";
-        return;
+	
+	// Skipping the negotiation if frontend does not support that API call yet
+    if (!environ_cb(RETRO_ENVIRONMENT_GET_PREFERRED_HW_RENDER, &preferred)) preferred == 0xFFFFFFFF;
+	
+    if (preferred == RETRO_HW_CONTEXT_OPENGL || preferred == RETRO_HW_CONTEXT_OPENGL_CORE || preferred == 0xFFFFFFFF) {
+      if (preferred != 0xFFFFFFFF) {
+         hw_render.version_major = 3;
+         hw_render.version_minor = 1;
+         hw_render.context_reset = ContextReset;
+         hw_render.context_destroy = ContextDestroy;
+         hw_render.bottom_left_origin = true;
+         hw_render.context_type = (retro_hw_context_type)preferred;
+         if (environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
+         {
+           environ_cb(RETRO_ENVIRONMENT_SET_HW_SHARED_CONTEXT, nullptr);
+           if (Options::renderer == "Hardware")
+              SConfig::GetInstance().m_strVideoBackend = "OGL";
+           else
+              SConfig::GetInstance().m_strVideoBackend = "Software Renderer";
+           return;
+         }
+      } else {
+         std::vector<retro_hw_context_type> openglTypes = {
+            RETRO_HW_CONTEXT_OPENGL_CORE, RETRO_HW_CONTEXT_OPENGL, RETRO_HW_CONTEXT_OPENGLES3,
+            RETRO_HW_CONTEXT_OPENGLES2};
+         hw_render.version_major = 3;
+         hw_render.version_minor = 1;
+         hw_render.context_reset = ContextReset;
+         hw_render.context_destroy = ContextDestroy;
+         hw_render.bottom_left_origin = true;
+         for (retro_hw_context_type type : openglTypes)
+         {
+            hw_render.context_type = type;
+			if (environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
+            {
+               environ_cb(RETRO_ENVIRONMENT_SET_HW_SHARED_CONTEXT, nullptr);
+               if (Options::renderer == "Hardware")
+                  SConfig::GetInstance().m_strVideoBackend = "OGL";
+               else
+                  SConfig::GetInstance().m_strVideoBackend = "Software Renderer";
+               return;
+            }
+         }
       }
     }
 	
 #ifdef _WIN32
-    if (preferred == RETRO_HW_CONTEXT_DIRECT3D) {
+    if (preferred == RETRO_HW_CONTEXT_DIRECT3D || preferred == 0xFFFFFFFF) {
       hw_render.context_type = RETRO_HW_CONTEXT_DIRECT3D;
       hw_render.version_major = 11;
       hw_render.version_minor = 0;
@@ -252,7 +279,7 @@ void Init()
     }
 #endif
 #ifndef __APPLE__
-    if (preferred == RETRO_HW_CONTEXT_VULKAN) {
+    if (preferred == RETRO_HW_CONTEXT_VULKAN || preferred == 0xFFFFFFFF) {
       hw_render.context_type = RETRO_HW_CONTEXT_VULKAN;
       hw_render.version_major = VK_API_VERSION_1_0;
       hw_render.version_minor = 0;
