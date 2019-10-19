@@ -219,6 +219,9 @@ void Init()
   if (Options::renderer == "Hardware" || Options::renderer == "Software")
   {
     unsigned preferred;
+    hw_render.context_reset = ContextReset;
+    hw_render.context_destroy = ContextDestroy;
+    hw_render.bottom_left_origin = true;
 	
 	// Skipping the negotiation if frontend does not support that API call yet
     if (!environ_cb(RETRO_ENVIRONMENT_GET_PREFERRED_HW_RENDER, &preferred)) preferred == 0xFFFFFFFF;
@@ -227,9 +230,6 @@ void Init()
       if (preferred != 0xFFFFFFFF) {
          hw_render.version_major = 3;
          hw_render.version_minor = 1;
-         hw_render.context_reset = ContextReset;
-         hw_render.context_destroy = ContextDestroy;
-         hw_render.bottom_left_origin = true;
          hw_render.context_type = (retro_hw_context_type)preferred;
          if (environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
          {
@@ -246,9 +246,6 @@ void Init()
             RETRO_HW_CONTEXT_OPENGLES2};
          hw_render.version_major = 3;
          hw_render.version_minor = 1;
-         hw_render.context_reset = ContextReset;
-         hw_render.context_destroy = ContextDestroy;
-         hw_render.bottom_left_origin = true;
          for (retro_hw_context_type type : openglTypes)
          {
             hw_render.context_type = type;
