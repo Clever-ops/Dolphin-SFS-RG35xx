@@ -224,7 +224,7 @@ void Init()
     hw_render.bottom_left_origin = true;
 	
 	// Skipping the negotiation if frontend does not support that API call yet
-    if (!environ_cb(RETRO_ENVIRONMENT_GET_PREFERRED_HW_RENDER, &preferred)) preferred == 0xFFFFFFFF;
+    if (!environ_cb(RETRO_ENVIRONMENT_GET_PREFERRED_HW_RENDER, &preferred)) preferred = 0xFFFFFFFF;
 	
     if (preferred == RETRO_HW_CONTEXT_OPENGL || preferred == RETRO_HW_CONTEXT_OPENGL_CORE || preferred == 0xFFFFFFFF) {
       if (preferred != 0xFFFFFFFF) {
