@@ -230,7 +230,7 @@ void Init()
       if (preferred != 0xFFFFFFFF) {
          hw_render.version_major = 3;
          hw_render.version_minor = 1;
-         hw_render.context_type = (retro_hw_context_type)preferred;
+         hw_render.context_type = RETRO_HW_CONTEXT_OPENGL_CORE;
          if (environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
          {
            environ_cb(RETRO_ENVIRONMENT_SET_HW_SHARED_CONTEXT, nullptr);
