@@ -220,8 +220,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "MSVC")
   dolphin_compile_definitions(_DEBUG DEBUG_ONLY)
 
   # Enforce C++ standard conforming conversion rules to catch possible bugs
-	# the following flag breaks build on libretro buildbot (see https://developercommunity.visualstudio.com/content/problem/185399/error-c2760-in-combaseapih-with-windows-sdk-81-and.html)
-  #add_compile_options(/permissive-)
+  add_compile_options(/permissive-)
   # Remove unreferenced inline functions/data to reduce link time and catch bugs
   add_compile_options(/Zc:inline)
   # Assume `new` (w/o std::nothrow) throws to reduce binary size
