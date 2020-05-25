@@ -222,19 +222,15 @@ void Init()
     hw_render.context_reset = ContextReset;
     hw_render.context_destroy = ContextDestroy;
     hw_render.bottom_left_origin = true;
-
-    // Skipping the negotiation if frontend does not support that API call yet
-    if (!environ_cb(RETRO_ENVIRONMENT_GET_PREFERRED_HW_RENDER, &preferred)) preferred = RETRO_HW_CONTEXT_DUMMY;
-
-    if (preferred == RETRO_HW_CONTEXT_OPENGL || preferred == RETRO_HW_CONTEXT_OPENGL_CORE || preferred == RETRO_HW_CONTEXT_DUMMY) {
-      if (preferred != RETRO_HW_CONTEXT_DUMMY) {
-         // Support of major/minor with non-glcore is partially broken (won't work with anything above 3.0 ?)
-         // So it's probably better to leave it empty so that it picks highest available version ?
-         if (preferred == RETRO_HW_CONTEXT_OPENGL_CORE) {
-            hw_render.version_major = 3;
-            hw_render.version_minor = 1;
-         }
-         hw_render.context_type = (retro_hw_context_type)preferred;
+	
+	// Skipping the negotiation if frontend does not support that API call yet
+    if (!environ_cb(RETRO_ENVIRONMENT_GET_PREFERRED_HW_RENDER, &preferred)) preferred = 0xFFFFFFFF;
+	
+    if (preferred == RETRO_HW_CONTEXT_OPENGL || preferred == RETRO_HW_CONTEXT_OPENGL_CORE || preferred == 0xFFFFFFFF) {
+      if (preferred != 0xFFFFFFFF) {
+         hw_render.version_major = 3;
+         hw_render.version_minor = 1;
+         hw_render.context_type = RETRO_HW_CONTEXT_OPENGL_CORE;
          if (environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
          {
            environ_cb(RETRO_ENVIRONMENT_SET_HW_SHARED_CONTEXT, nullptr);
@@ -248,13 +244,12 @@ void Init()
          std::vector<retro_hw_context_type> openglTypes = {
             RETRO_HW_CONTEXT_OPENGL_CORE, RETRO_HW_CONTEXT_OPENGL, RETRO_HW_CONTEXT_OPENGLES3,
             RETRO_HW_CONTEXT_OPENGLES2};
+         hw_render.version_major = 3;
+         hw_render.version_minor = 1;
          for (retro_hw_context_type type : openglTypes)
          {
             hw_render.context_type = type;
-            // See comment above, code-wise 0 is same as empty for requesting context
-            hw_render.version_major = (type == RETRO_HW_CONTEXT_OPENGL_CORE ? 3 : 0);
-            hw_render.version_minor = (type == RETRO_HW_CONTEXT_OPENGL_CORE ? 1 : 0);
-            if (environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
+			if (environ_cb(RETRO_ENVIRONMENT_SET_HW_RENDER, &hw_render))
             {
                environ_cb(RETRO_ENVIRONMENT_SET_HW_SHARED_CONTEXT, nullptr);
                if (Options::renderer == "Hardware")
@@ -266,9 +261,9 @@ void Init()
          }
       }
     }
-
+	
 #ifdef _WIN32
-    if (preferred == RETRO_HW_CONTEXT_DIRECT3D || preferred == RETRO_HW_CONTEXT_DUMMY) {
+    if (preferred == RETRO_HW_CONTEXT_DIRECT3D || preferred == 0xFFFFFFFF) {
       hw_render.context_type = RETRO_HW_CONTEXT_DIRECT3D;
       hw_render.version_major = 11;
       hw_render.version_minor = 0;
@@ -281,7 +276,7 @@ void Init()
     }
 #endif
 #ifndef __APPLE__
-    if (preferred == RETRO_HW_CONTEXT_VULKAN || preferred == RETRO_HW_CONTEXT_DUMMY) {
+    if (preferred == RETRO_HW_CONTEXT_VULKAN || preferred == 0xFFFFFFFF) {
       hw_render.context_type = RETRO_HW_CONTEXT_VULKAN;
       hw_render.version_major = VK_API_VERSION_1_0;
       hw_render.version_minor = 0;
