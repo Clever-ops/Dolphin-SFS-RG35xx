@@ -390,7 +390,11 @@ IF (SWITCH)
   list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake/Switch)
   # Find libnx, which is required by our application.
   find_package(Libnx REQUIRED)
+  find_package(LibZ REQUIRED)
+  # SwitchTools provide various helper functions for building Switch file formats.
+  # include(SwitchTools)
 
+  set(USE_OPENSL 1)
   set(USE_UPNP 0)
   set(ENABLE_QT 0)
   set(USE_DISCORD_PRESENCE 0)
@@ -400,10 +404,6 @@ IF (SWITCH)
   SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
   SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
   SET(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
-ENDIF()
-
-# SwitchTools provide various helper functions for building Switch file formats.
-include(SwitchTools)
 
 ENDIF()
 
