@@ -87,7 +87,6 @@ list(APPEND CMAKE_MODULE_PATH
 include(CheckAndAddFlag)
 include(CheckCCompilerFlag)
 include(DolphinCompileDefinitions)
-
 # Enable folders for IDE
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -382,6 +381,33 @@ if(ANDROID)
   SET(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 endif()
 
+
+
+IF (SWITCH)
+  message(STATUS "Building for Switch libnx")
+  # We have to add the cmake directory to have access to
+  # the Switch tools and also find_package for libnx.
+  list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake/Switch)
+  # Find libnx, which is required by our application.
+  find_package(Libnx REQUIRED)
+
+  set(USE_UPNP 0)
+  set(ENABLE_QT 0)
+  set(USE_DISCORD_PRESENCE 0)
+
+  # We are cross compiling, search only the toolchain for libraries and includes
+  SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+  SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+  SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+  SET(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
+ENDIF()
+
+# SwitchTools provide various helper functions for building Switch file formats.
+include(SwitchTools)
+
+ENDIF()
+
+
 if(LIBRETRO)
   set(ENABLE_HEADLESS 1)
   set(USE_UPNP 0)
@@ -617,7 +643,7 @@ else()
   add_subdirectory(Externals/cubeb EXCLUDE_FROM_ALL)
 endif()
 
-if(NOT ANDROID)
+if(NOT ANDROID AND NOT SWITCH)
   add_definitions(-D__LIBUSB__)
   if(NOT APPLE AND NOT LIBRETRO)
     find_package(LibUSB)
@@ -683,12 +709,12 @@ else()
   include_directories(BEFORE Externals/curl/include)
 endif()
 
-if (NOT ANDROID)
+if (NOT ANDROID AND NOT SWITCH)
   find_library(ICONV_LIBRARIES NAMES iconv libiconv libiconv-2 c)
   find_path(ICONV_INCLUDE_DIR NAMES iconv.h)
 endif()
 
-if (NOT ANDROID AND ICONV_LIBRARIES AND ICONV_INCLUDE_DIR)
+if (NOT ANDROID AND NOT SWITCH AND ICONV_LIBRARIES AND ICONV_INCLUDE_DIR)
   mark_as_advanced(ICONV_INCLUDE_DIR ICONV_LIBRARIES)
 else()
   message(STATUS "Using static iconv from Externals")
@@ -697,7 +723,7 @@ else()
   set(ICONV_LIBRARIES iconv)
 endif()
 
-if(NOT ANDROID)
+if(NOT ANDROID AND NOT SWITCH)
   find_package(HIDAPI)
   if(NOT HIDAPI_FOUND)
     message(STATUS "Using static HIDAPI from Externals")
