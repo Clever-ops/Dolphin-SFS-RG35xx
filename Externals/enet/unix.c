@@ -54,7 +54,8 @@
 #include <sys/poll.h>
 #endif
 
-#ifndef HAS_SOCKLEN_T
+// switch double declaratoin work-around
+#if !defined(HAS_SOCKLEN_T) && !defined(__SWITCH__)
 typedef int socklen_t;
 #endif
 

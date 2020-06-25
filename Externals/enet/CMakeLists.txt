@@ -78,3 +78,11 @@ endif(HAIKU)
 if(WIN32)
   target_link_libraries(enet winmm)
 endif()
+
+
+
+if (__SWITCH__)
+  if(NOT TARGET switch::libnx)
+    find_package(Libnx REQUIRED)
+  endif()
+endif()

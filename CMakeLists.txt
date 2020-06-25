@@ -383,14 +383,13 @@ endif()
 
 
 
-IF (SWITCH)
+IF (__SWITCH__)
+  add_definitions(-USWITCH)
   message(STATUS "Building for Switch libnx")
   # We have to add the cmake directory to have access to
   # the Switch tools and also find_package for libnx.
   list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/CMake/Switch)
   # Find libnx, which is required by our application.
-  find_package(Libnx REQUIRED)
-  find_package(LibZ REQUIRED)
   # SwitchTools provide various helper functions for building Switch file formats.
   # include(SwitchTools)
 
@@ -447,8 +446,13 @@ endif()
 include(CheckLib)
 include(CheckCXXSourceRuns)
 
+
 set(OpenGL_GL_PREFERENCE GLVND)
-find_package(OpenGL)
+
+if(NOT __SWITCH__)
+  find_package(OpenGL)
+endif()
+
 if (OPENGL_GL)
   include_directories(${OPENGL_INCLUDE_DIR})
 endif()
@@ -598,9 +602,9 @@ endif()
 
 find_package(ZLIB)
 if(ZLIB_FOUND)
-  message(STATUS "Using shared zlib")
+  message("Using shared zlib")
 else()
-  message(STATUS "Shared zlib not found, falling back to the static library")
+  message("Shared zlib not found, falling back to the static library")
   add_subdirectory(Externals/zlib)
   include_directories(Externals/zlib)
 endif()
@@ -635,6 +639,11 @@ endif()
 add_subdirectory(Externals/soundtouch)
 include_directories(Externals)
 
+if (__SWITCH__)
+  find_package(OpenGL REQUIRED)
+  find_package(Libnx REQUIRED)
+endif()
+
 find_package(Cubeb)
 if(CUBEB_FOUND)
   message(STATUS "Using the system cubeb")
@@ -643,7 +652,7 @@ else()
   add_subdirectory(Externals/cubeb EXCLUDE_FROM_ALL)
 endif()
 
-if(NOT ANDROID AND NOT SWITCH)
+if(NOT ANDROID AND NOT __SWITCH__)
   add_definitions(-D__LIBUSB__)
   if(NOT APPLE AND NOT LIBRETRO)
     find_package(LibUSB)
@@ -660,7 +669,9 @@ if(NOT ANDROID AND NOT SWITCH)
 endif()
 
 set(SFML_REQD_VERSION 2.1)
-if(NOT APPLE)
+if(__SWITCH__)
+  find_package(SFML REQUIRED)
+elseif(NOT APPLE)
   find_package(SFML ${SFML_REQD_VERSION} COMPONENTS network system)
 endif()
 if(SFML_FOUND)
@@ -699,7 +710,7 @@ else()
 endif()
 
 find_package(CURL)
-if(CURL_FOUND AND NOT(LIBRETRO))
+if(CURL_FOUND AND (NOT(LIBRETRO) OR __SWITCH__))
   message(STATUS "Using shared libcurl")
   include_directories(${CURL_INCLUDE_DIRS})
 else()
@@ -709,12 +720,12 @@ else()
   include_directories(BEFORE Externals/curl/include)
 endif()
 
-if (NOT ANDROID AND NOT SWITCH)
+if (NOT ANDROID AND NOT __SWITCH__)
   find_library(ICONV_LIBRARIES NAMES iconv libiconv libiconv-2 c)
   find_path(ICONV_INCLUDE_DIR NAMES iconv.h)
 endif()
 
-if (NOT ANDROID AND NOT SWITCH AND ICONV_LIBRARIES AND ICONV_INCLUDE_DIR)
+if (NOT ANDROID AND NOT __SWITCH__ AND ICONV_LIBRARIES AND ICONV_INCLUDE_DIR)
   mark_as_advanced(ICONV_INCLUDE_DIR ICONV_LIBRARIES)
 else()
   message(STATUS "Using static iconv from Externals")
@@ -723,7 +734,7 @@ else()
   set(ICONV_LIBRARIES iconv)
 endif()
 
-if(NOT ANDROID AND NOT SWITCH)
+if(NOT ANDROID AND NOT __SWITCH__)
   find_package(HIDAPI)
   if(NOT HIDAPI_FOUND)
     message(STATUS "Using static HIDAPI from Externals")

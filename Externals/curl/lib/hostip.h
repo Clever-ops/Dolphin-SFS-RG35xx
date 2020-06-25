@@ -26,6 +26,7 @@
 #include "hash.h"
 #include "curl_addrinfo.h"
 #include "asyn.h"
+#include "setjmp.h"
 
 #ifdef HAVE_SETJMP_H
 #include <setjmp.h>
