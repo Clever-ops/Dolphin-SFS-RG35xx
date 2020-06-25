@@ -1,5 +1,13 @@
 This is a heavily WIP port of dolphin emu to Switch using libnx and portlibs
 
+To build, use CMake in a subdirectory:
+
+``` bash
+mkdir build
+cd build
+cmake .. -DCMAKE_TOOLCHAIN_FILE=../CMake/Toolchains/DevkitA64Libnx.cmake -DLIBRETRO=1
+```
+
 # Dolphin - A GameCube and Wii Emulator
 
 [Homepage](https://dolphin-emu.org/) | [Project Site](https://github.com/dolphin-emu/dolphin) | [Forums](https://forums.dolphin-emu.org/) | [Wiki](https://wiki.dolphin-emu.org/) | [Issue Tracker](https://bugs.dolphin-emu.org/projects/emulator/issues) | [Coding Style](https://github.com/dolphin-emu/dolphin/blob/master/Contributing.md) | [Transifex Page](https://www.transifex.com/projects/p/dolphin-emu/)

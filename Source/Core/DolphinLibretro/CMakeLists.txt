@@ -10,7 +10,7 @@ add_library(dolphin_libretro SHARED
   Video.cpp
 )
 
-if (NOT APPLE)
+if (NOT APPLE AND NOT __SWITCH__)
    target_sources(dolphin_libretro PRIVATE
       Vulkan.cpp
    )

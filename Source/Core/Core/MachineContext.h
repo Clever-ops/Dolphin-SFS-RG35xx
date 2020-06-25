@@ -12,6 +12,32 @@
 // generic build.
 struct FakeGenericContext;
 typedef FakeGenericContext SContext;
+
+#elif defined(__SWITCH__)
+
+
+// todo: find register locations
+#define CTX_RAX 0
+#define CTX_RBX 0
+#define CTX_RCX Rcx
+#define CTX_RDX Rdx
+#define CTX_RDI Rdi
+#define CTX_RSI Rsi
+#define CTX_RBP Rbp
+#define CTX_RSP Rsp
+#define CTX_R8 R8
+#define CTX_R9 R9
+#define CTX_R10 R10
+#define CTX_R11 R11
+#define CTX_R12 R12
+#define CTX_R13 R13
+#define CTX_R14 R14
+#define CTX_R15 R15
+#define CTX_RIP Rip
+// JitBase uses SContext; it should have no concrete implementations in a
+// generic build.
+struct FakeGenericContext;
+typedef FakeGenericContext SContext;
 #elif defined(_WIN32)
 #include <windows.h>
 typedef CONTEXT SContext;

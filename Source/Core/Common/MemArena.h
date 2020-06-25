@@ -10,6 +10,10 @@
 #include <windows.h>
 #endif
 
+#ifdef __SWITCH__
+#include <switch.h>
+#endif
+
 #include "Common/CommonTypes.h"
 
 namespace Common
@@ -34,6 +38,8 @@ public:
 private:
 #ifdef _WIN32
   HANDLE hMemoryMapping;
+#elif __SWITCH__
+  SharedMemory memory;
 #else
   int fd;
 #endif

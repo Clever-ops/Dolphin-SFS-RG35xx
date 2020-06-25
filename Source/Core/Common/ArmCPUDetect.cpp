@@ -2,13 +2,16 @@
 // Licensed under GPLv2+
 // Refer to the license.txt file included.
 
+#ifndef __SWITCH__
 #include <asm/hwcap.h>
+#include <sys/auxv.h>
+#include <unistd.h>
+#endif
+
 #include <cstring>
 #include <fstream>
 #include <sstream>
 #include <string>
-#include <sys/auxv.h>
-#include <unistd.h>
 
 #include "Common/CPUDetect.h"
 #include "Common/CommonTypes.h"
@@ -19,6 +22,9 @@ const char procfile[] = "/proc/cpuinfo";
 
 static std::string GetCPUString()
 {
+#ifdef __SWITCH__
+  return "ARMCortexA53/57";
+#else
   const std::string marker = "Hardware\t: ";
   std::string cpu_string = "Unknown";
 
@@ -39,6 +45,7 @@ static std::string GetCPUString()
   }
 
   return cpu_string;
+#endif // NOT SWITCH
 }
 
 CPUInfo cpu_info;
@@ -59,6 +66,9 @@ void CPUInfo::Detect()
   Mode64bit = true;
   vendor = CPUVendor::ARM;
 
+#ifndef __SWITCH__
+  // Use defaults
+
   // Get the information about the CPU
   num_cores = sysconf(_SC_NPROCESSORS_CONF);
   strncpy(cpu_string, GetCPUString().c_str(), sizeof(cpu_string));
@@ -70,6 +80,7 @@ void CPUInfo::Detect()
   bCRC32 = hwcaps & HWCAP_CRC32;
   bSHA1 = hwcaps & HWCAP_SHA1;
   bSHA2 = hwcaps & HWCAP_SHA2;
+#endif
 }
 
 // Turn the CPU info into a string we can show

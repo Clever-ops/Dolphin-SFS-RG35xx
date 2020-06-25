@@ -82,7 +82,5 @@ endif()
 
 
 if (__SWITCH__)
-  if(NOT TARGET switch::libnx)
-    find_package(Libnx REQUIRED)
-  endif()
+  find_package(Libnx REQUIRED)
 endif()

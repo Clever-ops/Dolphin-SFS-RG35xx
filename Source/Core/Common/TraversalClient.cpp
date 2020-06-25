@@ -12,6 +12,11 @@
 #include "Common/Random.h"
 #include "Core/NetPlayProto.h"
 
+#ifdef __SWITCH__
+#define ntohs(v) v
+#endif
+
+
 TraversalClient::TraversalClient(ENetHost* netHost, const std::string& server, const u16 port)
     : m_NetHost(netHost), m_Server(server), m_port(port)
 {
@@ -68,6 +73,7 @@ static ENetAddress MakeENetAddress(TraversalInetAddress* address)
   else
   {
     eaddr.host = address->address[0];
+    
     eaddr.port = ntohs(address->port);
   }
   return eaddr;

@@ -73,6 +73,8 @@ endif()
 
 if(ANDROID)
   target_sources(inputcommon PRIVATE GCAdapter_Android.cpp)
+elseif(__SWITCH__)
+  target_sources(inputcommon PRIVATE GCAdapter_Switch.cpp)
 else()
   target_sources(inputcommon PRIVATE GCAdapter.cpp)
   target_link_libraries(inputcommon PUBLIC ${LIBUSB_LIBRARIES})

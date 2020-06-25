@@ -368,15 +368,19 @@ static void AddDevicesForPort(unsigned port)
   g_controller_interface.AddDevice(std::make_shared<Device>(RETRO_DEVICE_POINTER, port));
 }
 
-static void RemoveDevicesForPort(unsigned port)
-{
-  g_controller_interface.RemoveDevice([&port](const auto& device) {
+static bool RemoveDevice(unsigned port, const ciface::Core::Device* device) {
     return device->GetSource() == source
         && (device->GetName() == GetDeviceName(RETRO_DEVICE_ANALOG)
             || device->GetName() == GetDeviceName(RETRO_DEVICE_JOYPAD)
             || device->GetName() == GetDeviceName(RETRO_DEVICE_POINTER))
         && dynamic_cast<const Device *>(device)->GetPort() == port;
-  });
+}
+
+static void RemoveDevicesForPort(unsigned port)
+{
+  using namespace std::placeholders;
+  std::function<bool(const ciface::Core::Device*)> func = std::bind(RemoveDevice, port, _1);
+  g_controller_interface.RemoveDevice(func);
 }
 
 void Init()

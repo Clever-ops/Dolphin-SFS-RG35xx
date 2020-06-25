@@ -20,7 +20,15 @@
 #include <cerrno>
 #include <cstring>
 #include <fcntl.h>
+
+
+
+#ifdef __SWITCH__
+#include <switch.h>
+#else
 #include <sys/mman.h>
+#endif
+
 #include <unistd.h>
 #ifdef ANDROID
 #include <linux/ashmem.h>
@@ -67,6 +75,11 @@ void MemArena::GrabSHMSegment(size_t size)
     NOTICE_LOG(MEMMAP, "Ashmem allocation failed");
     return;
   }
+#elif defined(__SWITCH__)
+  Permission perm = (Permission) (Perm_Rw | Perm_X);
+  Result result = shmemCreate(&memory, size, perm, perm);
+  if (R_FAILED(result))
+    ERROR_LOG(MEMMAP, "Failed to allocate low memory space");
 #else
   const std::string file_name = "/dolphin-emu." + std::to_string(getpid());
   fd = shm_open(file_name.c_str(), O_RDWR | O_CREAT | O_EXCL, 0600);
@@ -86,6 +99,9 @@ void MemArena::ReleaseSHMSegment()
 #ifdef _WIN32
   CloseHandle(hMemoryMapping);
   hMemoryMapping = 0;
+
+#elif defined (__SWITCH__)
+  shmemClose(&memory);
 #else
   close(fd);
 #endif
@@ -95,6 +111,11 @@ void* MemArena::CreateView(s64 offset, size_t size, void* base)
 {
 #ifdef _WIN32
   return MapViewOfFileEx(hMemoryMapping, FILE_MAP_ALL_ACCESS, 0, (DWORD)((u64)offset), size, base);
+#elif defined(__SWITCH__)
+  Result result = svcMapMemory(base, memory.map_addr + offset, size);
+  if (R_FAILED(result))
+    NOTICE_LOG(MEMMAP, "svcMapMemory failed");
+  return base;
 #else
   void* retval = mmap(base, size, PROT_READ | PROT_WRITE,
                       MAP_SHARED | ((base == nullptr) ? 0 : MAP_FIXED), fd, offset);
@@ -115,6 +136,8 @@ void MemArena::ReleaseView(void* view, size_t size)
 {
 #ifdef _WIN32
   UnmapViewOfFile(view);
+#elif defined(__SWITCH__)
+  // TODO SWITCH
 #else
   munmap(view, size);
 #endif
@@ -143,7 +166,14 @@ u8* MemArena::GetMemoryBase(size_t memory_size)
   }
   VirtualFree(base, 0, MEM_RELEASE);
   return base;
+
+#elif defined (__SWITCH__)
+  
+  // TODO: IMPLEMENT
+  return NULL;
+
 #else
+
 #ifdef ANDROID
   // Android 4.3 changed how mmap works.
   // if we map it private and then munmap it, we can't use the base returned.

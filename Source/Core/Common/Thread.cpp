@@ -22,6 +22,8 @@
 #include <pthread.h>
 #elif defined __HAIKU__
 #include <OS.h>
+#elif defined __SWITCH__
+#include <switch.h>
 #endif
 
 #ifdef USE_VTUNE
@@ -37,8 +39,10 @@ int CurrentThreadId()
   return GetCurrentThreadId();
 #elif defined __APPLE__
   return mach_thread_self();
+#elif defined __SWITCH__
+  return CUR_THREAD_HANDLE;
 #else
-  return 0;
+  return CUR_THREAD_HANDLE;
 #endif
 }
 
@@ -100,6 +104,9 @@ void SetCurrentThreadName(const char* szThreadName)
 
 void SetThreadAffinity(std::thread::native_handle_type thread, u32 mask)
 {
+
+#ifndef __SWITCH__
+// not supported
 #ifdef __APPLE__
   thread_policy_set(pthread_mach_thread_np(thread), THREAD_AFFINITY_POLICY, (integer_t*)&mask, 1);
 #elif (defined __linux__ || defined BSD4_4 || defined __FreeBSD__) && !(defined ANDROID)
@@ -116,6 +123,8 @@ void SetThreadAffinity(std::thread::native_handle_type thread, u32 mask)
 
   pthread_setaffinity_np(thread, sizeof(cpu_set), &cpu_set);
 #endif
+
+#endif // NOT SWITCH
 }
 
 void SetCurrentThreadAffinity(u32 mask)
@@ -125,12 +134,12 @@ void SetCurrentThreadAffinity(u32 mask)
 
 void SleepCurrentThread(int ms)
 {
-  usleep(1000 * ms);
+  svcSleepThread(1000 * ms);
 }
 
 void SwitchCurrentThread()
 {
-  usleep(1000 * 1);
+  SleepCurrentThread(10);
 }
 
 void SetCurrentThreadName(const char* szThreadName)
@@ -141,7 +150,7 @@ void SetCurrentThreadName(const char* szThreadName)
   pthread_set_name_np(pthread_self(), szThreadName);
 #elif defined __HAIKU__
   rename_thread(find_thread(nullptr), szThreadName);
-#else
+#elif !defined(__SWITCH__)
   // linux doesn't allow to set more than 16 bytes, including \0.
   pthread_setname_np(pthread_self(), std::string(szThreadName).substr(0, 15).c_str());
 #endif

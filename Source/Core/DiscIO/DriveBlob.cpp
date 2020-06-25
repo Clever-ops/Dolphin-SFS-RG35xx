@@ -16,6 +16,7 @@
 #include "DiscIO/Blob.h"
 #include "DiscIO/DriveBlob.h"
 
+#ifndef __SWITCH__
 #ifdef _WIN32
 #include "Common/StringUtil.h"
 #else
@@ -29,16 +30,21 @@
 #include <sys/disk.h>  // DKIOCGETBLOCKCOUNT / DKIOCGETBLOCKSIZE
 #endif
 #endif
+#endif // SWITCH
 
 namespace DiscIO
 {
 DriveReader::DriveReader(const std::string& drive)
 {
+
+
   // 32 sectors is roughly the optimal amount a CD Drive can read in
   // a single IO cycle. Larger values yield no performance improvement
   // and just cause IO stalls from the read delay. Smaller values allow
   // the OS IO and seeking overhead to ourstrip the time actually spent
   // transferring bytes from the media.
+
+#ifndef __SWITCH__
   SetChunkSize(32);  // 32*2048 = 64KiB
   SetSectorSize(2048);
 #ifdef _WIN32
@@ -97,10 +103,13 @@ DriveReader::DriveReader(const std::string& drive)
 #endif
   }
   else { NOTICE_LOG(DISCIO, "Load from DVD backup failed or no disc in drive %s", drive.c_str()); }
+
+  #endif // __SWITCH__
 }
 
 DriveReader::~DriveReader()
 {
+#ifndef __SWITCH__
 #ifdef _WIN32
 #ifdef _LOCKDRIVE  // Do we want to lock the drive?
   // Unlock the disc in the CD-ROM drive.
@@ -116,6 +125,8 @@ DriveReader::~DriveReader()
 #else
   m_file.Close();
 #endif
+
+#endif // __SWITCH__
 }
 
 std::unique_ptr<DriveReader> DriveReader::Create(const std::string& drive)
@@ -135,6 +146,10 @@ bool DriveReader::GetBlock(u64 block_num, u8* out_ptr)
 
 bool DriveReader::ReadMultipleAlignedBlocks(u64 block_num, u64 num_blocks, u8* out_ptr)
 {
+#ifdef __SWITCH__
+  return false;
+#else
+
 #ifdef _WIN32
   LARGE_INTEGER offset;
   offset.QuadPart = GetSectorSize() * block_num;
@@ -153,6 +168,8 @@ bool DriveReader::ReadMultipleAlignedBlocks(u64 block_num, u64 num_blocks, u8* o
     return true;
   m_file.Clear();
   return false;
+#endif
+
 #endif
 }
 

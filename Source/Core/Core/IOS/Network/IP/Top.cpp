@@ -38,7 +38,7 @@
 #define MALLOC(x) HeapAlloc(GetProcessHeap(), 0, (x))
 #define FREE(x) HeapFree(GetProcessHeap(), 0, (x))
 
-#else
+#elif !defined(__SWITCH__)
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <netinet/in.h>
@@ -213,7 +213,7 @@ static std::optional<DefaultInterface> GetSystemDefaultInterface()
         return DefaultInterface{entry.dwAddr, entry.dwMask, entry.dwBCastAddr};
     }
   }
-#elif !defined(__ANDROID__)
+#elif !defined(__ANDROID__) && !defined(__SWITCH__)
   // Assume that the address that is used to access the Internet corresponds
   // to the default interface.
   auto get_default_address = []() -> std::optional<in_addr> {
@@ -599,6 +599,10 @@ IPCCommandResult NetIPTop::HandleInetNToPRequest(const IOCtlRequest& request)
 
 IPCCommandResult NetIPTop::HandlePollRequest(const IOCtlRequest& request)
 {
+
+#ifndef __SWITCH__
+  //TODO: IMPLEMENT FOR SWITCH
+
   // Map Wii/native poll events types
   struct
   {
@@ -670,6 +674,9 @@ IPCCommandResult NetIPTop::HandlePollRequest(const IOCtlRequest& request)
   }
 
   return GetDefaultReply(ret);
+
+#endif
+  return {};
 }
 
 IPCCommandResult NetIPTop::HandleGetHostByNameRequest(const IOCtlRequest& request)
@@ -771,6 +778,9 @@ IPCCommandResult NetIPTop::HandleGetInterfaceOptRequest(const IOCtlVRequest& req
   const u32 param3 = Memory::Read_U32(request.io_vectors[0].address);
   const u32 param4 = Memory::Read_U32(request.io_vectors[1].address);
   u32 param5 = 0;
+
+#ifndef __SWITCH__
+  // todo
 
   if (param != 0xfffe)
   {
@@ -934,6 +944,7 @@ IPCCommandResult NetIPTop::HandleGetInterfaceOptRequest(const IOCtlVRequest& req
     ERROR_LOG(IOS_NET, "Unknown param2: %08X", param2);
     break;
   }
+#endif
 
   return GetDefaultReply(0);
 }

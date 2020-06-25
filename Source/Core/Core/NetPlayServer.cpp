@@ -56,6 +56,8 @@
 #ifdef __HAIKU__
 #define _BSD_SOURCE
 #include <bsd/ifaddrs.h>
+#elif defined __SWITCH__
+#include <switch.h>
 #elif !defined ANDROID
 #include <ifaddrs.h>
 #endif
@@ -1794,7 +1796,9 @@ std::vector<std::pair<std::string, std::string>> NetPlayServer::GetInterfaceList
 
 #elif defined(ANDROID)
 // Android has no getifaddrs for some stupid reason.  If this
-// functionality ends up actually being used on Android, fix this.
+// functionality ends up actually being used on Android, fix this
+#elif defined(__SWITCH__)
+// todo: implement netplay.
 #else
   ifaddrs* ifp = nullptr;
   char buf[512];

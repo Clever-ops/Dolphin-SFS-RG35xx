@@ -14,6 +14,7 @@
 #include "Common/CommonTypes.h"
 #include "Common/StringUtil.h"
 
+#ifndef __SWITCH__
 #ifdef _WIN32
 #include <windows.h>
 #elif __APPLE__
@@ -29,6 +30,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #endif  // WIN32
+
+#endif // __SWITCH__
 
 #ifdef __linux__
 #include <linux/cdrom.h>
@@ -132,7 +135,7 @@ std::vector<std::string> GetCDDevices()
   IOObjectRelease(media_iterator);
   return drives;
 }
-#else
+#elif !defined(__SWITCH__)
 // checklist: /dev/cdrom, /dev/dvd /dev/hd?, /dev/scd? /dev/sr?
 static struct
 {
@@ -180,10 +183,14 @@ static bool IsCDROM(const std::string& drive)
   return is_cd;
 }
 
+#endif // __SWITCH__
+
 // Returns a pointer to an array of strings with the device names
 std::vector<std::string> GetCDDevices()
 {
   std::vector<std::string> drives;
+
+#ifndef __SWITCH__
   // Scan the system for DVD/CD-ROM drives.
   for (unsigned int i = 0; checklist[i].format; ++i)
   {
@@ -196,9 +203,10 @@ std::vector<std::string> GetCDDevices()
       }
     }
   }
+#endif // __SWITCH__
+
   return drives;
 }
-#endif
 
 // Returns true if device is a cdrom/dvd drive
 bool IsCDROMDevice(std::string device)
@@ -212,13 +220,14 @@ bool IsCDROMDevice(std::string device)
     return false;
   device = devname;
 #endif
-
+#ifndef __SWITCH__
   std::vector<std::string> devices = GetCDDevices();
   for (const std::string& d : devices)
   {
     if (d == device)
       return true;
   }
+#endif // __SWITCH__
   return false;
 }
 }  // namespace Common

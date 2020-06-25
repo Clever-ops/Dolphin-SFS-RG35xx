@@ -15,6 +15,8 @@
 #ifdef _WIN32
 #include <windows.h>
 #include "Common/StringUtil.h"
+#elif defined __SWITCH__
+#include <switch.h>
 #else
 #include <stdio.h>
 #include <sys/mman.h>
@@ -24,8 +26,22 @@
 #elif defined __HAIKU__
 #include <OS.h>
 #else
+
 #include <sys/sysinfo.h>
 #endif
+#endif
+
+#ifdef __SWITCH__
+
+static void* AllocateMemory(size_t size, u32 perm)
+{
+  Handle handle;
+  void* ptr = virtmemReserve(size);
+  svcCreateSharedMemory(&handle, size, perm, perm);
+  svcMapSharedMemory(handle, ptr, size, perm);
+  svcCloseHandle(handle);
+  return ptr;
+}
 #endif
 
 namespace Common
@@ -37,6 +53,9 @@ void* AllocateExecutableMemory(size_t size)
 {
 #if defined(_WIN32)
   void* ptr = VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_EXECUTE_READWRITE);
+#elif defined (__SWITCH__)
+  void* ptr = AllocateMemory(size, Perm_Rw | Perm_X);
+
 #else
   void* ptr =
       mmap(nullptr, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_ANON | MAP_PRIVATE, -1, 0);
@@ -44,6 +63,7 @@ void* AllocateExecutableMemory(size_t size)
   if (ptr == MAP_FAILED)
     ptr = nullptr;
 #endif
+
 
   if (ptr == nullptr)
     PanicAlert("Failed to allocate executable memory");
@@ -55,6 +75,8 @@ void* AllocateMemoryPages(size_t size)
 {
 #ifdef _WIN32
   void* ptr = VirtualAlloc(nullptr, size, MEM_COMMIT, PAGE_READWRITE);
+#elif defined (__SWITCH__)
+  void* ptr = AllocateMemory(size, Perm_Rw);
 #else
   void* ptr = mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
 
@@ -91,6 +113,8 @@ void FreeMemoryPages(void* ptr, size_t size)
 #ifdef _WIN32
     if (!VirtualFree(ptr, 0, MEM_RELEASE))
       PanicAlert("FreeMemoryPages failed!\nVirtualFree: %s", GetLastErrorString().c_str());
+#elif defined(__SWITCH__)
+  virtmemFree(ptr, size);
 #else
     if (munmap(ptr, size) != 0)
       PanicAlert("FreeMemoryPages failed!\nmunmap: %s", LastStrerrorString().c_str());
@@ -116,6 +140,10 @@ void ReadProtectMemory(void* ptr, size_t size)
   DWORD oldValue;
   if (!VirtualProtect(ptr, size, PAGE_NOACCESS, &oldValue))
     PanicAlert("ReadProtectMemory failed!\nVirtualProtect: %s", GetLastErrorString().c_str());
+#elif defined(__SWITCH__)
+  Result result = svcSetMemoryPermission(ptr, size, Perm_None);
+  if (R_FAILED(result))
+    PanicAlert("ReadProtectMemory failed!\nsvcSetMemoryPermission: %u", result);
 #else
   if (mprotect(ptr, size, PROT_NONE) != 0)
     PanicAlert("ReadProtectMemory failed!\nmprotect: %s", LastStrerrorString().c_str());
@@ -128,6 +156,10 @@ void WriteProtectMemory(void* ptr, size_t size, bool allowExecute)
   DWORD oldValue;
   if (!VirtualProtect(ptr, size, allowExecute ? PAGE_EXECUTE_READ : PAGE_READONLY, &oldValue))
     PanicAlert("WriteProtectMemory failed!\nVirtualProtect: %s", GetLastErrorString().c_str());
+#elif defined(__SWITCH__)
+  Result result = svcSetMemoryPermission(ptr, size, Perm_R | Perm_X);
+  if (R_FAILED(result))
+    PanicAlert("WriteProtectMemory failed!\nsvcSetMemoryPermission: %u", result);
 #else
   if (mprotect(ptr, size, allowExecute ? (PROT_READ | PROT_EXEC) : PROT_READ) != 0)
     PanicAlert("WriteProtectMemory failed!\nmprotect: %s", LastStrerrorString().c_str());
@@ -140,6 +172,10 @@ void UnWriteProtectMemory(void* ptr, size_t size, bool allowExecute)
   DWORD oldValue;
   if (!VirtualProtect(ptr, size, allowExecute ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE, &oldValue))
     PanicAlert("UnWriteProtectMemory failed!\nVirtualProtect: %s", GetLastErrorString().c_str());
+#elif defined(__SWITCH__)
+  Result result = svcSetMemoryPermission(ptr, size, allowExecute ? (Perm_Rw | Perm_X) : Perm_Rw);
+  if (R_FAILED(result))
+    PanicAlert("UnWriteProtectMemory failed!\nsvcSetMemoryPermission: %u", result);
 #else
   if (mprotect(ptr, size,
                allowExecute ? (PROT_READ | PROT_WRITE | PROT_EXEC) : PROT_WRITE | PROT_READ) != 0)
@@ -151,6 +187,7 @@ void UnWriteProtectMemory(void* ptr, size_t size, bool allowExecute)
 
 size_t MemPhysical()
 {
+
 #ifdef _WIN32
   MEMORYSTATUSEX memInfo;
   memInfo.dwLength = sizeof(MEMORYSTATUSEX);
@@ -174,6 +211,9 @@ size_t MemPhysical()
   system_info sysinfo;
   get_system_info(&sysinfo);
   return static_cast<size_t>(sysinfo.max_pages * B_PAGE_SIZE);
+#elif defined __SWITCH__
+  u64 size;
+  svcGetSystemInfo(&size, SystemInfoType_TotalPhysicalMemorySize, INVALID_HANDLE, 0);
 #else
   struct sysinfo memInfo;
   sysinfo(&memInfo);

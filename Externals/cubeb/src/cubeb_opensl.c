@@ -4,9 +4,11 @@
  * This program is made available under an ISC-style license.  See the
  * accompanying file LICENSE for details.
  */
+
+#ifndef __SWITCH__
+
 #undef NDEBUG
 #include <assert.h>
-#include <dlfcn.h>
 #include <stdlib.h>
 #include <pthread.h>
 #include <errno.h>
@@ -20,6 +22,10 @@
 #include <SLES/OpenSLES_Android.h>
 #include <android/log.h>
 #include <android/api-level.h>
+#endif
+
+#if !defined (__SWITCH__)
+#include <dlfcn.h>
 #endif
 #include "cubeb/cubeb.h"
 #include "cubeb-internal.h"
@@ -1719,3 +1725,6 @@ static struct cubeb_ops const opensl_ops = {
   .stream_register_device_changed_callback = NULL,
   .register_device_collection_changed = NULL
 };
+
+
+#endif // __SWITCH__
