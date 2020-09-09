@@ -59,6 +59,8 @@ static struct retro_input_descriptor descGC[] = {
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L, "L"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R, "R"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R2, "Z"},
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_L3, "L-Analog"},
+    {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_R3, "R-Analog"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_START, "Start"},
     {0, RETRO_DEVICE_JOYPAD, 0, RETRO_DEVICE_ID_JOYPAD_SELECT, "Select"},
     {0, RETRO_DEVICE_ANALOG, RETRO_DEVICE_INDEX_ANALOG_LEFT, RETRO_DEVICE_ID_ANALOG_X,
@@ -516,8 +518,8 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
     gcDPad->SetControlExpression(3, "Right");                             // Right
     gcTriggers->SetControlExpression(0, "L");                             // L
     gcTriggers->SetControlExpression(1, "R");                             // R
-    gcTriggers->SetControlExpression(2, "`" + devAnalog + "Trigger0+`");  // L-trigger Analog
-    gcTriggers->SetControlExpression(3, "`" + devAnalog + "Trigger1+`");  // R-trigger Analog
+    gcTriggers->SetControlExpression(2, "L3");  // L-trigger Analog
+    gcTriggers->SetControlExpression(3, "R3");  // R-trigger Analog
     gcRumble->SetControlExpression(0, "Rumble");
 
     gcPad->UpdateReferences(g_controller_interface);
