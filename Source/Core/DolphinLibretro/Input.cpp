@@ -27,7 +27,7 @@
 #include "InputCommon/GCPadStatus.h"
 #include "InputCommon/InputConfig.h"
 
-#define RETRO_DEVICE_WIIMOTE ((1 << 8) | RETRO_DEVICE_JOYPAD)
+#define RETRO_DEVICE_WIIMOTE RETRO_DEVICE_JOYPAD
 #define RETRO_DEVICE_WIIMOTE_SW ((2 << 8) | RETRO_DEVICE_JOYPAD)
 #define RETRO_DEVICE_WIIMOTE_NC ((3 << 8) | RETRO_DEVICE_JOYPAD)
 #define RETRO_DEVICE_WIIMOTE_CC ((4 << 8) | RETRO_DEVICE_JOYPAD)
@@ -204,14 +204,7 @@ private:
     {
     }
     std::string GetName() const override { return m_name; }
-    ControlState GetState() const override
-    {
-      if (m_port > 3)
-      {
-        return std::max(input_cb(m_port - 4, m_device, m_index, m_id), input_cb(m_port, m_device, m_index, m_id));
-      }
-      return input_cb(m_port, m_device, m_index, m_id);
-    }
+    ControlState GetState() const override { return input_cb(m_port, m_device, m_index, m_id); }
 
   private:
     const unsigned m_port;
@@ -231,23 +224,7 @@ private:
     std::string GetName() const override { return m_name; }
     ControlState GetState() const override
     {
-      ControlState value;
-      if (m_port > 3)
-      {
-        if (m_range > 0)
-        {
-          value = std::max(input_cb(m_port - 4, m_device, m_index, m_id) , input_cb(m_port, m_device, m_index, m_id));
-        }
-        else
-        {
-          value = std::min(input_cb(m_port - 4, m_device, m_index, m_id) , input_cb(m_port, m_device, m_index, m_id));
-        }
-      }
-      else
-      {
-        value = input_cb(m_port, m_device, m_index, m_id);
-      }
-      return std::max(0.0, value / m_range);
+      return std::max(0.0, input_cb(m_port, m_device, m_index, m_id) / m_range);
     }
 
   private:
@@ -268,12 +245,6 @@ private:
     {
       u16 str = std::min(std::max(0.0, state), 1.0) * 0xFFFF;
 
-
-      if (m_port > 3)
-      {
-        rumble.set_rumble_state(m_port - 4, RETRO_RUMBLE_WEAK, str);
-        rumble.set_rumble_state(m_port - 4, RETRO_RUMBLE_STRONG, str);
-      }
       rumble.set_rumble_state(m_port, RETRO_RUMBLE_WEAK, str);
       rumble.set_rumble_state(m_port, RETRO_RUMBLE_STRONG, str);
     }
@@ -429,7 +400,6 @@ void Init()
     Wiimote::Initialize(Wiimote::InitializeMode::DO_NOT_WAIT_FOR_WIIMOTES);
 
     static const struct retro_controller_description wiimote_desc[] = {
-        {"GameCube Controller", RETRO_DEVICE_JOYPAD},
         {"WiiMote", RETRO_DEVICE_WIIMOTE},
         {"WiiMote (sideways)", RETRO_DEVICE_WIIMOTE_SW},
         {"WiiMote + Nunchuk", RETRO_DEVICE_WIIMOTE_NC},
@@ -788,10 +758,6 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 
     switch (Libretro::Input::input_types[i])
     {
-    case RETRO_DEVICE_WIIMOTE:
-      desc = Libretro::Input::descWiimote;
-      break;
-
     case RETRO_DEVICE_WIIMOTE_SW:
       desc = Libretro::Input::descWiimoteSideways;
       break;
@@ -809,7 +775,14 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
       continue;
 
     default:
-      desc = Libretro::Input::descGC;
+      if (!SConfig::GetInstance().bWii || port > 3)
+      {
+        desc = Libretro::Input::descGC;
+      }
+      else
+      {
+        desc = Libretro::Input::descWiimote;
+      }
       break;
     }
     for (int j = 0; desc[j].device != 0; j++)
