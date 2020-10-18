@@ -494,13 +494,12 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
   std::string devMouse = Libretro::Input::GetQualifiedName(port, RETRO_DEVICE_MOUSE);
   std::string devPointer = Libretro::Input::GetQualifiedName(port, RETRO_DEVICE_POINTER);
 #if 0
-  std::string devMouse = Libretro::Input::GetQualifiedName(port, RETRO_DEVICE_MOUSE);
   std::string devKeyboard = Libretro::Input::GetQualifiedName(port, RETRO_DEVICE_KEYBOARD);
   std::string devLightgun = Libretro::Input::GetQualifiedName(port, RETRO_DEVICE_LIGHTGUN);
 #endif
 
   Libretro::Input::RemoveDevicesForPort(port);
-  if (device != RETRO_DEVICE_NONE)
+  if (device != RETRO_DEVICE_NONE && device != RETRO_DEVICE_REAL_WIIMOTE)
     Libretro::Input::AddDevicesForPort(port);
 
   if (!SConfig::GetInstance().bWii || port > 3)
@@ -607,8 +606,6 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
       ControllerEmu::ControlGroup* wmHotkeys = wm->GetWiimoteGroup(WiimoteGroup::Hotkeys);
 #endif
 
-      wmButtons->SetControlExpression(0, "A | `" + devMouse + ":Left`");   // A
-      wmButtons->SetControlExpression(1, "B | `" + devMouse + ":Right`");  // B
 
       if (device == RETRO_DEVICE_WIIMOTE_NC)
       {
@@ -630,6 +627,8 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
         ncShake->SetControlExpression(1, "L2");                       // Y
         ncShake->SetControlExpression(2, "L2");                       // Z
 
+        wmButtons->SetControlExpression(0, "A | `" + devMouse + ":Left`");   // A
+        wmButtons->SetControlExpression(1, "B | `" + devMouse + ":Right`");  // B
         wmButtons->SetControlExpression(2, "Start");                         // 1
         wmButtons->SetControlExpression(3, "Select");                        // 2
         wmButtons->SetControlExpression(4, "L");                             // -
@@ -785,7 +784,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
       }
       break;
     }
-    for (int j = 0; desc[j].device != 0; j++)
+    for (int j = 0; desc[j].description != NULL; j++)
     {
       retro_input_descriptor new_desc = desc[j];
       new_desc.port = i;
