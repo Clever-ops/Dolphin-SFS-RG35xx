@@ -402,7 +402,10 @@ if(ANDROID)
 endif()
 
 if(LIBRETRO)
+  # copied from ENABLE_HEADLESS
+  set(ENABLE_QT 0)
   set(USE_DISCORD_PRESENCE 0)
+
   set(USE_UPNP 0)
   set(ENABLE_ALSA 0)
   set(ENABLE_PULSEAUDIO 0)
@@ -410,6 +413,7 @@ if(LIBRETRO)
   set(ENABLE_LLVM 0)
   set(ENABLE_ANALYTICS 0)
   set(ENCODE_FRAMEDUMPS 0)
+
   add_definitions(-D__LIBRETRO__)
   check_and_add_flag(FPIC -fpic)
 endif()
