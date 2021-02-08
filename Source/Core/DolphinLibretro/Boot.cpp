@@ -116,7 +116,7 @@ bool retro_load_game(const struct retro_game_info* game)
   Config::SetBase(Config::GFX_WIDESCREEN_HACK, Libretro::Options::WidescreenHack);
   Config::SetBase(Config::GFX_EFB_SCALE, Libretro::Options::efbScale);
   Config::SetBase(Config::GFX_ASPECT_RATIO, AspectMode::Stretch);
-  Config::SetBase(Config::GFX_BACKEND_MULTITHREADING, false);
+  Config::SetBase(Config::GFX_BACKEND_MULTITHREADING, true);
   Config::SetBase(Config::GFX_SHADER_COMPILATION_MODE, Libretro::Options::shaderCompilationMode);
   Config::SetBase(Config::GFX_ENHANCE_MAX_ANISOTROPY, Libretro::Options::maxAnisotropy);
   Config::SetBase(Config::GFX_HACK_COPY_EFB_SCALED, Libretro::Options::efbScaledCopy);
