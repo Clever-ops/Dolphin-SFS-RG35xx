@@ -44,7 +44,7 @@ option(LIBRETRO "Build as a libretro library" OFF)
 #    launch).
 #  * The Dolphin team relies on the data in order to understand the behavior
 #    of our software in the wild.
-option(ENABLE_ANALYTICS "Enables opt-in Analytics collection" ON)
+option(ENABLE_ANALYTICS "Enables opt-in Analytics collection" OFF)
 
 option(ENCODE_FRAMEDUMPS "Encode framedumps in AVI format" ON)
 
@@ -52,6 +52,11 @@ option(ENABLE_GPROF "Enable gprof profiling (must be using Debug build)" OFF)
 option(FASTLOG "Enable all logs" OFF)
 option(GDBSTUB "Enable gdb stub for remote debugging." OFF)
 option(OPROFILING "Enable profiling" OFF)
+
+if (MSVC)
+   set(CMAKE_CXX_FLAGS_DEBUG   "/MTd")
+   set(CMAKE_CXX_FLAGS_RELEASE "/MT")
+endif()
 
 # TODO: Add DSPSpy
 option(DSPTOOL "Build dsptool" OFF)
@@ -410,6 +415,7 @@ if(LIBRETRO)
   set(ENABLE_LLVM 0)
   set(ENABLE_ANALYTICS 0)
   set(ENCODE_FRAMEDUMPS 0)
+  set(ENABLE_QT 0)
   add_definitions(-D__LIBRETRO__)
   check_and_add_flag(FPIC -fpic)
 endif()
