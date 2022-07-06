@@ -169,6 +169,9 @@ Option<float> cpuClockRate("dolphin_cpu_clock_rate", "CPU Clock Rate",
                             {"70%", 0.7},
                             {"80%", 0.8},
                             {"90%", 0.9}});
+Option<float> EmulationSpeed("dolphin_emulation_speed", "Emulation Speed",
+                           {{"unlimited", 0.0},
+                            {"100%", 1.0}});
 Option<bool> fastmem("dolphin_fastmem", "Fastmem", true);
 Option<int> irMode("dolphin_ir_mode", "Wiimote IR Mode", 1,
     {"Right Stick controls pointer (relative)",

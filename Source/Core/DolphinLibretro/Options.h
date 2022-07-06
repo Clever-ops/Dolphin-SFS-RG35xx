@@ -111,6 +111,7 @@ extern Option<bool> loadCustomTextures;
 extern Option<bool> cacheCustomTextures;
 extern Option<PowerPC::CPUCore> cpu_core;
 extern Option<float> cpuClockRate;
+extern Option<float> EmulationSpeed;
 extern Option<bool> fastmem;
 extern Option<int> irMode;
 extern Option<int> irCenter;
