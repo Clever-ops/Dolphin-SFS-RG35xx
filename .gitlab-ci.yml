@@ -30,11 +30,6 @@ include:
   - project: 'libretro-infrastructure/ci-templates'
     file: '/linux-cmake.yml'
     
-  ################################## CELLULAR ################################
-  # Android
-  - project: 'libretro-infrastructure/ci-templates'
-    file: '/android-cmake.yml'
-
 # Stages for building
 stages:
   - build-prepare
@@ -58,10 +53,3 @@ libretro-build-linux-x64:
   extends:
     - .libretro-linux-cmake-x86_64
     - .core-linux-defs
-    
-################################### CELLULAR #################################
-# Android ARMv8a
-libretro-build-android-arm64-v8a:
-  extends:
-    - .libretro-android-cmake-arm64-v8a
-    - .core-defs
