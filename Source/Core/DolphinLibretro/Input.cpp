@@ -755,13 +755,6 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
           wmTilt->SetControlExpression(2, "`" + devAnalog + ":X1-`");  // Left
           wmTilt->SetControlExpression(3, "`" + devAnalog + ":X1+`");  // Right
         }
-        if (Libretro::Options::irMode != 3 && Libretro::Options::irMode != 4)
-        {
-          wmTilt->SetControlExpression(0, "`" + devAnalog + ":Y0-`");  // Forward
-          wmTilt->SetControlExpression(1, "`" + devAnalog + ":Y0+`");  // Backward
-          wmTilt->SetControlExpression(2, "`" + devAnalog + ":X0-`");  // Left
-          wmTilt->SetControlExpression(3, "`" + devAnalog + ":X0+`");  // Right
-        }
       }
       else
       {
@@ -802,18 +795,6 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
         wmIR->SetControlExpression(3, "`" + devAnalog + ":X1+`");     // Right
         static_cast<ControllerEmu::NumericSetting<bool>*>(wmIR->numeric_settings[4].get())
           ->SetValue(Libretro::Options::irMode == 1);                 // Relative input
-        static_cast<ControllerEmu::NumericSetting<bool>*>(wmIR->numeric_settings[5].get())
-          ->SetValue(true);                                           // Auto hide
-      }
-      else if (Libretro::Options::irMode == 3 || Libretro::Options::irMode == 4)
-      {
-        // Set left stick to control the IR
-        wmIR->SetControlExpression(0, "`" + devAnalog + ":Y0-`");     // Up
-        wmIR->SetControlExpression(1, "`" + devAnalog + ":Y0+`");     // Down
-        wmIR->SetControlExpression(2, "`" + devAnalog + ":X0-`");     // Left
-        wmIR->SetControlExpression(3, "`" + devAnalog + ":X0+`");     // Right
-        static_cast<ControllerEmu::NumericSetting<bool>*>(wmIR->numeric_settings[4].get())
-          ->SetValue(Libretro::Options::irMode == 3);                 // Relative input
         static_cast<ControllerEmu::NumericSetting<bool>*>(wmIR->numeric_settings[5].get())
           ->SetValue(true);                                           // Auto hide
       }
