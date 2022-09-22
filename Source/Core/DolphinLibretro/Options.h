@@ -99,6 +99,7 @@ extern Option<bool> progressiveScan;
 extern Option<bool> pal60;
 extern Option<int> maxAnisotropy;
 extern Option<bool> skipDupeFrames;
+extern Option<bool> immediatexfb;
 extern Option<bool> efbScaledCopy;
 extern Option<bool> forceTextureFiltering;
 extern Option<bool> efbToTexture;
