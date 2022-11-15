@@ -200,7 +200,9 @@ void BlendingState::ApproximateLogicOpWithBlending()
   blendenable = true;
   subtract = approximations[logicmode].subtract;
   srcfactor = approximations[logicmode].srcfactor;
+  srcfactoralpha = approximations[logicmode].srcfactor;
   dstfactor = approximations[logicmode].dstfactor;
+  dstfactoralpha = approximations[logicmode].dstfactor;
 }
 
 BlendingState& BlendingState::operator=(const BlendingState& rhs)
