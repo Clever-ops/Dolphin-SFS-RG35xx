@@ -139,6 +139,38 @@ bool retro_load_game(const struct retro_game_info* game)
   Config::SetBase(Config::GFX_SHADER_PRECOMPILER_THREADS, 1);
 #endif
 
+  switch (Libretro::Options::antiAliasing)
+  {
+    case 1:  // 2x MSAA
+      Config::SetBase(Config::GFX_MSAA, 2);
+      Config::SetBase(Config::GFX_SSAA, false);
+      break;
+    case 2:  // 4x MSAA
+      Config::SetBase(Config::GFX_MSAA, 4);
+      Config::SetBase(Config::GFX_SSAA, false);
+      break;
+    case 3:  // 8x MSAA
+      Config::SetBase(Config::GFX_MSAA, 8);
+      Config::SetBase(Config::GFX_SSAA, false);
+      break;
+    case 4:  // 2x SSAA
+      Config::SetBase(Config::GFX_MSAA, 2);
+      Config::SetBase(Config::GFX_SSAA, true);
+      break;
+    case 5:  // 4x SSAA
+      Config::SetBase(Config::GFX_MSAA, 4);
+      Config::SetBase(Config::GFX_SSAA, true);
+      break;
+    case 6:  // 8x SSAA
+      Config::SetBase(Config::GFX_MSAA, 8);
+      Config::SetBase(Config::GFX_SSAA, true);
+      break;
+    default: // disabled
+      Config::SetBase(Config::GFX_MSAA, 1);
+      Config::SetBase(Config::GFX_SSAA, false);
+      break;
+  }
+
   Libretro::Video::Init();
   VideoBackendBase::PopulateBackendInfo();
   NOTICE_LOG(VIDEO, "Using GFX backend: %s", Config::Get(Config::MAIN_GFX_BACKEND).c_str());
