@@ -97,6 +97,7 @@ extern Option<ShaderCompilationMode> shaderCompilationMode;
 extern Option<bool> waitForShaders;
 extern Option<bool> progressiveScan;
 extern Option<bool> pal60;
+extern Option<int> antiAliasing;
 extern Option<int> maxAnisotropy;
 extern Option<bool> skipDupeFrames;
 extern Option<bool> immediatexfb;
