@@ -176,6 +176,7 @@ Option<float> EmulationSpeed("dolphin_emulation_speed", "Emulation Speed",
                            {{"unlimited", 0.0},
                             {"100%", 1.0}});
 Option<bool> fastmem("dolphin_fastmem", "Fastmem", true);
+Option<bool> fastDiscSpeed("dolphin_fast_disc_speed", "Speed Up Disc Transfer Rate", false);
 Option<int> irMode("dolphin_ir_mode", "Wiimote IR Mode", 1,
     {"Right Stick controls pointer (relative)",
      "Right Stick controls pointer (absolute)",
