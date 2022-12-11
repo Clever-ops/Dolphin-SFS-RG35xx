@@ -1,6 +1,5 @@
 // Copyright 2009 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "VideoBackends/Software/SWRenderer.h"
 
@@ -13,21 +12,24 @@
 
 #include "VideoBackends/Software/EfbCopy.h"
 #include "VideoBackends/Software/EfbInterface.h"
+#include "VideoBackends/Software/Rasterizer.h"
+#include "VideoBackends/Software/SWBoundingBox.h"
 #include "VideoBackends/Software/SWOGLWindow.h"
 #include "VideoBackends/Software/SWTexture.h"
 
 #include "VideoCommon/AbstractPipeline.h"
 #include "VideoCommon/AbstractShader.h"
 #include "VideoCommon/AbstractTexture.h"
-#include "VideoCommon/BoundingBox.h"
 #include "VideoCommon/NativeVertexFormat.h"
+#include "VideoCommon/PixelEngine.h"
 #include "VideoCommon/VideoBackendBase.h"
 #include "VideoCommon/VideoCommon.h"
 
 namespace SW
 {
 SWRenderer::SWRenderer(std::unique_ptr<SWOGLWindow> window)
-    : ::Renderer(static_cast<int>(MAX_XFB_WIDTH), static_cast<int>(MAX_XFB_HEIGHT), 1.0f,
+    : ::Renderer(static_cast<int>(std::max(window->GetContext()->GetBackBufferWidth(), 1u)),
+                 static_cast<int>(std::max(window->GetContext()->GetBackBufferHeight(), 1u)), 1.0f,
                  AbstractTextureFormat::RGBA8),
       m_window(std::move(window))
 {
@@ -38,7 +40,8 @@ bool SWRenderer::IsHeadless() const
   return m_window->IsHeadless();
 }
 
-std::unique_ptr<AbstractTexture> SWRenderer::CreateTexture(const TextureConfig& config)
+std::unique_ptr<AbstractTexture> SWRenderer::CreateTexture(const TextureConfig& config,
+                                                           [[maybe_unused]] std::string_view name)
 {
   return std::make_unique<SWTexture>(config);
 }
@@ -56,6 +59,18 @@ SWRenderer::CreateFramebuffer(AbstractTexture* color_attachment, AbstractTexture
                                static_cast<SWTexture*>(depth_attachment));
 }
 
+void SWRenderer::BindBackbuffer(const ClearColor& clear_color)
+{
+  // Look for framebuffer resizes
+  if (!m_surface_resized.TestAndClear())
+    return;
+
+  GLContext* context = m_window->GetContext();
+  context->Update();
+  m_backbuffer_width = context->GetBackBufferWidth();
+  m_backbuffer_height = context->GetBackBufferHeight();
+}
+
 class SWShader final : public AbstractShader
 {
 public:
@@ -66,13 +81,15 @@ public:
 };
 
 std::unique_ptr<AbstractShader>
-SWRenderer::CreateShaderFromSource(ShaderStage stage, [[maybe_unused]] std::string_view source)
+SWRenderer::CreateShaderFromSource(ShaderStage stage, [[maybe_unused]] std::string_view source,
+                                   [[maybe_unused]] std::string_view name)
 {
   return std::make_unique<SWShader>(stage);
 }
 
-std::unique_ptr<AbstractShader> SWRenderer::CreateShaderFromBinary(ShaderStage stage,
-                                                                   const void* data, size_t length)
+std::unique_ptr<AbstractShader>
+SWRenderer::CreateShaderFromBinary(ShaderStage stage, const void* data, size_t length,
+                                   [[maybe_unused]] std::string_view name)
 {
   return std::make_unique<SWShader>(stage);
 }
@@ -117,6 +134,27 @@ u32 SWRenderer::AccessEFB(EFBAccessType type, u32 x, u32 y, u32 InputData)
 
     // rgba to argb
     value = (color >> 8) | (color & 0xff) << 24;
+
+    // check what to do with the alpha channel (GX_PokeAlphaRead)
+    PixelEngine::AlphaReadMode alpha_read_mode = PixelEngine::GetAlphaReadMode();
+
+    if (alpha_read_mode == PixelEngine::AlphaReadMode::ReadNone)
+    {
+      // value is OK as it is
+    }
+    else if (alpha_read_mode == PixelEngine::AlphaReadMode::ReadFF)
+    {
+      value |= 0xFF000000;
+    }
+    else
+    {
+      if (alpha_read_mode != PixelEngine::AlphaReadMode::Read00)
+      {
+        PanicAlertFmt("Invalid PE alpha read mode: {}", static_cast<u16>(alpha_read_mode));
+      }
+      value &= 0x00FFFFFF;
+    }
+
     break;
   }
   default:
@@ -126,14 +164,9 @@ u32 SWRenderer::AccessEFB(EFBAccessType type, u32 x, u32 y, u32 InputData)
   return value;
 }
 
-u16 SWRenderer::BBoxRead(int index)
+std::unique_ptr<BoundingBox> SWRenderer::CreateBoundingBox() const
 {
-  return BoundingBox::GetCoordinate(static_cast<BoundingBox::Coordinate>(index));
-}
-
-void SWRenderer::BBoxWrite(int index, u16 value)
-{
-  BoundingBox::SetCoordinate(static_cast<BoundingBox::Coordinate>(index), value);
+  return std::make_unique<SWBoundingBox>();
 }
 
 void SWRenderer::ClearScreen(const MathUtil::Rectangle<int>& rc, bool colorEnable, bool alphaEnable,
@@ -146,5 +179,14 @@ std::unique_ptr<NativeVertexFormat>
 SWRenderer::CreateNativeVertexFormat(const PortableVertexDeclaration& vtx_decl)
 {
   return std::make_unique<NativeVertexFormat>(vtx_decl);
+}
+
+void SWRenderer::SetScissorRect(const MathUtil::Rectangle<int>& rc)
+{
+  // BPFunctions calls SetScissorRect with the "best" scissor rect whenever the viewport or scissor
+  // changes.  However, the software renderer is actually able to use multiple scissor rects (which
+  // is necessary in a few renderering edge cases, such as with Major Minor's Majestic March).
+  // Thus, we use this as a signal to update the list of scissor rects, but ignore the parameter.
+  Rasterizer::ScissorChanged();
 }
 }  // namespace SW

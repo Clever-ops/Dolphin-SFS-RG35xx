@@ -2,7 +2,7 @@
 #pragma once
 
 #include <libretro.h>
-#include "VideoBackends/Null/Render.h"
+#include "VideoBackends/Null/NullRender.h"
 #include "VideoBackends/Software/SWOGLWindow.h"
 #include "VideoBackends/Software/SWRenderer.h"
 #include "VideoBackends/Software/SWTexture.h"
@@ -16,8 +16,8 @@
 #include "VideoBackends/D3D/D3DState.h"
 #include "VideoBackends/D3D/DXShader.h"
 #include "VideoBackends/D3D/DXTexture.h"
-#include "VideoBackends/D3D/Render.h"
-#include "VideoBackends/D3D/SwapChain.h"
+#include "VideoBackends/D3D/D3DRender.h"
+#include "VideoBackends/D3D/D3DSwapChain.h"
 #endif
 
 namespace Libretro
@@ -61,7 +61,7 @@ public:
 
   void PresentBackbuffer() override
   {
-    video_cb(m_texture->GetData(), m_rc.GetWidth(), m_rc.GetHeight(), m_texture->GetWidth() * 4);
+    video_cb(m_texture->GetData(0, 0), m_rc.GetWidth(), m_rc.GetHeight(), m_texture->GetWidth() * 4);
     UpdateActiveConfig();
   }
 
@@ -110,7 +110,7 @@ protected:
     TextureConfig config(m_width, m_height, 1, 1, 1, AbstractTextureFormat::RGBA8,
                          AbstractTextureFlag_RenderTarget);
 
-    m_texture = DX11::DXTexture::Create(config);
+    m_texture = DX11::DXTexture::Create(config, "Libretro Swapchain Buffer Texture");
     m_framebuffer = DX11::DXFramebuffer::Create(m_texture.get(), nullptr);
     return true;
   }

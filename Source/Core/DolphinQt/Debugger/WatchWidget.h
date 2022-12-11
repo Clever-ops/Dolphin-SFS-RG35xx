@@ -1,6 +1,5 @@
 // Copyright 2017 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
 
@@ -25,6 +24,7 @@ public:
   void AddWatch(QString name, u32 addr);
 signals:
   void RequestMemoryBreakpoint(u32 addr);
+  void ShowMemory(u32 addr);
 
 protected:
   void closeEvent(QCloseEvent*) override;
@@ -33,6 +33,10 @@ protected:
 private:
   void CreateWidgets();
   void ConnectWidgets();
+
+  void OnDelete();
+  void OnClear();
+  void OnNewWatch();
 
   void OnLoad();
   void OnSave();
@@ -44,9 +48,12 @@ private:
   void OnItemChanged(QTableWidgetItem* item);
   void DeleteWatch(int row);
   void AddWatchBreakpoint(int row);
-
+  void ShowInMemory(int row);
   void UpdateIcons();
 
+  QAction* m_new;
+  QAction* m_delete;
+  QAction* m_clear;
   QAction* m_load;
   QAction* m_save;
   QToolBar* m_toolbar;

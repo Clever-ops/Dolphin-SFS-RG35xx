@@ -1,36 +1,26 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 package org.dolphinemu.dolphinemu.features.settings.ui.viewholder;
 
 import android.view.View;
-import android.widget.CheckBox;
-import android.widget.TextView;
 
-import org.dolphinemu.dolphinemu.R;
-import org.dolphinemu.dolphinemu.features.settings.model.Settings;
+import androidx.annotation.Nullable;
+
+import org.dolphinemu.dolphinemu.databinding.ListItemSettingCheckboxBinding;
 import org.dolphinemu.dolphinemu.features.settings.model.view.CheckBoxSetting;
 import org.dolphinemu.dolphinemu.features.settings.model.view.SettingsItem;
 import org.dolphinemu.dolphinemu.features.settings.ui.SettingsAdapter;
-import org.dolphinemu.dolphinemu.features.settings.ui.SettingsFragmentPresenter;
 
 public final class CheckBoxSettingViewHolder extends SettingViewHolder
 {
   private CheckBoxSetting mItem;
 
-  private TextView mTextSettingName;
-  private TextView mTextSettingDescription;
+  private final ListItemSettingCheckboxBinding mBinding;
 
-  private CheckBox mCheckbox;
-
-  public CheckBoxSettingViewHolder(View itemView, SettingsAdapter adapter)
+  public CheckBoxSettingViewHolder(ListItemSettingCheckboxBinding binding, SettingsAdapter adapter)
   {
-    super(itemView, adapter);
-  }
-
-  @Override
-  protected void findViews(View root)
-  {
-    mTextSettingName = (TextView) root.findViewById(R.id.text_setting_name);
-    mTextSettingDescription = (TextView) root.findViewById(R.id.text_setting_description);
-    mCheckbox = (CheckBox) root.findViewById(R.id.checkbox);
+    super(binding.getRoot(), adapter);
+    mBinding = binding;
   }
 
   @Override
@@ -38,33 +28,33 @@ public final class CheckBoxSettingViewHolder extends SettingViewHolder
   {
     mItem = (CheckBoxSetting) item;
 
-    // Special case for LogTypes retrieved via JNI since those aren't string references.
-    if (item.getNameId() == 0 && item.getSection().equals(Settings.SECTION_LOGGER_LOGS))
-    {
-      mTextSettingName.setText(SettingsFragmentPresenter.LOG_TYPE_NAMES.get(item.getKey()));
-    }
-    else
-    {
-      mTextSettingName.setText(item.getNameId());
-    }
+    mBinding.textSettingName.setText(item.getName());
+    mBinding.textSettingDescription.setText(item.getDescription());
 
-    if (item.getDescriptionId() > 0)
-    {
-      mTextSettingDescription.setText(item.getDescriptionId());
-    }
-    else
-    {
-      mTextSettingDescription.setText("");
-    }
+    mBinding.checkbox.setChecked(mItem.isChecked(getAdapter().getSettings()));
 
-    mCheckbox.setChecked(mItem.isChecked());
+    setStyle(mBinding.textSettingName, mItem);
   }
 
   @Override
   public void onClick(View clicked)
   {
-    mCheckbox.toggle();
+    if (!mItem.isEditable())
+    {
+      showNotRuntimeEditableError();
+      return;
+    }
 
-    getAdapter().onBooleanClick(mItem, getAdapterPosition(), mCheckbox.isChecked());
+    mBinding.checkbox.toggle();
+
+    getAdapter().onBooleanClick(mItem, getBindingAdapterPosition(), mBinding.checkbox.isChecked());
+
+    setStyle(mBinding.textSettingName, mItem);
+  }
+
+  @Nullable @Override
+  protected SettingsItem getItem()
+  {
+    return mItem;
   }
 }

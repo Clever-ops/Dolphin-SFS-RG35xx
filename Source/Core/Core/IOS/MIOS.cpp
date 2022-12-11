@@ -1,6 +1,5 @@
 // Copyright 2017 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "Core/IOS/MIOS.h"
 
@@ -12,6 +11,7 @@
 #include "Common/Logging/Log.h"
 #include "Common/MsgHandler.h"
 #include "Common/Swap.h"
+#include "Core/Config/MainSettings.h"
 #include "Core/ConfigManager.h"
 #include "Core/Core.h"
 #include "Core/DSPEmulator.h"
@@ -24,6 +24,7 @@
 #include "Core/Host.h"
 #include "Core/PowerPC/PPCSymbolDB.h"
 #include "Core/PowerPC/PowerPC.h"
+#include "Core/System.h"
 
 namespace IOS::HLE::MIOS
 {
@@ -32,7 +33,9 @@ static void ReinitHardware()
   SConfig::GetInstance().bWii = false;
 
   // IOS clears mem2 and overwrites it with pseudo-random data (for security).
-  std::memset(Memory::m_pEXRAM, 0, Memory::GetExRamSizeReal());
+  auto& system = Core::System::GetInstance();
+  auto& memory = system.GetMemory();
+  std::memset(memory.GetEXRAM(), 0, memory.GetExRamSizeReal());
   // MIOS appears to only reset the DI and the PPC.
   // HACK However, resetting DI will reset the DTK config, which is set by the system menu
   // (and not by MIOS), causing games that use DTK to break.  Perhaps MIOS doesn't actually
@@ -41,8 +44,9 @@ static void ReinitHardware()
   PowerPC::Reset();
   Wiimote::ResetAllWiimotes();
   // Note: this is specific to Dolphin and is required because we initialised it in Wii mode.
-  DSP::Reinit(SConfig::GetInstance().bDSPHLE);
-  DSP::GetDSPEmulator()->Initialize(SConfig::GetInstance().bWii, SConfig::GetInstance().bDSPThread);
+  DSP::Reinit(Config::Get(Config::MAIN_DSP_HLE));
+  DSP::GetDSPEmulator()->Initialize(SConfig::GetInstance().bWii,
+                                    Config::Get(Config::MAIN_DSP_THREAD));
 
   SystemTimers::ChangePPCClock(SystemTimers::Mode::GC);
 }
@@ -51,11 +55,13 @@ constexpr u32 ADDRESS_INIT_SEMAPHORE = 0x30f8;
 
 bool Load()
 {
-  Memory::Write_U32(0x00000000, ADDRESS_INIT_SEMAPHORE);
-  Memory::Write_U32(0x09142001, 0x3180);
+  auto& system = Core::System::GetInstance();
+  auto& memory = system.GetMemory();
+  memory.Write_U32(0x00000000, ADDRESS_INIT_SEMAPHORE);
+  memory.Write_U32(0x09142001, 0x3180);
 
   ReinitHardware();
-  NOTICE_LOG(IOS, "Reinitialised hardware.");
+  NOTICE_LOG_FMT(IOS, "Reinitialised hardware.");
 
   // Load symbols for the IPL if they exist.
   if (!g_symbolDB.IsEmpty())
@@ -74,18 +80,19 @@ bool Load()
   PowerPC::SetMode(PowerPC::CoreMode::Interpreter);
   MSR.Hex = 0;
   PC = 0x3400;
-  NOTICE_LOG(IOS, "Loaded MIOS and bootstrapped PPC.");
+  NOTICE_LOG_FMT(IOS, "Loaded MIOS and bootstrapped PPC.");
 
   // IOS writes 0 to 0x30f8 before bootstrapping the PPC. Once started, the IPL eventually writes
   // 0xdeadbeef there, then waits for it to be cleared by IOS before continuing.
-  while (Memory::Read_U32(ADDRESS_INIT_SEMAPHORE) != 0xdeadbeef)
+  while (memory.Read_U32(ADDRESS_INIT_SEMAPHORE) != 0xdeadbeef)
     PowerPC::SingleStep();
   PowerPC::SetMode(core_mode);
 
-  Memory::Write_U32(0x00000000, ADDRESS_INIT_SEMAPHORE);
-  NOTICE_LOG(IOS, "IPL ready.");
+  memory.Write_U32(0x00000000, ADDRESS_INIT_SEMAPHORE);
+  NOTICE_LOG_FMT(IOS, "IPL ready.");
   SConfig::GetInstance().m_is_mios = true;
   DVDInterface::UpdateRunningGameMetadata();
+  SConfig::OnNewTitleLoad();
   return true;
 }
 }  // namespace IOS::HLE::MIOS

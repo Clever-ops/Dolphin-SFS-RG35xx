@@ -1,9 +1,9 @@
 // Copyright 2008 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "Core/HW/DSPHLE/UCodes/CARD.h"
 
+#include "Common/ChunkFile.h"
 #include "Common/CommonTypes.h"
 #include "Common/Logging/Log.h"
 #include "Core/HW/DSP.h"
@@ -14,12 +14,7 @@ namespace DSP::HLE
 {
 CARDUCode::CARDUCode(DSPHLE* dsphle, u32 crc) : UCodeInterface(dsphle, crc)
 {
-  INFO_LOG(DSPHLE, "CARDUCode - initialized");
-}
-
-CARDUCode::~CARDUCode()
-{
-  m_mail_handler.Clear();
+  INFO_LOG_FMT(DSPHLE, "CARDUCode - initialized");
 }
 
 void CARDUCode::Initialize()
@@ -29,8 +24,8 @@ void CARDUCode::Initialize()
 
 void CARDUCode::Update()
 {
-  // check if we have to sent something
-  if (!m_mail_handler.IsEmpty())
+  // check if we have something to send
+  if (m_mail_handler.HasPending())
   {
     DSP::GenerateDSPInterruptFromDSPEmu(DSP::INT_DSP);
   }
@@ -44,10 +39,16 @@ void CARDUCode::HandleMail(u32 mail)
   }
   else
   {
-    WARN_LOG(DSPHLE, "CARDUCode - unknown command: %x", mail);
+    WARN_LOG_FMT(DSPHLE, "CARDUCode - unknown command: {:x}", mail);
   }
 
   m_mail_handler.PushMail(DSP_DONE);
   m_dsphle->SetUCode(UCODE_ROM);
+}
+
+void CARDUCode::DoState(PointerWrap& p)
+{
+  DoStateShared(p);
+  p.Do(m_state);
 }
 }  // namespace DSP::HLE

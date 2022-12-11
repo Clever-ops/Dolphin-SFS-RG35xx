@@ -1,6 +1,7 @@
 // Copyright 2009 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+#include "VideoBackends/Software/VideoBackend.h"
 
 #include <cstring>
 #include <memory>
@@ -13,7 +14,6 @@
 #include "Common/MsgHandler.h"
 
 #include "VideoBackends/Software/Clipper.h"
-#include "VideoBackends/Software/DebugUtil.h"
 #include "VideoBackends/Software/EfbInterface.h"
 #include "VideoBackends/Software/Rasterizer.h"
 #include "VideoBackends/Software/SWOGLWindow.h"
@@ -21,7 +21,6 @@
 #include "VideoBackends/Software/SWTexture.h"
 #include "VideoBackends/Software/SWVertexLoader.h"
 #include "VideoBackends/Software/TextureCache.h"
-#include "VideoBackends/Software/VideoBackend.h"
 
 #include "VideoCommon/FramebufferManager.h"
 #include "VideoCommon/TextureCacheBase.h"
@@ -45,7 +44,7 @@ public:
 
 std::string VideoSoftware::GetName() const
 {
-  return "Software Renderer";
+  return NAME;
 }
 
 std::string VideoSoftware::GetDisplayName() const
@@ -68,7 +67,6 @@ void VideoSoftware::InitBackendInfo()
   g_Config.backend_info.bSupports3DVision = false;
   g_Config.backend_info.bSupportsDualSourceBlend = true;
   g_Config.backend_info.bSupportsEarlyZ = true;
-  g_Config.backend_info.bSupportsOversizedViewports = true;
   g_Config.backend_info.bSupportsPrimitiveRestart = false;
   g_Config.backend_info.bSupportsMultithreading = false;
   g_Config.backend_info.bSupportsComputeShaders = false;
@@ -84,6 +82,13 @@ void VideoSoftware::InitBackendInfo()
   g_Config.backend_info.bSupportsLogicOp = true;
   g_Config.backend_info.bSupportsShaderBinaries = false;
   g_Config.backend_info.bSupportsPipelineCacheData = false;
+  g_Config.backend_info.bSupportsBBox = true;
+  g_Config.backend_info.bSupportsCoarseDerivatives = false;
+  g_Config.backend_info.bSupportsTextureQueryLevels = false;
+  g_Config.backend_info.bSupportsLodBiasInSampler = false;
+  g_Config.backend_info.bSupportsSettingObjectNames = false;
+  g_Config.backend_info.bSupportsPartialMultisampleResolve = true;
+  g_Config.backend_info.bSupportsDynamicVertexLoader = false;
 
   // aamodes
   g_Config.backend_info.AAModes = {1};
@@ -99,7 +104,6 @@ bool VideoSoftware::Initialize(const WindowSystemInfo& wsi)
 
   Clipper::Init();
   Rasterizer::Init();
-  DebugUtil::Init();
 
   g_renderer = std::make_unique<SWRenderer>(std::move(window));
   g_vertex_manager = std::make_unique<SWVertexLoader>();
@@ -112,7 +116,7 @@ bool VideoSoftware::Initialize(const WindowSystemInfo& wsi)
       !g_renderer->Initialize() || !g_framebuffer_manager->Initialize() ||
       !g_texture_cache->Initialize())
   {
-    PanicAlert("Failed to initialize renderer classes");
+    PanicAlertFmt("Failed to initialize renderer classes");
     Shutdown();
     return false;
   }
@@ -129,7 +133,6 @@ void VideoSoftware::Shutdown()
   if (g_renderer)
     g_renderer->Shutdown();
 
-  DebugUtil::Shutdown();
   g_texture_cache.reset();
   g_perf_query.reset();
   g_framebuffer_manager.reset();

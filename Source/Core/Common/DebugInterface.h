@@ -1,6 +1,5 @@
 // Copyright 2008 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
 
@@ -73,6 +72,11 @@ public:
   virtual void WriteExtraMemory(int /*memory*/, u32 /*value*/, u32 /*address*/) {}
   virtual u32 ReadExtraMemory(int /*memory*/, u32 /*address*/) const { return 0; }
   virtual u32 ReadInstruction(u32 /*address*/) const { return 0; }
+  virtual std::optional<u32>
+  GetMemoryAddressFromInstruction(const std::string& /*instruction*/) const
+  {
+    return std::nullopt;
+  }
   virtual u32 GetPC() const { return 0; }
   virtual void SetPC(u32 /*address*/) {}
   virtual void Step() {}

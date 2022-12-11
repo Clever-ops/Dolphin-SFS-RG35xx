@@ -1,6 +1,5 @@
 // Copyright 2008 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
 
@@ -10,10 +9,12 @@ class PointerWrap;
 
 namespace GPFifo
 {
-enum
-{
-  GATHER_PIPE_SIZE = 32
-};
+// This address is configurable in the WPAR SPR, but all games put it at this address
+// (and presumably the hardware backing this system uses this address).
+constexpr u32 GATHER_PIPE_PHYSICAL_ADDRESS = 0x0C008000;
+
+constexpr u32 GATHER_PIPE_SIZE = 32;
+constexpr u32 GATHER_PIPE_EXTRA_SIZE = GATHER_PIPE_SIZE * 16;
 
 // Init
 void Init();
@@ -25,7 +26,7 @@ void UpdateGatherPipe();
 void CheckGatherPipe();
 void FastCheckGatherPipe();
 
-bool IsEmpty();
+bool IsBNE();
 
 // Write
 void Write8(u8 value);

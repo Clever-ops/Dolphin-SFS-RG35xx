@@ -1,6 +1,5 @@
 // Copyright 2008 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "Core/PowerPC/PowerPC.h"
 
@@ -19,16 +18,20 @@
 #include "Common/FloatUtils.h"
 #include "Common/Logging/Log.h"
 
+#include "Core/Config/MainSettings.h"
 #include "Core/ConfigManager.h"
+#include "Core/Core.h"
 #include "Core/CoreTiming.h"
 #include "Core/HW/CPU.h"
 #include "Core/HW/SystemTimers.h"
 #include "Core/Host.h"
 #include "Core/PowerPC/CPUCoreBase.h"
+#include "Core/PowerPC/GDBStub.h"
 #include "Core/PowerPC/Interpreter/Interpreter.h"
 #include "Core/PowerPC/JitInterface.h"
 #include "Core/PowerPC/MMU.h"
 #include "Core/PowerPC/PPCSymbolDB.h"
+#include "Core/System.h"
 
 namespace PowerPC
 {
@@ -66,7 +69,7 @@ void PairedSingle::SetPS1(double value)
   ps1 = Common::BitCast<u64>(value);
 }
 
-static void InvalidateCacheThreadSafe(u64 userdata, s64 cyclesLate)
+static void InvalidateCacheThreadSafe(Core::System& system, u64 userdata, s64 cyclesLate)
 {
   ppcState.iCache.Invalidate(static_cast<u32>(userdata));
 }
@@ -98,7 +101,7 @@ std::ostream& operator<<(std::ostream& os, CPUCore core)
 void DoState(PointerWrap& p)
 {
   // some of this code has been disabled, because
-  // it changes registers even in MODE_MEASURE (which is suspicious and seems like it could cause
+  // it changes registers even in Mode::Measure (which is suspicious and seems like it could cause
   // desyncs)
   // and because the values it's changing have been added to CoreTiming::DoState, so it might
   // conflict to mess with them here.
@@ -125,10 +128,14 @@ void DoState(PointerWrap& p)
   p.Do(ppcState.pagetable_base);
   p.Do(ppcState.pagetable_hashmask);
 
+  p.Do(ppcState.reserve);
+  p.Do(ppcState.reserve_address);
+
   ppcState.iCache.DoState(p);
 
-  if (p.GetMode() == PointerWrap::MODE_READ)
+  if (p.IsReadMode())
   {
+    RoundingModeUpdated();
     IBATUpdated();
     DBATUpdated();
   }
@@ -174,12 +181,17 @@ static void ResetRegisters()
   ppcState.pc = 0;
   ppcState.npc = 0;
   ppcState.Exceptions = 0;
+
+  ppcState.reserve = false;
+  ppcState.reserve_address = 0;
+
   for (auto& v : ppcState.cr.fields)
   {
     v = 0x8000000000000001;
   }
   SetXER({});
 
+  RoundingModeUpdated();
   DBATUpdated();
   IBATUpdated();
 
@@ -209,8 +221,8 @@ static void InitializeCPUCore(CPUCore cpu_core)
     s_cpu_core_base = JitInterface::InitJitCore(cpu_core);
     if (!s_cpu_core_base)  // Handle Situations where JIT core isn't available
     {
-      WARN_LOG(POWERPC, "CPU core %d not available. Falling back to default.",
-               static_cast<int>(cpu_core));
+      WARN_LOG_FMT(POWERPC, "CPU core {} not available. Falling back to default.",
+                   static_cast<int>(cpu_core));
       s_cpu_core_base = JitInterface::InitJitCore(DefaultCPUCore());
     }
     break;
@@ -247,19 +259,15 @@ CPUCore DefaultCPUCore()
 
 void Init(CPUCore cpu_core)
 {
-  // NOTE: This function runs on EmuThread, not the CPU Thread.
-  //   Changing the rounding mode has a limited effect.
-  FPURoundMode::SetPrecisionMode(FPURoundMode::PREC_53);
-
-  s_invalidate_cache_thread_safe =
-      CoreTiming::RegisterEvent("invalidateEmulatedCache", InvalidateCacheThreadSafe);
+  s_invalidate_cache_thread_safe = Core::System::GetInstance().GetCoreTiming().RegisterEvent(
+      "invalidateEmulatedCache", InvalidateCacheThreadSafe);
 
   Reset();
 
   InitializeCPUCore(cpu_core);
   ppcState.iCache.Init();
 
-  if (SConfig::GetInstance().bEnableDebugging)
+  if (Config::Get(Config::MAIN_ENABLE_DEBUGGING))
     breakpoints.ClearAllTemporary();
 }
 
@@ -277,8 +285,8 @@ void ScheduleInvalidateCacheThreadSafe(u32 address)
 {
   if (CPU::GetState() == CPU::State::Running)
   {
-    CoreTiming::ScheduleEvent(0, s_invalidate_cache_thread_safe, address,
-                              CoreTiming::FromThread::NON_CPU);
+    Core::System::GetInstance().GetCoreTiming().ScheduleEvent(
+        0, s_invalidate_cache_thread_safe, address, CoreTiming::FromThread::NON_CPU);
   }
   else
   {
@@ -473,19 +481,19 @@ void CheckExceptions()
     MSR.Hex &= ~0x04EF36;
     PC = NPC = 0x00000400;
 
-    DEBUG_LOG(POWERPC, "EXCEPTION_ISI");
+    DEBUG_LOG_FMT(POWERPC, "EXCEPTION_ISI");
     ppcState.Exceptions &= ~EXCEPTION_ISI;
   }
   else if (exceptions & EXCEPTION_PROGRAM)
   {
     SRR0 = PC;
-    // say that it's a trap exception
-    SRR1 = (MSR.Hex & 0x87C0FFFF) | 0x20000;
+    // SRR1 was partially set by GenerateProgramException, so bitwise or is used here
+    SRR1 |= MSR.Hex & 0x87C0FFFF;
     MSR.LE = MSR.ILE;
     MSR.Hex &= ~0x04EF36;
     PC = NPC = 0x00000700;
 
-    DEBUG_LOG(POWERPC, "EXCEPTION_PROGRAM");
+    DEBUG_LOG_FMT(POWERPC, "EXCEPTION_PROGRAM");
     ppcState.Exceptions &= ~EXCEPTION_PROGRAM;
   }
   else if (exceptions & EXCEPTION_SYSCALL)
@@ -496,7 +504,7 @@ void CheckExceptions()
     MSR.Hex &= ~0x04EF36;
     PC = NPC = 0x00000C00;
 
-    DEBUG_LOG(POWERPC, "EXCEPTION_SYSCALL (PC=%08x)", PC);
+    DEBUG_LOG_FMT(POWERPC, "EXCEPTION_SYSCALL (PC={:08x})", PC);
     ppcState.Exceptions &= ~EXCEPTION_SYSCALL;
   }
   else if (exceptions & EXCEPTION_FPU_UNAVAILABLE)
@@ -508,7 +516,7 @@ void CheckExceptions()
     MSR.Hex &= ~0x04EF36;
     PC = NPC = 0x00000800;
 
-    DEBUG_LOG(POWERPC, "EXCEPTION_FPU_UNAVAILABLE");
+    DEBUG_LOG_FMT(POWERPC, "EXCEPTION_FPU_UNAVAILABLE");
     ppcState.Exceptions &= ~EXCEPTION_FPU_UNAVAILABLE;
   }
   else if (exceptions & EXCEPTION_FAKE_MEMCHECK_HIT)
@@ -524,7 +532,7 @@ void CheckExceptions()
     PC = NPC = 0x00000300;
     // DSISR and DAR regs are changed in GenerateDSIException()
 
-    DEBUG_LOG(POWERPC, "EXCEPTION_DSI");
+    DEBUG_LOG_FMT(POWERPC, "EXCEPTION_DSI");
     ppcState.Exceptions &= ~EXCEPTION_DSI;
   }
   else if (exceptions & EXCEPTION_ALIGNMENT)
@@ -537,7 +545,7 @@ void CheckExceptions()
 
     // TODO crazy amount of DSISR options to check out
 
-    DEBUG_LOG(POWERPC, "EXCEPTION_ALIGNMENT");
+    DEBUG_LOG_FMT(POWERPC, "EXCEPTION_ALIGNMENT");
     ppcState.Exceptions &= ~EXCEPTION_ALIGNMENT;
   }
 
@@ -565,7 +573,7 @@ void CheckExternalExceptions()
       MSR.Hex &= ~0x04EF36;
       PC = NPC = 0x00000500;
 
-      DEBUG_LOG(POWERPC, "EXCEPTION_EXTERNAL_INT");
+      DEBUG_LOG_FMT(POWERPC, "EXCEPTION_EXTERNAL_INT");
       ppcState.Exceptions &= ~EXCEPTION_EXTERNAL_INT;
 
       DEBUG_ASSERT_MSG(POWERPC, (SRR1 & 0x02) != 0, "EXTERNAL_INT unrecoverable???");
@@ -578,7 +586,7 @@ void CheckExternalExceptions()
       MSR.Hex &= ~0x04EF36;
       PC = NPC = 0x00000F00;
 
-      DEBUG_LOG(POWERPC, "EXCEPTION_PERFORMANCE_MONITOR");
+      DEBUG_LOG_FMT(POWERPC, "EXCEPTION_PERFORMANCE_MONITOR");
       ppcState.Exceptions &= ~EXCEPTION_PERFORMANCE_MONITOR;
     }
     else if (exceptions & EXCEPTION_DECREMENTER)
@@ -589,45 +597,67 @@ void CheckExternalExceptions()
       MSR.Hex &= ~0x04EF36;
       PC = NPC = 0x00000900;
 
-      DEBUG_LOG(POWERPC, "EXCEPTION_DECREMENTER");
+      DEBUG_LOG_FMT(POWERPC, "EXCEPTION_DECREMENTER");
       ppcState.Exceptions &= ~EXCEPTION_DECREMENTER;
     }
     else
     {
-      DEBUG_ASSERT_MSG(POWERPC, 0, "Unknown EXT interrupt: Exceptions == %08x", exceptions);
-      ERROR_LOG(POWERPC, "Unknown EXTERNAL INTERRUPT exception: Exceptions == %08x", exceptions);
+      DEBUG_ASSERT_MSG(POWERPC, 0, "Unknown EXT interrupt: Exceptions == {:08x}", exceptions);
+      ERROR_LOG_FMT(POWERPC, "Unknown EXTERNAL INTERRUPT exception: Exceptions == {:08x}",
+                    exceptions);
     }
   }
 }
 
 void CheckBreakPoints()
 {
-  if (PowerPC::breakpoints.IsAddressBreakPoint(PC))
+  const TBreakPoint* bp = PowerPC::breakpoints.GetBreakpoint(PC);
+
+  if (!bp || !bp->is_enabled || !EvaluateCondition(bp->condition))
+    return;
+
+  if (bp->break_on_hit)
   {
-    if (PowerPC::breakpoints.IsBreakPointBreakOnHit(PC))
-      CPU::Break();
-    if (PowerPC::breakpoints.IsBreakPointLogOnHit(PC))
-    {
-      NOTICE_LOG(MEMMAP, "BP %08x %s(%08x %08x %08x %08x %08x %08x %08x %08x %08x %08x) LR=%08x",
-                 PC, g_symbolDB.GetDescription(PC).c_str(), GPR(3), GPR(4), GPR(5), GPR(6), GPR(7),
-                 GPR(8), GPR(9), GPR(10), GPR(11), GPR(12), LR);
-    }
-    if (PowerPC::breakpoints.IsTempBreakPoint(PC))
-      PowerPC::breakpoints.Remove(PC);
+    CPU::Break();
+    if (GDBStub::IsActive())
+      GDBStub::TakeControl();
   }
+  if (bp->log_on_hit)
+  {
+    NOTICE_LOG_FMT(MEMMAP,
+                   "BP {:08x} {}({:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} {:08x} "
+                   "{:08x}) LR={:08x}",
+                   PC, g_symbolDB.GetDescription(PC), GPR(3), GPR(4), GPR(5), GPR(6), GPR(7),
+                   GPR(8), GPR(9), GPR(10), GPR(11), GPR(12), LR);
+  }
+  if (PowerPC::breakpoints.IsTempBreakPoint(PC))
+    PowerPC::breakpoints.Remove(PC);
 }
 
 void PowerPCState::SetSR(u32 index, u32 value)
 {
-  DEBUG_LOG(POWERPC, "%08x: MMU: Segment register %i set to %08x", pc, index, value);
+  DEBUG_LOG_FMT(POWERPC, "{:08x}: MMU: Segment register {} set to {:08x}", pc, index, value);
   sr[index] = value;
 }
 
 // FPSCR update functions
 
-void UpdateFPRF(double dvalue)
+void UpdateFPRFDouble(double dvalue)
 {
   FPSCR.FPRF = Common::ClassifyDouble(dvalue);
+}
+
+void UpdateFPRFSingle(float fvalue)
+{
+  FPSCR.FPRF = Common::ClassifyFloat(fvalue);
+}
+
+void RoundingModeUpdated()
+{
+  // The rounding mode is separate for each thread, so this must run on the CPU thread
+  ASSERT(Core::IsCPUThread());
+
+  FPURoundMode::SetSIMDMode(FPSCR.RN, FPSCR.NI);
 }
 
 }  // namespace PowerPC

@@ -1,23 +1,22 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 package org.dolphinemu.dolphinemu.adapters;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-
-import androidx.appcompat.app.AlertDialog;
-import androidx.leanback.widget.ImageCardView;
-import androidx.leanback.widget.Presenter;
-import androidx.fragment.app.FragmentActivity;
-import androidx.core.content.ContextCompat;
-
 import android.view.ViewGroup;
 import android.widget.ImageView;
+
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.FragmentActivity;
+import androidx.leanback.widget.ImageCardView;
+import androidx.leanback.widget.Presenter;
 
 import org.dolphinemu.dolphinemu.R;
 import org.dolphinemu.dolphinemu.dialogs.GamePropertiesDialog;
 import org.dolphinemu.dolphinemu.model.GameFile;
-import org.dolphinemu.dolphinemu.services.GameFileCacheService;
-import org.dolphinemu.dolphinemu.ui.platform.Platform;
-import org.dolphinemu.dolphinemu.utils.PicassoUtils;
+import org.dolphinemu.dolphinemu.services.GameFileCacheManager;
+import org.dolphinemu.dolphinemu.utils.GlideUtils;
 import org.dolphinemu.dolphinemu.viewholders.TvGameViewHolder;
 
 /**
@@ -51,15 +50,14 @@ public final class GameRowPresenter extends Presenter
     GameFile gameFile = (GameFile) item;
 
     holder.imageScreenshot.setImageDrawable(null);
-    PicassoUtils.loadGameCover(holder.imageScreenshot, gameFile);
+    GlideUtils.loadGameCover(null, holder.imageScreenshot, gameFile, null);
 
     holder.cardParent.setTitleText(gameFile.getTitle());
 
-    if (GameFileCacheService.findSecondDisc(gameFile) != null)
+    if (GameFileCacheManager.findSecondDisc(gameFile) != null)
     {
-      holder.cardParent
-              .setContentText(
-                      context.getString(R.string.disc_number, gameFile.getDiscNumber() + 1));
+      holder.cardParent.setContentText(
+              context.getString(R.string.disc_number, gameFile.getDiscNumber() + 1));
     }
     else
     {
@@ -68,43 +66,14 @@ public final class GameRowPresenter extends Presenter
 
     holder.gameFile = gameFile;
 
-    // Set the platform-dependent background color of the card
-    int backgroundId;
-    switch (Platform.fromNativeInt(gameFile.getPlatform()))
-    {
-      case GAMECUBE:
-        backgroundId = R.drawable.tv_card_background_gamecube;
-        break;
-      case WII:
-        backgroundId = R.drawable.tv_card_background_wii;
-        break;
-      case WIIWARE:
-        backgroundId = R.drawable.tv_card_background_wiiware;
-        break;
-      default:
-        throw new AssertionError("Not reachable.");
-    }
-    Drawable background = ContextCompat.getDrawable(context, backgroundId);
+    // Set the background color of the card
+    Drawable background = ContextCompat.getDrawable(context, R.drawable.tv_card_background);
     holder.cardParent.setInfoAreaBackground(background);
     holder.cardParent.setOnLongClickListener((view) ->
     {
       FragmentActivity activity = (FragmentActivity) view.getContext();
-      String gameId = gameFile.getGameId();
-
-      if (gameId.isEmpty())
-      {
-        AlertDialog.Builder builder = new AlertDialog.Builder(activity, R.style.DolphinDialogBase);
-        builder.setTitle("Game Settings");
-        builder.setMessage("Files without game IDs don't support game-specific settings.");
-
-        builder.show();
-        return true;
-      }
-
-      GamePropertiesDialog fragment =
-              GamePropertiesDialog.newInstance(holder.gameFile.getPath(), gameId,
-                      holder.gameFile.getPlatform());
-      ((FragmentActivity) view.getContext()).getSupportFragmentManager().beginTransaction()
+      GamePropertiesDialog fragment = GamePropertiesDialog.newInstance(holder.gameFile);
+      activity.getSupportFragmentManager().beginTransaction()
               .add(fragment, GamePropertiesDialog.TAG).commit();
 
       return true;

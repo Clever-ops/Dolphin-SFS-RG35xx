@@ -1,6 +1,5 @@
 // Copyright 2017 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
 
@@ -27,6 +26,7 @@ public:
   {
     Shutdown();
     m_shutdown.Clear();
+    m_cancelled.Clear();
     m_function = std::move(function);
     m_thread = std::thread(&WorkQueueThread::ThreadLoop, this);
   }
@@ -34,6 +34,7 @@ public:
   template <typename... Args>
   void EmplaceItem(Args&&... args)
   {
+    if (!m_cancelled.IsSet())
     {
       std::lock_guard lg(m_lock);
       m_items.emplace(std::forward<Args>(args)...);
@@ -41,7 +42,24 @@ public:
     m_wakeup.Set();
   }
 
-private:
+  void Clear()
+  {
+    {
+      std::lock_guard lg(m_lock);
+      m_items = std::queue<T>();
+    }
+    m_wakeup.Set();
+  }
+
+  void Cancel()
+  {
+    m_cancelled.Set();
+    Clear();
+    Shutdown();
+  }
+
+  bool IsCancelled() const { return m_cancelled.IsSet(); }
+
   void Shutdown()
   {
     if (m_thread.joinable())
@@ -52,6 +70,7 @@ private:
     }
   }
 
+private:
   void ThreadLoop()
   {
     Common::SetCurrentThreadName("WorkQueueThread");
@@ -81,6 +100,7 @@ private:
   std::thread m_thread;
   Common::Event m_wakeup;
   Common::Flag m_shutdown;
+  Common::Flag m_cancelled;
   std::mutex m_lock;
   std::queue<T> m_items;
 };

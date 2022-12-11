@@ -11,6 +11,8 @@ add_library(discio
   DiscExtractor.h
   DiscScrubber.cpp
   DiscScrubber.h
+  DiscUtils.cpp
+  DiscUtils.h
   DriveBlob.cpp
   DriveBlob.h
   Enums.cpp
@@ -21,11 +23,19 @@ add_library(discio
   FileSystemGCWii.h
   Filesystem.cpp
   Filesystem.h
+  GameModDescriptor.cpp
+  GameModDescriptor.h
   LaggedFibonacciGenerator.cpp
   LaggedFibonacciGenerator.h
   MultithreadedCompressor.h
   NANDImporter.cpp
   NANDImporter.h
+  NFSBlob.cpp
+  NFSBlob.h
+  RiivolutionParser.cpp
+  RiivolutionParser.h
+  RiivolutionPatcher.cpp
+  RiivolutionPatcher.h
   ScrubbedBlob.cpp
   ScrubbedBlob.h
   TGCBlob.cpp
@@ -58,12 +68,19 @@ add_library(discio
 
 target_link_libraries(discio
 PUBLIC
+  core
   BZip2::BZip2
-  LibLZMA::LibLZMA
+  lzma
   zstd
 
 PRIVATE
-  minizip
+  fmt::fmt
+  minizip-ng
   pugixml
   ZLIB::ZLIB
 )
+
+if(MSVC)
+  # Add precompiled header
+  target_link_libraries(discio PRIVATE use_pch)
+endif()

@@ -1,10 +1,12 @@
 // Copyright 2008 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
 
 #include <array>
+#include <vector>
+
+#include "VideoCommon/BPFunctions.h"
 
 struct Statistics
 {
@@ -22,6 +24,16 @@ struct Statistics
   std::array<float, 6> proj;
   std::array<float, 16> gproj;
   std::array<float, 16> g2proj;
+
+  std::vector<BPFunctions::ScissorResult> scissors;
+  size_t current_scissor = 0;  // 0 => all, otherwise index + 1
+  int scissor_scale = 10;
+  int scissor_expected_count = 0;
+  bool allow_duplicate_scissors = false;
+  bool show_scissors = true;
+  bool show_raw_scissors = true;
+  bool show_viewports = false;
+  bool show_text = true;
 
   struct ThisFrame
   {
@@ -59,12 +71,18 @@ struct Statistics
 
     int num_efb_peeks;
     int num_efb_pokes;
+
+    int num_draw_done;
+    int num_token;
+    int num_token_int;
   };
   ThisFrame this_frame;
   void ResetFrame();
   void SwapDL();
+  void AddScissorRect();
   void Display() const;
   void DisplayProj() const;
+  void DisplayScissor();
 };
 
 extern Statistics g_stats;
@@ -72,11 +90,32 @@ extern Statistics g_stats;
 #define STATISTICS
 
 #ifdef STATISTICS
-#define INCSTAT(a) (a)++;
-#define ADDSTAT(a, b) (a) += (b);
-#define SETSTAT(a, x) (a) = (int)(x);
+#define INCSTAT(a)                                                                                 \
+  do                                                                                               \
+  {                                                                                                \
+    (a)++;                                                                                         \
+  } while (false)
+#define ADDSTAT(a, b)                                                                              \
+  do                                                                                               \
+  {                                                                                                \
+    (a) += (b);                                                                                    \
+  } while (false)
+#define SETSTAT(a, x)                                                                              \
+  do                                                                                               \
+  {                                                                                                \
+    (a) = static_cast<int>(x);                                                                     \
+  } while (false)
 #else
-#define INCSTAT(a) ;
-#define ADDSTAT(a, b) ;
-#define SETSTAT(a, x) ;
+#define INCSTAT(a)                                                                                 \
+  do                                                                                               \
+  {                                                                                                \
+  } while (false)
+#define ADDSTAT(a, b)                                                                              \
+  do                                                                                               \
+  {                                                                                                \
+  } while (false)
+#define SETSTAT(a, x)                                                                              \
+  do                                                                                               \
+  {                                                                                                \
+  } while (false)
 #endif

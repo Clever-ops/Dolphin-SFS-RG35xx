@@ -1,20 +1,23 @@
 // Copyright 2008 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "Core/Debugger/PPCDebugInterface.h"
 
+#include <algorithm>
 #include <array>
 #include <cstddef>
+#include <regex>
 #include <string>
+#include <vector>
 
 #include <fmt/format.h>
 
 #include "Common/Align.h"
-#include "Common/Debug/OSThread.h"
 #include "Common/GekkoDisassembler.h"
 
+#include "Core/Config/MainSettings.h"
 #include "Core/Core.h"
+#include "Core/Debugger/OSThread.h"
 #include "Core/HW/DSP.h"
 #include "Core/PowerPC/MMU.h"
 #include "Core/PowerPC/PPCSymbolDB.h"
@@ -176,14 +179,18 @@ Common::Debug::Threads PPCDebugInterface::GetThreads() const
   if (!PowerPC::HostIsRAMAddress(active_queue_head))
     return threads;
 
-  auto active_thread = std::make_unique<Common::Debug::OSThreadView>(active_queue_head);
+  auto active_thread = std::make_unique<Core::Debug::OSThreadView>(active_queue_head);
   if (!active_thread->IsValid())
     return threads;
 
-  const auto insert_threads = [&threads](u32 addr, auto get_next_addr) {
+  std::vector<u32> visited_addrs{active_thread->GetAddress()};
+  const auto insert_threads = [&threads, &visited_addrs](u32 addr, auto get_next_addr) {
     while (addr != 0 && PowerPC::HostIsRAMAddress(addr))
     {
-      auto thread = std::make_unique<Common::Debug::OSThreadView>(addr);
+      if (std::find(visited_addrs.begin(), visited_addrs.end(), addr) != visited_addrs.end())
+        break;
+      visited_addrs.push_back(addr);
+      auto thread = std::make_unique<Core::Debug::OSThreadView>(addr);
       if (!thread->IsValid())
         break;
       addr = get_next_addr(*thread);
@@ -328,7 +335,7 @@ void PPCDebugInterface::ToggleMemCheck(u32 address, bool read, bool write, bool 
     MemCheck.log_on_hit = log;
     MemCheck.break_on_hit = true;
 
-    PowerPC::memchecks.Add(MemCheck);
+    PowerPC::memchecks.Add(std::move(MemCheck));
   }
   else
   {
@@ -369,6 +376,55 @@ std::string PPCDebugInterface::GetDescription(u32 address) const
   return g_symbolDB.GetDescription(address);
 }
 
+std::optional<u32>
+PPCDebugInterface::GetMemoryAddressFromInstruction(const std::string& instruction) const
+{
+  std::regex re(",[^r0-]*(-?)(0[xX]?[0-9a-fA-F]*|r\\d+)[^r^s]*.(p|toc|\\d+)");
+  std::smatch match;
+
+  // Instructions should be identified as a load or store before using this function. This error
+  // check should never trigger.
+  if (!std::regex_search(instruction, match, re))
+    return std::nullopt;
+
+  // Output: match.str(1): negative sign for offset or no match. match.str(2): 0xNNNN, 0, or
+  // rNN. Check next for 'r' to see if a gpr needs to be loaded. match.str(3): will either be p,
+  // toc, or NN. Always a gpr.
+  const std::string offset_match = match.str(2);
+  const std::string register_match = match.str(3);
+  constexpr char is_reg = 'r';
+  u32 offset = 0;
+
+  if (is_reg == offset_match[0])
+  {
+    const int register_index = std::stoi(offset_match.substr(1), nullptr, 10);
+    offset = (register_index == 0 ? 0 : GPR(register_index));
+  }
+  else
+  {
+    offset = static_cast<u32>(std::stoi(offset_match, nullptr, 16));
+  }
+
+  // sp and rtoc need to be converted to 1 and 2.
+  constexpr char is_sp = 'p';
+  constexpr char is_rtoc = 't';
+  u32 i = 0;
+
+  if (is_sp == register_match[0])
+    i = 1;
+  else if (is_rtoc == register_match[0])
+    i = 2;
+  else
+    i = std::stoi(register_match, nullptr, 10);
+
+  const u32 base_address = GPR(i);
+
+  if (!match.str(1).empty())
+    return base_address - offset;
+
+  return base_address + offset;
+}
+
 u32 PPCDebugInterface::GetPC() const
 {
   return PowerPC::ppcState.pc;
@@ -383,10 +439,42 @@ void PPCDebugInterface::RunToBreakpoint()
 {
 }
 
+std::shared_ptr<Core::NetworkCaptureLogger> PPCDebugInterface::NetworkLogger()
+{
+  const bool has_ssl = Config::Get(Config::MAIN_NETWORK_SSL_DUMP_READ) ||
+                       Config::Get(Config::MAIN_NETWORK_SSL_DUMP_WRITE);
+  const bool is_pcap = Config::Get(Config::MAIN_NETWORK_DUMP_AS_PCAP);
+  const auto current_capture_type = [&] {
+    if (is_pcap)
+      return Core::NetworkCaptureType::PCAP;
+    if (has_ssl)
+      return Core::NetworkCaptureType::Raw;
+    return Core::NetworkCaptureType::None;
+  }();
+
+  if (m_network_logger && m_network_logger->GetCaptureType() == current_capture_type)
+    return m_network_logger;
+
+  switch (current_capture_type)
+  {
+  case Core::NetworkCaptureType::PCAP:
+    m_network_logger = std::make_shared<Core::PCAPSSLCaptureLogger>();
+    break;
+  case Core::NetworkCaptureType::Raw:
+    m_network_logger = std::make_shared<Core::BinarySSLCaptureLogger>();
+    break;
+  case Core::NetworkCaptureType::None:
+    m_network_logger = std::make_shared<Core::DummyNetworkCaptureLogger>();
+    break;
+  }
+  return m_network_logger;
+}
+
 void PPCDebugInterface::Clear()
 {
   ClearAllBreakpoints();
   ClearAllMemChecks();
   ClearPatches();
   ClearWatches();
+  m_network_logger.reset();
 }

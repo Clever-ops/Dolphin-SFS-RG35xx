@@ -1,10 +1,10 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 package org.dolphinemu.dolphinemu.features.settings.ui;
 
-import android.content.IntentFilter;
 import android.os.Bundle;
 
 import org.dolphinemu.dolphinemu.features.settings.model.Settings;
-import org.dolphinemu.dolphinemu.utils.DirectoryStateReceiver;
 
 /**
  * Abstraction for the Activity that manages SettingsFragments.
@@ -55,10 +55,17 @@ public interface SettingsActivityView
   /**
    * Called by a containing Fragment to tell the Activity that a setting was changed;
    * unless this has been called, the Activity will not save to disk.
-   *
-   * @param key Key of the modified setting.
    */
-  void onSettingChanged(String key);
+  void onSettingChanged();
+
+  /**
+   * Called by a containing Fragment to tell the containing Activity that the Serial Port 1 setting
+   * was modified.
+   *
+   * @param menuTag Identifier for the SerialPort that was modified.
+   * @param value   New setting for the SerialPort.
+   */
+  void onSerialPort1SettingChanged(MenuTag menuTag, int value);
 
   /**
    * Called by a containing Fragment to tell the containing Activity that a GCPad's setting
@@ -93,19 +100,9 @@ public interface SettingsActivityView
   void showLoading();
 
   /**
-   * Hide the loading the dialog
+   * Hide the loading dialog
    */
   void hideLoading();
-
-  /**
-   * Show a hint to the user that the app needs write to external storage access
-   */
-  void showPermissionNeededHint();
-
-  /**
-   * Show a hint to the user that the app needs the external storage to be mounted
-   */
-  void showExternalStorageNotMountedHint();
 
   /**
    * Tell the user that there is junk in the game INI and ask if they want to delete the whole file.
@@ -113,17 +110,7 @@ public interface SettingsActivityView
   void showGameIniJunkDeletionQuestion();
 
   /**
-   * Start the DirectoryInitialization and listen for the result.
-   *
-   * @param receiver the broadcast receiver for the DirectoryInitialization
-   * @param filter   the Intent broadcasts to be received.
+   * Accesses the material toolbar layout and changes the title
    */
-  void startDirectoryInitializationService(DirectoryStateReceiver receiver, IntentFilter filter);
-
-  /**
-   * Stop listening to the DirectoryInitialization.
-   *
-   * @param receiver The broadcast receiver to unregister.
-   */
-  void stopListeningToDirectoryInitializationService(DirectoryStateReceiver receiver);
+  void setToolbarTitle(String title);
 }

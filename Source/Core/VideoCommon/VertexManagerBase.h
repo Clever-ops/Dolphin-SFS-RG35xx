@@ -1,12 +1,12 @@
 // Copyright 2010 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
 
 #include <memory>
 #include <vector>
 
+#include "Common/BitSet.h"
 #include "Common/CommonTypes.h"
 #include "Common/MathUtil.h"
 #include "VideoCommon/IndexGenerator.h"
@@ -34,6 +34,11 @@ enum TexelBufferFormat : u32
   TEXEL_BUFFER_FORMAT_RGBA8_UINT,
   TEXEL_BUFFER_FORMAT_R32G32_UINT,
   NUM_TEXEL_BUFFER_FORMATS
+};
+
+namespace OpcodeDecoder
+{
+enum class Primitive : u8;
 };
 
 class VertexManagerBase
@@ -85,7 +90,7 @@ public:
   // Texel buffer will fit the maximum size of an encoded GX texture. 1024x1024, RGBA8 = 4MB.
   static constexpr u32 VERTEX_STREAM_BUFFER_SIZE = 48 * 1024 * 1024;
   static constexpr u32 INDEX_STREAM_BUFFER_SIZE = 8 * 1024 * 1024;
-  static constexpr u32 UNIFORM_STREAM_BUFFER_SIZE = 32 * 1024 * 1024;
+  static constexpr u32 UNIFORM_STREAM_BUFFER_SIZE = 64 * 1024 * 1024;
   static constexpr u32 TEXEL_STREAM_BUFFER_SIZE = 16 * 1024 * 1024;
 
   VertexManagerBase();
@@ -94,8 +99,9 @@ public:
   virtual bool Initialize();
 
   PrimitiveType GetCurrentPrimitiveType() const { return m_current_primitive_type; }
-  void AddIndices(int primitive, u32 num_vertices);
-  DataReader PrepareForAdditionalData(int primitive, u32 count, u32 stride, bool cullall);
+  void AddIndices(OpcodeDecoder::Primitive primitive, u32 num_vertices);
+  virtual DataReader PrepareForAdditionalData(OpcodeDecoder::Primitive primitive, u32 count,
+                                              u32 stride, bool cullall);
   void FlushData(u32 count, u32 stride);
 
   void Flush();
@@ -134,6 +140,9 @@ public:
                                  u32* out_offset, const void* palette_data, u32 palette_size,
                                  TexelBufferFormat palette_format, u32* out_palette_offset);
 
+  // Call if active config changes
+  void OnConfigChange();
+
   // CPU access tracking - call after a draw call is made.
   void OnDraw();
 
@@ -164,10 +173,12 @@ protected:
   virtual void DrawCurrentBatch(u32 base_index, u32 num_indices, u32 base_vertex);
 
   u32 GetRemainingSize() const;
-  u32 GetRemainingIndices(int primitive) const;
+  u32 GetRemainingIndices(OpcodeDecoder::Primitive primitive) const;
 
   void CalculateZSlope(NativeVertexFormat* format);
-  void LoadTextures();
+  void CalculateBinormals(NativeVertexFormat* format);
+
+  BitSet32 UsedTextures() const;
 
   u8* m_cur_buffer_pointer = nullptr;
   u8* m_base_buffer_pointer = nullptr;
@@ -204,6 +215,7 @@ private:
   // CPU access tracking
   u32 m_draw_counter = 0;
   u32 m_last_efb_copy_draw_counter = 0;
+  bool m_unflushed_efb_copy = false;
   std::vector<u32> m_cpu_accesses_this_frame;
   std::vector<u32> m_scheduled_command_buffer_kicks;
   bool m_allow_background_execution = true;

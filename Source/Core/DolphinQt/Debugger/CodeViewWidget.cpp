@@ -1,11 +1,12 @@
 // Copyright 2018 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "DolphinQt/Debugger/CodeViewWidget.h"
 
 #include <algorithm>
 #include <cmath>
+
+#include <fmt/format.h>
 
 #include <QApplication>
 #include <QClipboard>
@@ -13,6 +14,7 @@
 #include <QInputDialog>
 #include <QKeyEvent>
 #include <QMenu>
+#include <QMessageBox>
 #include <QMouseEvent>
 #include <QPainter>
 #include <QResizeEvent>
@@ -21,6 +23,8 @@
 #include <QTableWidgetItem>
 #include <QWheelEvent>
 
+#include "Common/Assert.h"
+#include "Common/Debug/CodeTrace.h"
 #include "Common/GekkoDisassembler.h"
 #include "Common/StringUtil.h"
 #include "Core/Core.h"
@@ -36,10 +40,10 @@
 
 struct CodeViewBranch
 {
-  u32 src_addr;
-  u32 dst_addr;
+  u32 src_addr = 0;
+  u32 dst_addr = 0;
   u32 indentation = 0;
-  bool is_link;
+  bool is_link = false;
 };
 
 constexpr u32 WIDTH_PER_BRANCH_ARROW = 16;
@@ -235,6 +239,15 @@ static bool IsBranchInstructionWithLink(std::string_view ins)
          StringEndsWith(ins, "la+") || StringEndsWith(ins, "l-") || StringEndsWith(ins, "la-");
 }
 
+static bool IsInstructionLoadStore(std::string_view ins)
+{
+  // Could add check for context address being near PC, because we need gprs to be correct for the
+  // load/store.
+  return (StringBeginsWith(ins, "l") && !StringBeginsWith(ins, "li")) ||
+         StringBeginsWith(ins, "st") || StringBeginsWith(ins, "psq_l") ||
+         StringBeginsWith(ins, "psq_s");
+}
+
 void CodeViewWidget::Update()
 {
   if (!isVisible())
@@ -338,9 +351,19 @@ void CodeViewWidget::Update()
 
     if (PowerPC::debug_interface.IsBreakpoint(addr))
     {
-      bp_item->setData(
-          Qt::DecorationRole,
-          Resources::GetScaledThemeIcon("debugger_breakpoint").pixmap(QSize(rowh - 2, rowh - 2)));
+      auto icon =
+          Resources::GetScaledThemeIcon("debugger_breakpoint").pixmap(QSize(rowh - 2, rowh - 2));
+      if (!PowerPC::breakpoints.IsBreakPointEnable(addr))
+      {
+        QPixmap disabled_icon(icon.size());
+        disabled_icon.fill(Qt::transparent);
+        QPainter p(&disabled_icon);
+        p.setOpacity(0.20);
+        p.drawPixmap(0, 0, icon);
+        p.end();
+        icon = disabled_icon;
+      }
+      bp_item->setData(Qt::DecorationRole, icon);
     }
 
     setItem(i, CODE_VIEW_COLUMN_BREAKPOINT, bp_item);
@@ -366,7 +389,7 @@ void CodeViewWidget::Update()
 
 void CodeViewWidget::CalculateBranchIndentation()
 {
-  const size_t rows = rowCount();
+  const u32 rows = rowCount();
   const size_t columns = m_branches.size();
   if (rows < 1 || columns < 1)
     return;
@@ -384,26 +407,27 @@ void CodeViewWidget::CalculateBranchIndentation()
   // build a 2D lookup table representing the columns and rows the arrow could be drawn in
   // and try to place all branch arrows in it as far left as possible
   std::vector<bool> arrow_space_used(columns * rows, false);
-  const auto index = [&](u32 column, u32 row) { return column * rows + row; };
-  const u32 first_visible_addr = AddressForRow(0);
-  const u32 last_visible_addr = AddressForRow(static_cast<int>(rows - 1));
-  for (CodeViewBranch& branch : m_branches)
-  {
+  const auto index = [&](u32 column, u32 row) {
+    ASSERT(row <= rows);
+    ASSERT(column <= columns);
+    return column * rows + row;
+  };
+
+  const auto add_branch_arrow = [&](CodeViewBranch& branch, u32 first_addr, u32 first_row,
+                                    u32 last_addr) {
     const u32 arrow_src_addr = branch.src_addr;
     const u32 arrow_dst_addr = branch.is_link ? branch.src_addr : branch.dst_addr;
-    const u32 arrow_addr_lower = std::min(arrow_src_addr, arrow_dst_addr);
-    const u32 arrow_addr_higher = std::max(arrow_src_addr, arrow_dst_addr);
-    const bool is_visible =
-        last_visible_addr >= arrow_addr_lower || first_visible_addr <= arrow_addr_higher;
-    if (!is_visible)
-      continue;
+    const auto [arrow_addr_lower, arrow_addr_higher] = std::minmax(arrow_src_addr, arrow_dst_addr);
 
-    const u32 arrow_first_visible_addr =
-        std::clamp(arrow_addr_lower, first_visible_addr, last_visible_addr);
-    const u32 arrow_last_visible_addr =
-        std::clamp(arrow_addr_higher, first_visible_addr, last_visible_addr);
-    const u32 arrow_first_visible_row = (arrow_first_visible_addr - first_visible_addr) / 4;
-    const u32 arrow_last_visible_row = (arrow_last_visible_addr - first_visible_addr) / 4;
+    const bool is_visible =
+        std::max(arrow_addr_lower, first_addr) <= std::min(arrow_addr_higher, last_addr);
+    if (!is_visible)
+      return;
+
+    const u32 arrow_first_visible_addr = std::clamp(arrow_addr_lower, first_addr, last_addr);
+    const u32 arrow_last_visible_addr = std::clamp(arrow_addr_higher, first_addr, last_addr);
+    const u32 arrow_first_visible_row = (arrow_first_visible_addr - first_addr) / 4 + first_row;
+    const u32 arrow_last_visible_row = (arrow_last_visible_addr - first_addr) / 4 + first_row;
 
     const auto free_column = [&]() -> std::optional<u32> {
       for (u32 column = 0; column < columns; ++column)
@@ -423,11 +447,43 @@ void CodeViewWidget::CalculateBranchIndentation()
     }();
 
     if (!free_column)
-      continue;
+      return;
 
     branch.indentation = *free_column;
     for (u32 row = arrow_first_visible_row; row <= arrow_last_visible_row; ++row)
       arrow_space_used[index(*free_column, row)] = true;
+  };
+
+  const u32 first_visible_addr = AddressForRow(0);
+  const u32 last_visible_addr = AddressForRow(rows - 1);
+
+  if (first_visible_addr <= last_visible_addr)
+  {
+    for (CodeViewBranch& branch : m_branches)
+      add_branch_arrow(branch, first_visible_addr, 0, last_visible_addr);
+  }
+  else
+  {
+    // Scrolling defaults to being centered around address 00000000, which means addresses before
+    // the start are visible (e.g. ffffffa8 - 00000050).  We need to do this in two parts, one for
+    // first_visible_addr to fffffffc, and the second for 00000000 to last_visible_addr.
+    // That means we need to find the row corresponding to 00000000.
+    int addr_zero_row = -1;
+    for (u32 row = 0; row < rows; row++)
+    {
+      if (AddressForRow(row) == 0)
+      {
+        addr_zero_row = row;
+        break;
+      }
+    }
+    ASSERT(addr_zero_row != -1);
+
+    for (CodeViewBranch& branch : m_branches)
+    {
+      add_branch_arrow(branch, first_visible_addr, 0, 0xfffffffc);
+      add_branch_arrow(branch, 0x00000000, addr_zero_row, last_visible_addr);
+    }
   }
 }
 
@@ -442,13 +498,23 @@ void CodeViewWidget::SetAddress(u32 address, SetAddressUpdate update)
     return;
 
   m_address = address;
-  if (update == SetAddressUpdate::WithUpdate)
+  switch (update)
+  {
+  case SetAddressUpdate::WithoutUpdate:
+    return;
+  case SetAddressUpdate::WithUpdate:
+    // Update the CodeViewWidget
     Update();
+    break;
+  case SetAddressUpdate::WithDetailedUpdate:
+    // Update the CodeWidget's views (code view, function calls/callers, ...)
+    emit UpdateCodeWidget();
+    break;
+  }
 }
 
 void CodeViewWidget::ReplaceAddress(u32 address, ReplaceWith replace)
 {
-  PowerPC::debug_interface.UnsetPatch(address);
   PowerPC::debug_interface.SetPatch(address, replace == ReplaceWith::BLR ? 0x4e800020 : 0x60000000);
   Update();
 }
@@ -476,7 +542,10 @@ void CodeViewWidget::OnContextMenu()
   auto* copy_hex_action = menu->addAction(tr("Copy &hex"), this, &CodeViewWidget::OnCopyHex);
 
   menu->addAction(tr("Show in &memory"), this, &CodeViewWidget::OnShowInMemory);
-
+  auto* show_target_memory =
+      menu->addAction(tr("Show target in memor&y"), this, &CodeViewWidget::OnShowTargetInMemory);
+  auto* copy_target_memory =
+      menu->addAction(tr("Copy tar&get address"), this, &CodeViewWidget::OnCopyTargetAddress);
   menu->addSeparator();
 
   auto* symbol_rename_action =
@@ -498,6 +567,26 @@ void CodeViewWidget::OnContextMenu()
   auto* restore_action =
       menu->addAction(tr("Restore instruction"), this, &CodeViewWidget::OnRestoreInstruction);
 
+  QString target;
+  if (addr == PC && running && Core::GetState() == Core::State::Paused)
+  {
+    const std::string line = PowerPC::debug_interface.Disassemble(PC);
+    const auto target_it = std::find(line.begin(), line.end(), '\t');
+    const auto target_end = std::find(target_it, line.end(), ',');
+
+    if (target_it != line.end() && target_end != line.end())
+      target = QString::fromStdString(std::string{target_it + 1, target_end});
+  }
+
+  auto* run_until_menu = menu->addMenu(tr("Run until (ignoring breakpoints)"));
+  run_until_menu->addAction(tr("%1's value is hit").arg(target), this,
+                            [this] { AutoStep(CodeTrace::AutoStop::Always); });
+  run_until_menu->addAction(tr("%1's value is used").arg(target), this,
+                            [this] { AutoStep(CodeTrace::AutoStop::Used); });
+  run_until_menu->addAction(tr("%1's value is changed").arg(target),
+                            [this] { AutoStep(CodeTrace::AutoStop::Changed); });
+
+  run_until_menu->setEnabled(!target.isEmpty());
   follow_branch_action->setEnabled(running && GetBranchFromAddress(addr));
 
   for (auto* action : {copy_address_action, copy_line_action, copy_hex_action, function_action,
@@ -507,10 +596,97 @@ void CodeViewWidget::OnContextMenu()
   for (auto* action : {symbol_rename_action, symbol_size_action, symbol_end_action})
     action->setEnabled(has_symbol);
 
+  const bool valid_load_store = Core::GetState() == Core::State::Paused &&
+                                IsInstructionLoadStore(PowerPC::debug_interface.Disassemble(addr));
+
+  for (auto* action : {copy_target_memory, show_target_memory})
+  {
+    action->setEnabled(valid_load_store);
+  }
+
   restore_action->setEnabled(running && PowerPC::debug_interface.HasEnabledPatch(addr));
 
   menu->exec(QCursor::pos());
   Update();
+}
+
+void CodeViewWidget::AutoStep(CodeTrace::AutoStop option)
+{
+  // Autosteps and follows value in the target (left-most) register. The Used and Changed options
+  // silently follows target through reshuffles in memory and registers and stops on use or update.
+
+  CodeTrace code_trace;
+  bool repeat = false;
+
+  QMessageBox msgbox(QMessageBox::NoIcon, tr("Run until"), {}, QMessageBox::Cancel);
+  QPushButton* run_button = msgbox.addButton(tr("Keep Running"), QMessageBox::AcceptRole);
+  // Not sure if we want default to be cancel. Spacebar can let you quickly continue autostepping if
+  // Yes.
+
+  do
+  {
+    // Run autostep then update codeview
+    const AutoStepResults results = code_trace.AutoStepping(repeat, option);
+    emit Host::GetInstance()->UpdateDisasmDialog();
+    repeat = true;
+
+    // Invalid instruction, 0 means no step executed.
+    if (results.count == 0)
+      return;
+
+    // Status report
+    if (results.reg_tracked.empty() && results.mem_tracked.empty())
+    {
+      QMessageBox::warning(
+          this, tr("Overwritten"),
+          tr("Target value was overwritten by current instruction.\nInstructions executed:   %1")
+              .arg(QString::number(results.count)),
+          QMessageBox::Cancel);
+      return;
+    }
+    else if (results.timed_out)
+    {
+      // Can keep running and try again after a time out.
+      msgbox.setText(
+          tr("<font color='#ff0000'>AutoStepping timed out. Current instruction is irrelevant."));
+    }
+    else
+    {
+      msgbox.setText(tr("Value tracked to current instruction."));
+    }
+
+    // Mem_tracked needs to track each byte individually, so a tracked word-sized value would have
+    // four entries. The displayed memory list needs to be shortened so it's not a huge list of
+    // bytes. Assumes adjacent bytes represent a word or half-word and removes the redundant bytes.
+    std::set<u32> mem_out;
+    auto iter = results.mem_tracked.begin();
+
+    while (iter != results.mem_tracked.end())
+    {
+      const u32 address = *iter;
+      mem_out.insert(address);
+
+      for (u32 i = 1; i <= 3; i++)
+      {
+        if (results.mem_tracked.count(address + i))
+          iter++;
+        else
+          break;
+      }
+
+      iter++;
+    }
+
+    const QString msgtext =
+        tr("Instructions executed:   %1\nValue contained in:\nRegisters:   %2\nMemory:   %3")
+            .arg(QString::number(results.count))
+            .arg(QString::fromStdString(fmt::format("{}", fmt::join(results.reg_tracked, ", "))))
+            .arg(QString::fromStdString(fmt::format("{:#x}", fmt::join(mem_out, ", "))));
+
+    msgbox.setInformativeText(msgtext);
+    msgbox.exec();
+
+  } while (msgbox.clickedButton() == (QAbstractButton*)run_button);
 }
 
 void CodeViewWidget::OnCopyAddress()
@@ -520,9 +696,43 @@ void CodeViewWidget::OnCopyAddress()
   QApplication::clipboard()->setText(QStringLiteral("%1").arg(addr, 8, 16, QLatin1Char('0')));
 }
 
+void CodeViewWidget::OnCopyTargetAddress()
+{
+  if (Core::GetState() != Core::State::Paused)
+    return;
+
+  const std::string code_line = PowerPC::debug_interface.Disassemble(GetContextAddress());
+
+  if (!IsInstructionLoadStore(code_line))
+    return;
+
+  const std::optional<u32> addr =
+      PowerPC::debug_interface.GetMemoryAddressFromInstruction(code_line);
+
+  if (addr)
+    QApplication::clipboard()->setText(QStringLiteral("%1").arg(*addr, 8, 16, QLatin1Char('0')));
+}
+
 void CodeViewWidget::OnShowInMemory()
 {
   emit ShowMemory(GetContextAddress());
+}
+
+void CodeViewWidget::OnShowTargetInMemory()
+{
+  if (Core::GetState() != Core::State::Paused)
+    return;
+
+  const std::string code_line = PowerPC::debug_interface.Disassemble(GetContextAddress());
+
+  if (!IsInstructionLoadStore(code_line))
+    return;
+
+  const std::optional<u32> addr =
+      PowerPC::debug_interface.GetMemoryAddressFromInstruction(code_line);
+
+  if (addr)
+    emit ShowMemory(*addr);
 }
 
 void CodeViewWidget::OnCopyCode()
@@ -548,7 +758,7 @@ void CodeViewWidget::OnCopyFunction()
   for (u32 addr = start; addr != end; addr += 4)
   {
     const std::string disasm = PowerPC::debug_interface.Disassemble(addr);
-    text += StringFromFormat("%08x: ", addr) + disasm + "\r\n";
+    fmt::format_to(std::back_inserter(text), "{:08x}: {}\r\n", addr, disasm);
   }
 
   QApplication::clipboard()->setText(QString::fromStdString(text));
@@ -611,22 +821,22 @@ void CodeViewWidget::OnFollowBranch()
   if (!branch_addr)
     return;
 
-  SetAddress(branch_addr, SetAddressUpdate::WithUpdate);
+  SetAddress(branch_addr, SetAddressUpdate::WithDetailedUpdate);
 }
 
 void CodeViewWidget::OnRenameSymbol()
 {
   const u32 addr = GetContextAddress();
 
-  Common::Symbol* symbol = g_symbolDB.GetSymbolFromAddr(addr);
+  Common::Symbol* const symbol = g_symbolDB.GetSymbolFromAddr(addr);
 
   if (!symbol)
     return;
 
   bool good;
-  QString name =
+  const QString name =
       QInputDialog::getText(this, tr("Rename symbol"), tr("Symbol name:"), QLineEdit::Normal,
-                            QString::fromStdString(symbol->name), &good);
+                            QString::fromStdString(symbol->name), &good, Qt::WindowCloseButtonHint);
 
   if (good && !name.isEmpty())
   {
@@ -653,16 +863,16 @@ void CodeViewWidget::OnSetSymbolSize()
 {
   const u32 addr = GetContextAddress();
 
-  Common::Symbol* symbol = g_symbolDB.GetSymbolFromAddr(addr);
+  Common::Symbol* const symbol = g_symbolDB.GetSymbolFromAddr(addr);
 
   if (!symbol)
     return;
 
   bool good;
-  int size =
+  const int size =
       QInputDialog::getInt(this, tr("Rename symbol"),
                            tr("Set symbol size (%1):").arg(QString::fromStdString(symbol->name)),
-                           symbol->size, 1, 0xFFFF, 1, &good);
+                           symbol->size, 1, 0xFFFF, 1, &good, Qt::WindowCloseButtonHint);
 
   if (!good)
     return;
@@ -676,18 +886,19 @@ void CodeViewWidget::OnSetSymbolEndAddress()
 {
   const u32 addr = GetContextAddress();
 
-  Common::Symbol* symbol = g_symbolDB.GetSymbolFromAddr(addr);
+  Common::Symbol* const symbol = g_symbolDB.GetSymbolFromAddr(addr);
 
   if (!symbol)
     return;
 
   bool good;
-  QString name = QInputDialog::getText(
+  const QString name = QInputDialog::getText(
       this, tr("Set symbol end address"),
       tr("Symbol (%1) end address:").arg(QString::fromStdString(symbol->name)), QLineEdit::Normal,
-      QStringLiteral("%1").arg(addr + symbol->size, 8, 16, QLatin1Char('0')), &good);
+      QStringLiteral("%1").arg(addr + symbol->size, 8, 16, QLatin1Char('0')), &good,
+      Qt::WindowCloseButtonHint);
 
-  u32 address = name.toUInt(&good, 16);
+  const u32 address = name.toUInt(&good, 16);
 
   if (!good)
     return;
@@ -712,7 +923,6 @@ void CodeViewWidget::OnReplaceInstruction()
 
   if (dialog.exec() == QDialog::Accepted)
   {
-    PowerPC::debug_interface.UnsetPatch(addr);
     PowerPC::debug_interface.SetPatch(addr, dialog.GetCode());
     Update();
   }
@@ -785,7 +995,7 @@ void CodeViewWidget::mousePressEvent(QMouseEvent* event)
     if (column(item) == CODE_VIEW_COLUMN_BREAKPOINT)
       ToggleBreakpoint();
     else
-      SetAddress(addr, SetAddressUpdate::WithUpdate);
+      SetAddress(addr, SetAddressUpdate::WithDetailedUpdate);
 
     Update();
     break;

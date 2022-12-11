@@ -1,6 +1,5 @@
 // Copyright 2009 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "Core/PowerPC/PPCCache.h"
 
@@ -8,10 +7,12 @@
 
 #include "Common/ChunkFile.h"
 #include "Common/Swap.h"
-#include "Core/Analytics.h"
+#include "Core/Config/MainSettings.h"
+#include "Core/DolphinAnalytics.h"
 #include "Core/HW/Memmap.h"
 #include "Core/PowerPC/JitInterface.h"
 #include "Core/PowerPC/PowerPC.h"
+#include "Core/System.h"
 
 namespace PowerPC
 {
@@ -87,8 +88,10 @@ constexpr std::array<u32, 128> s_way_from_plru = [] {
 }();
 }  // Anonymous namespace
 
-InstructionCache::InstructionCache()
+InstructionCache::~InstructionCache()
 {
+  if (m_config_callback_id)
+    Config::RemoveConfigChangedCallback(*m_config_callback_id);
 }
 
 void InstructionCache::Reset()
@@ -103,6 +106,10 @@ void InstructionCache::Reset()
 
 void InstructionCache::Init()
 {
+  if (!m_config_callback_id)
+    m_config_callback_id = Config::AddConfigChangedCallback([this] { RefreshConfig(); });
+  RefreshConfig();
+
   data.fill({});
   tags.fill({});
   Reset();
@@ -110,7 +117,7 @@ void InstructionCache::Init()
 
 void InstructionCache::Invalidate(u32 addr)
 {
-  if (!HID0.ICE)
+  if (!HID0.ICE || m_disable_icache)
     return;
 
   // Invalidates the whole set
@@ -128,13 +135,16 @@ void InstructionCache::Invalidate(u32 addr)
     }
   }
   valid[set] = 0;
-  JitInterface::InvalidateICache(addr & ~0x1f, 32, false);
+  JitInterface::InvalidateICacheLine(addr);
 }
 
 u32 InstructionCache::ReadInstruction(u32 addr)
 {
-  if (!HID0.ICE)  // instruction cache is disabled
-    return Memory::Read_U32(addr);
+  auto& system = Core::System::GetInstance();
+  auto& memory = system.GetMemory();
+
+  if (!HID0.ICE || m_disable_icache)  // instruction cache is disabled
+    return memory.Read_U32(addr);
   u32 set = (addr >> 5) & 0x7f;
   u32 tag = addr >> 12;
 
@@ -155,14 +165,14 @@ u32 InstructionCache::ReadInstruction(u32 addr)
   if (t == 0xff)  // load to the cache
   {
     if (HID0.ILOCK)  // instruction cache is locked
-      return Memory::Read_U32(addr);
+      return memory.Read_U32(addr);
     // select a way
     if (valid[set] != 0xff)
       t = s_way_from_valid[valid[set]];
     else
       t = s_way_from_plru[plru[set]];
     // load
-    Memory::CopyFromEmu(reinterpret_cast<u8*>(data[set][t].data()), (addr & ~0x1f), 32);
+    memory.CopyFromEmu(reinterpret_cast<u8*>(data[set][t].data()), (addr & ~0x1f), 32);
     if (valid[set] & (1 << t))
     {
       if (tags[set][t] & (ICACHE_VMEM_BIT >> 12))
@@ -184,12 +194,13 @@ u32 InstructionCache::ReadInstruction(u32 addr)
   }
   // update plru
   plru[set] = (plru[set] & ~s_plru_mask[t]) | s_plru_value[t];
-  u32 res = Common::swap32(data[set][t][(addr >> 2) & 7]);
-  u32 inmem = Memory::Read_U32(addr);
+  const u32 res = Common::swap32(data[set][t][(addr >> 2) & 7]);
+  const u32 inmem = memory.Read_U32(addr);
   if (res != inmem)
   {
-    INFO_LOG(POWERPC, "ICache read at %08x returned stale data: CACHED: %08x vs. RAM: %08x", addr,
-             res, inmem);
+    INFO_LOG_FMT(POWERPC,
+                 "ICache read at {:08x} returned stale data: CACHED: {:08x} vs. RAM: {:08x}", addr,
+                 res, inmem);
     DolphinAnalytics::Instance().ReportGameQuirk(GameQuirk::ICACHE_MATTERS);
   }
   return res;
@@ -197,12 +208,57 @@ u32 InstructionCache::ReadInstruction(u32 addr)
 
 void InstructionCache::DoState(PointerWrap& p)
 {
+  if (p.IsReadMode())
+  {
+    // Clear valid parts of the lookup tables (this is done instead of using fill(0xff) to avoid
+    // loading the entire 4MB of tables into cache)
+    for (u32 set = 0; set < ICACHE_SETS; set++)
+    {
+      for (u32 way = 0; way < ICACHE_WAYS; way++)
+      {
+        if ((valid[set] & (1 << way)) != 0)
+        {
+          const u32 addr = (tags[set][way] << 12) | (set << 5);
+          if (addr & ICACHE_VMEM_BIT)
+            lookup_table_vmem[(addr >> 5) & 0xfffff] = 0xff;
+          else if (addr & ICACHE_EXRAM_BIT)
+            lookup_table_ex[(addr >> 5) & 0x1fffff] = 0xff;
+          else
+            lookup_table[(addr >> 5) & 0xfffff] = 0xff;
+        }
+      }
+    }
+  }
+
   p.DoArray(data);
   p.DoArray(tags);
   p.DoArray(plru);
   p.DoArray(valid);
-  p.DoArray(lookup_table);
-  p.DoArray(lookup_table_ex);
-  p.DoArray(lookup_table_vmem);
+
+  if (p.IsReadMode())
+  {
+    // Recompute lookup tables
+    for (u32 set = 0; set < ICACHE_SETS; set++)
+    {
+      for (u32 way = 0; way < ICACHE_WAYS; way++)
+      {
+        if ((valid[set] & (1 << way)) != 0)
+        {
+          const u32 addr = (tags[set][way] << 12) | (set << 5);
+          if (addr & ICACHE_VMEM_BIT)
+            lookup_table_vmem[(addr >> 5) & 0xfffff] = way;
+          else if (addr & ICACHE_EXRAM_BIT)
+            lookup_table_ex[(addr >> 5) & 0x1fffff] = way;
+          else
+            lookup_table[(addr >> 5) & 0xfffff] = way;
+        }
+      }
+    }
+  }
+}
+
+void InstructionCache::RefreshConfig()
+{
+  m_disable_icache = Config::Get(Config::MAIN_DISABLE_ICACHE);
 }
 }  // namespace PowerPC

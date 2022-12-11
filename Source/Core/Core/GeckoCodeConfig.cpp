@@ -1,10 +1,10 @@
 // Copyright 2010 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "Core/GeckoCodeConfig.h"
 
 #include <algorithm>
+#include <optional>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -17,13 +17,14 @@
 
 namespace Gecko
 {
-std::vector<GeckoCode> DownloadCodes(std::string gametdb_id, bool* succeeded)
+std::vector<GeckoCode> DownloadCodes(std::string gametdb_id, bool* succeeded, bool use_https)
 {
-  std::string endpoint{"https://www.geckocodes.org/txt.php?txt=" + gametdb_id};
-  Common::HttpRequest http;
+  // TODO: Fix https://bugs.dolphin-emu.org/issues/11772 so we don't need this workaround
+  const std::string protocol = use_https ? "https://" : "http://";
 
-  // Circumvent high-tech DDOS protection
-  http.SetCookies("challenge=BitMitigate.com;");
+  // codes.rc24.xyz is a mirror of the now defunct geckocodes.org.
+  std::string endpoint{protocol + "codes.rc24.xyz/txt.php?txt=" + gametdb_id};
+  Common::HttpRequest http;
 
   // The server always redirects once to the same location.
   http.FollowRedirects(1);
@@ -53,7 +54,7 @@ std::vector<GeckoCode> DownloadCodes(std::string gametdb_id, bool* succeeded)
   {
     // Remove \r at the end of the line for files using windows line endings, std::getline only
     // removes \n
-    line = StripSpaces(line);
+    line = StripWhitespace(line);
 
     if (line.empty())
     {
@@ -73,7 +74,7 @@ std::vector<GeckoCode> DownloadCodes(std::string gametdb_id, bool* succeeded)
       std::istringstream ssline(line);
       // stop at [ character (beginning of contributor name)
       std::getline(ssline, gcode.name, '[');
-      gcode.name = StripSpaces(gcode.name);
+      gcode.name = StripWhitespace(gcode.name);
       gcode.user_defined = true;
       // read the code creator name
       std::getline(ssline, gcode.creator, ']');
@@ -164,7 +165,7 @@ std::vector<GeckoCode> LoadCodes(const IniFile& globalIni, const IniFile& localI
         ss.seekg(1, std::ios_base::cur);
         // read the code name
         std::getline(ss, gcode.name, '[');  // stop at [ character (beginning of contributor name)
-        gcode.name = StripSpaces(gcode.name);
+        gcode.name = StripWhitespace(gcode.name);
         // read the code creator name
         std::getline(ss, gcode.creator, ']');
         break;
@@ -179,8 +180,10 @@ std::vector<GeckoCode> LoadCodes(const IniFile& globalIni, const IniFile& localI
       {
         GeckoCode::Code new_code;
         // TODO: support options
-        new_code.original_line = line;
-        ss >> std::hex >> new_code.address >> new_code.data;
+        if (std::optional<GeckoCode::Code> code = DeserializeLine(line))
+          new_code = *code;
+        else
+          new_code.original_line = line;
         gcode.codes.push_back(new_code);
       }
       break;
@@ -256,4 +259,23 @@ void SaveCodes(IniFile& inifile, const std::vector<GeckoCode>& gcodes)
   inifile.SetLines("Gecko_Enabled", enabled_lines);
   inifile.SetLines("Gecko_Disabled", disabled_lines);
 }
+
+std::optional<GeckoCode::Code> DeserializeLine(const std::string& line)
+{
+  std::vector<std::string> items = SplitString(line, ' ');
+
+  GeckoCode::Code code;
+  code.original_line = line;
+
+  if (items.size() < 2)
+    return std::nullopt;
+
+  if (!TryParse(items[0], &code.address, 16))
+    return std::nullopt;
+  if (!TryParse(items[1], &code.data, 16))
+    return std::nullopt;
+
+  return code;
+}
+
 }  // namespace Gecko

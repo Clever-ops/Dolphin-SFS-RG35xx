@@ -1,6 +1,5 @@
 // Copyright 2010 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
 
@@ -9,6 +8,8 @@
 #include <optional>
 
 #include "Common/CommonTypes.h"
+#include "Common/EnumFormatter.h"
+
 #include "VideoCommon/AbstractFramebuffer.h"
 #include "VideoCommon/AbstractPipeline.h"
 #include "VideoCommon/AbstractStagingTexture.h"
@@ -29,6 +30,13 @@ enum class EFBReinterpretType
   RGB565ToRGBA6 = 5
 };
 constexpr u32 NUM_EFB_REINTERPRET_TYPES = 6;
+template <>
+struct fmt::formatter<EFBReinterpretType> : EnumFormatter<EFBReinterpretType::RGB565ToRGBA6>
+{
+  static constexpr array_type names = {"RGB8 to RGB565", "RGB8 to RGBA6",  "RGBA6 to RGB8",
+                                       "RGB6 to RGB565", "RGB565 to RGB8", "RGB565 to RGBA6"};
+  constexpr formatter() : EnumFormatter(names) {}
+};
 
 inline bool AddressRangesOverlap(u32 aLower, u32 aUpper, u32 bLower, u32 bUpper)
 {
@@ -91,7 +99,9 @@ public:
   float PeekEFBDepth(u32 x, u32 y);
   void SetEFBCacheTileSize(u32 size);
   void InvalidatePeekCache(bool forced = true);
+  void RefreshPeekCache();
   void FlagPeekCacheAsOutOfDate();
+  void EndOfFrame();
 
   // Writes a value to the framebuffer. This will never block, and writes will be batched.
   void PokeEFBColor(u32 x, u32 y, u32 color);
@@ -109,6 +119,12 @@ protected:
   };
   static_assert(std::is_standard_layout<EFBPokeVertex>::value, "EFBPokeVertex is standard-layout");
 
+  struct EFBCacheTile
+  {
+    bool present;
+    u8 frame_access_mask;
+  };
+
   // EFB cache - for CPU EFB access
   // Tiles are ordered left-to-right, then top-to-bottom
   struct EFBCacheData
@@ -117,9 +133,11 @@ protected:
     std::unique_ptr<AbstractFramebuffer> framebuffer;
     std::unique_ptr<AbstractStagingTexture> readback_texture;
     std::unique_ptr<AbstractPipeline> copy_pipeline;
-    std::vector<bool> tiles;
+    std::vector<EFBCacheTile> tiles;
     bool out_of_date;
-    bool valid;
+    bool has_active_tiles;
+    bool needs_refresh;
+    bool needs_flush;
   };
 
   bool CreateEFBFramebuffer();
@@ -143,7 +161,7 @@ protected:
   bool IsUsingTiledEFBCache() const;
   bool IsEFBCacheTilePresent(bool depth, u32 x, u32 y, u32* tile_index) const;
   MathUtil::Rectangle<int> GetEFBCacheTileRect(u32 tile_index) const;
-  void PopulateEFBCache(bool depth, u32 tile_index);
+  void PopulateEFBCache(bool depth, u32 tile_index, bool async = false);
 
   void CreatePokeVertices(std::vector<EFBPokeVertex>* destination_list, u32 x, u32 y, float z,
                           u32 color);
@@ -162,7 +180,9 @@ protected:
 
   std::unique_ptr<AbstractFramebuffer> m_efb_framebuffer;
   std::unique_ptr<AbstractFramebuffer> m_efb_convert_framebuffer;
+  std::unique_ptr<AbstractFramebuffer> m_efb_color_resolve_framebuffer;
   std::unique_ptr<AbstractFramebuffer> m_efb_depth_resolve_framebuffer;
+  std::unique_ptr<AbstractPipeline> m_efb_color_resolve_pipeline;
   std::unique_ptr<AbstractPipeline> m_efb_depth_resolve_pipeline;
 
   // Pipeline for restoring the contents of the EFB from a save state
@@ -171,9 +191,14 @@ protected:
   // Format conversion shaders
   std::array<std::unique_ptr<AbstractPipeline>, 6> m_format_conversion_pipelines;
 
-  // EFB cache - for CPU EFB access
+  // EFB cache - for CPU EFB access (EFB peeks/pokes), not for EFB copies
+
+  // Width and height of a tile in pixels at 1x IR. 0 indicates non-tiled, in which case a single
+  // tile is used for the entire EFB.
+  // Note that as EFB peeks and pokes are a CPU feature, they always operate at 1x IR.
   u32 m_efb_cache_tile_size = 0;
-  u32 m_efb_cache_tiles_wide = 0;
+  // Number of tiles that make up a row in m_efb_color_cache.tiles / m_efb_depth_cache.tiles.
+  u32 m_efb_cache_tile_row_stride = 1;
   EFBCacheData m_efb_color_cache = {};
   EFBCacheData m_efb_depth_cache = {};
 

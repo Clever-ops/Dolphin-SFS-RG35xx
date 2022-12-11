@@ -1,6 +1,5 @@
 // Copyright 2010 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 // ---------------------------------------------------------------------------------------------
 // GC graphics pipeline
@@ -31,6 +30,7 @@
 #include "VideoCommon/BPMemory.h"
 #include "VideoCommon/FPSCounter.h"
 #include "VideoCommon/FrameDump.h"
+#include "VideoCommon/GraphicsModSystem/Runtime/GraphicsModManager.h"
 #include "VideoCommon/RenderState.h"
 #include "VideoCommon/TextureConfig.h"
 
@@ -39,6 +39,7 @@ class AbstractPipeline;
 class AbstractShader;
 class AbstractTexture;
 class AbstractStagingTexture;
+class BoundingBox;
 class NativeVertexFormat;
 class NetPlayChatUI;
 class PointerWrap;
@@ -94,7 +95,8 @@ public:
   virtual bool IsFullscreen() const { return false; }
   virtual void BeginUtilityDrawing();
   virtual void EndUtilityDrawing();
-  virtual std::unique_ptr<AbstractTexture> CreateTexture(const TextureConfig& config) = 0;
+  virtual std::unique_ptr<AbstractTexture> CreateTexture(const TextureConfig& config,
+                                                         std::string_view name = "") = 0;
   virtual std::unique_ptr<AbstractStagingTexture>
   CreateStagingTexture(StagingTextureType type, const TextureConfig& config) = 0;
   virtual std::unique_ptr<AbstractFramebuffer>
@@ -111,8 +113,8 @@ public:
   virtual void DrawIndexed(u32 base_index, u32 num_indices, u32 base_vertex) {}
 
   // Dispatching compute shaders with currently-bound state.
-  virtual void DispatchComputeShader(const AbstractShader* shader, u32 groups_x, u32 groups_y,
-                                     u32 groups_z)
+  virtual void DispatchComputeShader(const AbstractShader* shader, u32 groupsize_x, u32 groupsize_y,
+                                     u32 groupsize_z, u32 groups_x, u32 groups_y, u32 groups_z)
   {
   }
 
@@ -126,9 +128,11 @@ public:
 
   // Shader modules/objects.
   virtual std::unique_ptr<AbstractShader> CreateShaderFromSource(ShaderStage stage,
-                                                                 std::string_view source) = 0;
-  virtual std::unique_ptr<AbstractShader>
-  CreateShaderFromBinary(ShaderStage stage, const void* data, size_t length) = 0;
+                                                                 std::string_view source,
+                                                                 std::string_view name = "") = 0;
+  virtual std::unique_ptr<AbstractShader> CreateShaderFromBinary(ShaderStage stage,
+                                                                 const void* data, size_t length,
+                                                                 std::string_view name = "") = 0;
   virtual std::unique_ptr<NativeVertexFormat>
   CreateNativeVertexFormat(const PortableVertexDeclaration& vtx_decl) = 0;
   virtual std::unique_ptr<AbstractPipeline> CreatePipeline(const AbstractPipelineConfig& config,
@@ -212,9 +216,12 @@ public:
   virtual u32 AccessEFB(EFBAccessType type, u32 x, u32 y, u32 poke_data);
   virtual void PokeEFB(EFBAccessType type, const EfbPokeData* points, size_t num_points);
 
-  virtual u16 BBoxRead(int index) = 0;
-  virtual void BBoxWrite(int index, u16 value) = 0;
-  virtual void BBoxFlush() {}
+  bool IsBBoxEnabled() const;
+  void BBoxEnable();
+  void BBoxDisable();
+  u16 BBoxRead(u32 index);
+  void BBoxWrite(u32 index, u16 value);
+  void BBoxFlush();
 
   virtual void Flush() {}
   virtual void WaitForGPUIdle() {}
@@ -233,8 +240,8 @@ public:
   // Called when the configuration changes, and backend structures need to be updated.
   virtual void OnConfigChanged(u32 bits) {}
 
-  PEControl::PixelFormat GetPrevPixelFormat() const { return m_prev_efb_format; }
-  void StorePixelFormat(PEControl::PixelFormat new_format) { m_prev_efb_format = new_format; }
+  PixelFormat GetPrevPixelFormat() const { return m_prev_efb_format; }
+  void StorePixelFormat(PixelFormat new_format) { m_prev_efb_format = new_format; }
   bool EFBHasAlphaChannel() const;
   VideoCommon::PostProcessing* GetPostProcessor() const { return m_post_processor.get(); }
   // Final surface changing
@@ -259,6 +266,11 @@ public:
   // change in the future.
   void BeginUIFrame();
   void EndUIFrame();
+
+  // Will forcibly reload all textures on the next swap
+  void ForceReloadTextures();
+
+  const GraphicsModManager& GetGraphicsModManager() const;
 
 protected:
   // Bitmask containing information about which configuration has changed for the backend.
@@ -292,12 +304,17 @@ protected:
   // This function itself acquires the ImGui lock, so it should not be held.
   void BeginImGuiFrame();
 
+  // Same as above but without locking the ImGui lock.
+  void BeginImGuiFrameUnlocked();
+
   // Destroys all ImGui GPU resources, must do before shutdown.
   void ShutdownImGui();
 
   // Renders ImGui windows to the currently-bound framebuffer.
   // Should be called with the ImGui lock held.
   void DrawImGui();
+
+  virtual std::unique_ptr<BoundingBox> CreateBoundingBox() const = 0;
 
   AbstractFramebuffer* m_current_framebuffer = nullptr;
   const AbstractPipeline* m_current_pipeline = nullptr;
@@ -322,7 +339,8 @@ protected:
   MathUtil::Rectangle<int> m_target_rectangle = {};
   int m_frame_count = 0;
 
-  FPSCounter m_fps_counter;
+  FPSCounter m_fps_counter = FPSCounter("render_times.txt");
+  FPSCounter m_vps_counter = FPSCounter("v_blank_times.txt");
 
   std::unique_ptr<VideoCommon::PostProcessing> m_post_processor;
 
@@ -339,38 +357,46 @@ protected:
   u64 m_imgui_last_frame_time;
 
 private:
-  void RunFrameDumps();
   std::tuple<int, int> CalculateOutputDimensions(int width, int height) const;
 
-  PEControl::PixelFormat m_prev_efb_format = PEControl::INVALID_FMT;
+  PixelFormat m_prev_efb_format = PixelFormat::INVALID_FMT;
   unsigned int m_efb_scale = 1;
 
   // These will be set on the first call to SetWindowSize.
   int m_last_window_request_width = 0;
   int m_last_window_request_height = 0;
 
-  // frame dumping
+  // frame dumping:
+  FrameDump m_frame_dump;
   std::thread m_frame_dump_thread;
-  Common::Event m_frame_dump_start;
-  Common::Event m_frame_dump_done;
   Common::Flag m_frame_dump_thread_running;
-  u32 m_frame_dump_image_counter = 0;
-  bool m_frame_dump_frame_running = false;
-  struct FrameDumpConfig
-  {
-    const u8* data;
-    int width;
-    int height;
-    int stride;
-    FrameDump::Frame state;
-  } m_frame_dump_config;
+
+  // Used to kick frame dump thread.
+  Common::Event m_frame_dump_start;
+
+  // Set by frame dump thread on frame completion.
+  Common::Event m_frame_dump_done;
+
+  // Holds emulation state during the last swap when dumping.
+  FrameDump::FrameState m_last_frame_state;
+
+  // Communication of frame between video and dump threads.
+  FrameDump::FrameData m_frame_dump_data;
 
   // Texture used for screenshot/frame dumping
   std::unique_ptr<AbstractTexture> m_frame_dump_render_texture;
   std::unique_ptr<AbstractFramebuffer> m_frame_dump_render_framebuffer;
-  std::array<std::unique_ptr<AbstractStagingTexture>, 2> m_frame_dump_readback_textures;
-  FrameDump::Frame m_last_frame_state;
-  bool m_last_frame_exported = false;
+
+  // Double buffer:
+  std::unique_ptr<AbstractStagingTexture> m_frame_dump_readback_texture;
+  std::unique_ptr<AbstractStagingTexture> m_frame_dump_output_texture;
+  // Set when readback texture holds a frame that needs to be dumped.
+  bool m_frame_dump_needs_flush = false;
+  // Set when thread is processing output texture.
+  bool m_frame_dump_frame_running = false;
+
+  // Used to generate screenshot names.
+  u32 m_frame_dump_image_counter = 0;
 
   // Tracking of XFB textures so we don't render duplicate frames.
   u64 m_last_xfb_id = std::numeric_limits<u64>::max();
@@ -380,13 +406,29 @@ private:
   u32 m_last_xfb_stride = 0;
   u32 m_last_xfb_height = 0;
 
+  std::unique_ptr<BoundingBox> m_bounding_box;
+
+  // Nintendo's SDK seems to write "default" bounding box values before every draw (1023 0 1023 0
+  // are the only values encountered so far, which happen to be the extents allowed by the BP
+  // registers) to reset the registers for comparison in the pixel engine, and presumably to detect
+  // whether GX has updated the registers with real values.
+  //
+  // We can store these values when Bounding Box emulation is disabled and return them on read,
+  // which the game will interpret as "no pixels have been drawn"
+  //
+  // This produces much better results than just returning garbage, which can cause games like
+  // Ultimate Spider-Man to crash
+  std::array<u16, 4> m_bounding_box_fallback = {};
+
   // NOTE: The methods below are called on the framedumping thread.
-  bool StartFrameDumpToFFMPEG(const FrameDumpConfig& config);
-  void DumpFrameToFFMPEG(const FrameDumpConfig& config);
+  void FrameDumpThreadFunc();
+  bool StartFrameDumpToFFMPEG(const FrameDump::FrameData&);
+  void DumpFrameToFFMPEG(const FrameDump::FrameData&);
   void StopFrameDumpToFFMPEG();
   std::string GetFrameDumpNextImageFileName() const;
-  bool StartFrameDumpToImage(const FrameDumpConfig& config);
-  void DumpFrameToImage(const FrameDumpConfig& config);
+  bool StartFrameDumpToImage(const FrameDump::FrameData&);
+  void DumpFrameToImage(const FrameDump::FrameData&);
+
   void ShutdownFrameDumping();
 
   bool IsFrameDumping() const;
@@ -399,10 +441,10 @@ private:
 
   // Fills the frame dump staging texture with the current XFB texture.
   void DumpCurrentFrame(const AbstractTexture* src_texture,
-                        const MathUtil::Rectangle<int>& src_rect, u64 ticks);
+                        const MathUtil::Rectangle<int>& src_rect, u64 ticks, int frame_number);
 
   // Asynchronously encodes the specified pointer of frame data to the frame dump.
-  void DumpFrameData(const u8* data, int w, int h, int stride, const FrameDump::Frame& state);
+  void DumpFrameData(const u8* data, int w, int h, int stride);
 
   // Ensures all rendered frames are queued for encoding.
   void FlushFrameDump();
@@ -411,6 +453,10 @@ private:
   void FinishFrameData();
 
   std::unique_ptr<NetPlayChatUI> m_netplay_chat_ui;
+
+  Common::Flag m_force_reload_textures;
+
+  GraphicsModManager m_graphics_mod_manager;
 };
 
 extern std::unique_ptr<Renderer> g_renderer;

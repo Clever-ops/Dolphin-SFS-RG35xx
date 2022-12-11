@@ -1,6 +1,5 @@
 // Copyright 2008 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "Core/HW/EXI/EXI_Channel.h"
 
@@ -9,6 +8,7 @@
 #include "Common/Assert.h"
 #include "Common/ChunkFile.h"
 #include "Common/CommonTypes.h"
+#include "Common/Logging/Log.h"
 
 #include "Core/CoreTiming.h"
 #include "Core/HW/EXI/EXI.h"
@@ -34,7 +34,7 @@ CEXIChannel::CEXIChannel(u32 channel_id, const Memcard::HeaderData& memcard_head
     m_status.CHIP_SELECT = 1;
 
   for (auto& device : m_devices)
-    device = EXIDevice_Create(EXIDEVICE_NONE, m_channel_id, m_memcard_header_data);
+    device = EXIDevice_Create(EXIDeviceType::None, m_channel_id, m_memcard_header_data);
 }
 
 CEXIChannel::~CEXIChannel()
@@ -47,7 +47,7 @@ void CEXIChannel::RegisterMMIO(MMIO::Mapping* mmio, u32 base)
   // Warning: the base is not aligned on a page boundary here. We can't use |
   // to select a register address, instead we need to use +.
 
-  mmio->Register(base + EXI_STATUS, MMIO::ComplexRead<u32>([this](u32) {
+  mmio->Register(base + EXI_STATUS, MMIO::ComplexRead<u32>([this](Core::System&, u32) {
                    // check if external device is present
                    // pretty sure it is memcard only, not entirely sure
                    if (m_channel_id == 2)
@@ -61,7 +61,7 @@ void CEXIChannel::RegisterMMIO(MMIO::Mapping* mmio, u32 base)
 
                    return m_status.Hex;
                  }),
-                 MMIO::ComplexWrite<u32>([this](u32, u32 val) {
+                 MMIO::ComplexWrite<u32>([this](Core::System&, u32, u32 val) {
                    UEXI_STATUS new_status(val);
 
                    m_status.EXIINTMASK = new_status.EXIINTMASK;
@@ -98,7 +98,7 @@ void CEXIChannel::RegisterMMIO(MMIO::Mapping* mmio, u32 base)
   mmio->Register(base + EXI_DMA_LENGTH, MMIO::DirectRead<u32>(&m_dma_length),
                  MMIO::DirectWrite<u32>(&m_dma_length));
   mmio->Register(base + EXI_DMA_CONTROL, MMIO::DirectRead<u32>(&m_control.Hex),
-                 MMIO::ComplexWrite<u32>([this](u32, u32 val) {
+                 MMIO::ComplexWrite<u32>([this](Core::System&, u32, u32 val) {
                    m_control.Hex = val;
 
                    if (m_control.TSTART)
@@ -123,7 +123,7 @@ void CEXIChannel::RegisterMMIO(MMIO::Mapping* mmio, u32 base)
                          break;
                        default:
                          DEBUG_ASSERT_MSG(EXPANSIONINTERFACE, 0,
-                                          "EXI Imm: Unknown transfer type %i", m_control.RW);
+                                          "EXI Imm: Unknown transfer type {}", m_control.RW);
                        }
                      }
                      else
@@ -139,7 +139,7 @@ void CEXIChannel::RegisterMMIO(MMIO::Mapping* mmio, u32 base)
                          break;
                        default:
                          DEBUG_ASSERT_MSG(EXPANSIONINTERFACE, 0,
-                                          "EXI DMA: Unknown transfer type %i", m_control.RW);
+                                          "EXI DMA: Unknown transfer type {}", m_control.RW);
                        }
                      }
 
@@ -168,7 +168,7 @@ void CEXIChannel::RemoveDevices()
     device.reset(nullptr);
 }
 
-void CEXIChannel::AddDevice(const TEXIDevices device_type, const int device_num)
+void CEXIChannel::AddDevice(const EXIDeviceType device_type, const int device_num)
 {
   AddDevice(EXIDevice_Create(device_type, m_channel_id, m_memcard_header_data), device_num);
 }
@@ -178,10 +178,10 @@ void CEXIChannel::AddDevice(std::unique_ptr<IEXIDevice> device, const int device
 {
   DEBUG_ASSERT(device_num < NUM_DEVICES);
 
-  INFO_LOG(EXPANSIONINTERFACE,
-           "Changing EXI channel %d, device %d to type %d (notify software: %s)",
-           static_cast<int>(m_channel_id), device_num, static_cast<int>(device->m_device_type),
-           notify_presence_changed ? "true" : "false");
+  INFO_LOG_FMT(EXPANSIONINTERFACE,
+               "Changing EXI channel {}, device {} to type {} (notify software: {})", m_channel_id,
+               device_num, static_cast<int>(device->m_device_type),
+               notify_presence_changed ? "true" : "false");
 
   // Replace it with the new one
   m_devices[device_num] = std::move(device);
@@ -233,19 +233,19 @@ IEXIDevice* CEXIChannel::GetDevice(const u8 chip_select)
 
 void CEXIChannel::DoState(PointerWrap& p)
 {
-  p.DoPOD(m_status);
+  p.Do(m_status);
   p.Do(m_dma_memory_address);
   p.Do(m_dma_length);
   p.Do(m_control);
   p.Do(m_imm_data);
 
   Memcard::HeaderData old_header_data = m_memcard_header_data;
-  p.DoPOD(m_memcard_header_data);
+  p.Do(m_memcard_header_data);
 
   for (int device_index = 0; device_index < NUM_DEVICES; ++device_index)
   {
     std::unique_ptr<IEXIDevice>& device = m_devices[device_index];
-    TEXIDevices type = device->m_device_type;
+    EXIDeviceType type = device->m_device_type;
     p.Do(type);
 
     if (type == device->m_device_type)
@@ -260,7 +260,7 @@ void CEXIChannel::DoState(PointerWrap& p)
       AddDevice(std::move(save_device), device_index, false);
     }
 
-    if (type == EXIDEVICE_MEMORYCARDFOLDER && old_header_data != m_memcard_header_data &&
+    if (type == EXIDeviceType::MemoryCardFolder && old_header_data != m_memcard_header_data &&
         !Movie::IsMovieActive())
     {
       // We have loaded a savestate that has a GCI folder memcard that is different to the virtual
@@ -277,8 +277,8 @@ void CEXIChannel::DoState(PointerWrap& p)
       // notify_presence_changed flag set to true? Not sure how software behaves if the previous and
       // the new device type are identical in this case. I assume there is a reason we have this
       // grace period when switching in the GUI.
-      AddDevice(EXIDEVICE_NONE, device_index);
-      ExpansionInterface::ChangeDevice(m_channel_id, EXIDEVICE_MEMORYCARDFOLDER, device_index,
+      AddDevice(EXIDeviceType::None, device_index);
+      ExpansionInterface::ChangeDevice(m_channel_id, device_index, EXIDeviceType::MemoryCardFolder,
                                        CoreTiming::FromThread::CPU);
     }
   }
@@ -293,16 +293,5 @@ void CEXIChannel::PauseAndLock(bool do_lock, bool resume_on_unlock)
 void CEXIChannel::SetEXIINT(bool exiint)
 {
   m_status.EXIINT = !!exiint;
-}
-
-IEXIDevice* CEXIChannel::FindDevice(TEXIDevices device_type, int custom_index)
-{
-  for (auto& sup : m_devices)
-  {
-    IEXIDevice* device = sup->FindDevice(device_type, custom_index);
-    if (device)
-      return device;
-  }
-  return nullptr;
 }
 }  // namespace ExpansionInterface

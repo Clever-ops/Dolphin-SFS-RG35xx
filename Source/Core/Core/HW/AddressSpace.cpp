@@ -1,6 +1,5 @@
 // Copyright 2011 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "Core/HW/AddressSpace.h"
 
@@ -11,6 +10,7 @@
 #include "Core/HW/DSP.h"
 #include "Core/HW/Memmap.h"
 #include "Core/PowerPC/MMU.h"
+#include "Core/System.h"
 
 namespace AddressSpace
 {
@@ -93,6 +93,9 @@ struct EffectiveAddressSpaceAccessors : Accessors
 
   bool Matches(u32 haystack_start, const u8* needle_start, std::size_t needle_size) const
   {
+    auto& system = Core::System::GetInstance();
+    auto& memory = system.GetMemory();
+
     u32 page_base = haystack_start & 0xfffff000;
     u32 offset = haystack_start & 0x0000fff;
     do
@@ -115,7 +118,7 @@ struct EffectiveAddressSpaceAccessors : Accessors
         return false;
       }
 
-      u8* page_ptr = Memory::GetPointer(*page_physical_address);
+      u8* page_ptr = memory.GetPointer(*page_physical_address);
       if (page_ptr == nullptr)
       {
         return false;
@@ -247,22 +250,22 @@ struct CompositeAddressSpaceAccessors : Accessors
 
   u8 ReadU8(u32 address) const override
   {
-    auto it = FindAppropriateAccessor(address);
-    if (it == m_accessor_mappings.end())
+    auto mapping = FindAppropriateAccessor(address);
+    if (mapping == m_accessor_mappings.end())
     {
       return 0;
     }
-    return it->accessors->ReadU8(address);
+    return mapping->accessors->ReadU8(address - mapping->base);
   }
 
   void WriteU8(u32 address, u8 value) override
   {
-    auto it = FindAppropriateAccessor(address);
-    if (it == m_accessor_mappings.end())
+    auto mapping = FindAppropriateAccessor(address);
+    if (mapping == m_accessor_mappings.end())
     {
       return;
     }
-    return it->accessors->WriteU8(address, value);
+    return mapping->accessors->WriteU8(address - mapping->base, value);
   }
 
   std::optional<u32> Search(u32 haystack_offset, const u8* needle_start, std::size_t needle_size,
@@ -355,8 +358,8 @@ struct SmallBlockAccessors : Accessors
   }
 
 private:
-  u8** alloc_base;
-  u32 size;
+  u8** alloc_base = nullptr;
+  u32 size = 0;
 };
 
 struct NullAccessors : Accessors
@@ -374,9 +377,13 @@ static SmallBlockAccessors s_fake_address_space_accessors;
 static CompositeAddressSpaceAccessors s_physical_address_space_accessors_gcn;
 static CompositeAddressSpaceAccessors s_physical_address_space_accessors_wii;
 static NullAccessors s_null_accessors;
+static bool s_initialized = false;
 
 Accessors* GetAccessors(Type address_space)
 {
+  if (!s_initialized)
+    return &s_null_accessors;
+
   // default to effective
   switch (address_space)
   {
@@ -414,12 +421,21 @@ Accessors* GetAccessors(Type address_space)
 
 void Init()
 {
-  s_mem1_address_space_accessors = {&Memory::m_pRAM, Memory::GetRamSizeReal()};
-  s_mem2_address_space_accessors = {&Memory::m_pEXRAM, Memory::GetExRamSizeReal()};
-  s_fake_address_space_accessors = {&Memory::m_pFakeVMEM, Memory::GetFakeVMemSize()};
+  auto& system = Core::System::GetInstance();
+  auto& memory = system.GetMemory();
+
+  s_mem1_address_space_accessors = {&memory.GetRAM(), memory.GetRamSizeReal()};
+  s_mem2_address_space_accessors = {&memory.GetEXRAM(), memory.GetExRamSizeReal()};
+  s_fake_address_space_accessors = {&memory.GetFakeVMEM(), memory.GetFakeVMemSize()};
   s_physical_address_space_accessors_gcn = {{0x00000000, &s_mem1_address_space_accessors}};
   s_physical_address_space_accessors_wii = {{0x00000000, &s_mem1_address_space_accessors},
                                             {0x10000000, &s_mem2_address_space_accessors}};
+  s_initialized = true;
+}
+
+void Shutdown()
+{
+  s_initialized = false;
 }
 
 }  // namespace AddressSpace

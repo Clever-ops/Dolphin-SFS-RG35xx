@@ -33,6 +33,7 @@ namespace fs = std::filesystem;
 namespace Libretro
 {
 extern retro_environment_t environ_cb;
+extern std::shared_ptr<BootParameters> retro_boot_params;
 
 // Disk swapping
 static void InitDiskControlInterface();
@@ -78,36 +79,36 @@ bool retro_load_game(const struct retro_game_info* game)
   Discord::SetDiscordPresenceEnabled(false);
   Common::SetEnableAlert(false);
 
-  INFO_LOG(COMMON, "User Directory set to '%s'", user_dir.c_str());
-  INFO_LOG(COMMON, "System Directory set to '%s'", sys_dir.c_str());
+  INFO_LOG_FMT(COMMON, "User Directory set to '{}'", user_dir);
+  INFO_LOG_FMT(COMMON, "System Directory set to '{}'", sys_dir);
 
   /* disable throttling emulation to match GetTargetRefreshRate() */
   Core::SetIsThrottlerTempDisabled(true);
-  SConfig::GetInstance().m_EmulationSpeed = Libretro::Options::EmulationSpeed;
+  Config::SetBase(Config::MAIN_EMULATION_SPEED, Libretro::Options::EmulationSpeed);
 
 #if defined(_DEBUG)
-  SConfig::GetInstance().bFastmem = false;
+  Config::SetBase(Config::MAIN_FASTMEM, false);
 #else
-  SConfig::GetInstance().bFastmem = Libretro::Options::fastmem;
+  Config::SetBase(Config::MAIN_FASTMEM, Libretro::Options::fastmem);
 #endif
-  SConfig::GetInstance().bDSPHLE = Libretro::Options::DSPHLE;
-  SConfig::GetInstance().m_DSPEnableJIT = Libretro::Options::DSPEnableJIT;
-  SConfig::GetInstance().cpu_core = Libretro::Options::cpu_core;
-  SConfig::GetInstance().SelectedLanguage = (int)(DiscIO::Language)Libretro::Options::Language - 1;
-  SConfig::GetInstance().bCPUThread = true;
+  Config::SetBase(Config::MAIN_DSP_HLE, Libretro::Options::DSPHLE);
+  Config::SetBase(Config::MAIN_DSP_JIT, Libretro::Options::DSPEnableJIT);
+  Config::SetBase(Config::MAIN_CPU_CORE, Libretro::Options::cpu_core);
+  Config::SetBase(Config::MAIN_GC_LANGUAGE, (int)(DiscIO::Language)Libretro::Options::Language - 1);
+  Config::SetBase(Config::MAIN_CPU_THREAD, true);
   SConfig::GetInstance().bEMUThread = false;
   SConfig::GetInstance().bBootToPause = true;
-  SConfig::GetInstance().m_OCFactor = Libretro::Options::cpuClockRate;
-  SConfig::GetInstance().m_OCEnable = Libretro::Options::cpuClockRate != 1.0;
-  SConfig::GetInstance().sBackend = BACKEND_NULLSOUND;
-  SConfig::GetInstance().m_DumpAudio = false;
-  SConfig::GetInstance().bDPL2Decoder = false;
-  SConfig::GetInstance().iLatency = 0;
-  SConfig::GetInstance().m_audio_stretch = false;
-  SConfig::GetInstance().m_WiimoteContinuousScanning = Libretro::Options::WiimoteContinuousScanning;
-  SConfig::GetInstance().bEnableCheats = Libretro::Options::cheatsEnabled;
-  SConfig::GetInstance().bOnScreenDisplayMessages = Libretro::Options::osdEnabled;
-  SConfig::GetInstance().bFastDiscSpeed = Libretro::Options::fastDiscSpeed;
+  Config::SetBase(Config::MAIN_OVERCLOCK, Libretro::Options::cpuClockRate);
+  Config::SetBase(Config::MAIN_OVERCLOCK_ENABLE, Libretro::Options::cpuClockRate != 1.0);
+  Config::SetBase(Config::MAIN_AUDIO_BACKEND, BACKEND_NULLSOUND);
+  Config::SetBase(Config::MAIN_DUMP_AUDIO, false);
+  Config::SetBase(Config::MAIN_DPL2_DECODER, false);
+  Config::SetBase(Config::MAIN_AUDIO_LATENCY, 0);
+  Config::SetBase(Config::MAIN_AUDIO_STRETCH, false);
+  Config::SetBase(Config::MAIN_WIIMOTE_CONTINUOUS_SCANNING, Libretro::Options::WiimoteContinuousScanning);
+  Config::SetBase(Config::MAIN_ENABLE_CHEATS, Libretro::Options::cheatsEnabled);
+  Config::SetBase(Config::MAIN_OSD_MESSAGES, Libretro::Options::osdEnabled);
+  Config::SetBase(Config::MAIN_FAST_DISC_SPEED, Libretro::Options::fastDiscSpeed);
 
   Config::SetBase(Config::SYSCONF_LANGUAGE, (u32)(DiscIO::Language)Libretro::Options::Language);
   Config::SetBase(Config::SYSCONF_WIDESCREEN, Libretro::Options::Widescreen);
@@ -174,7 +175,7 @@ bool retro_load_game(const struct retro_game_info* game)
 
   Libretro::Video::Init();
   VideoBackendBase::PopulateBackendInfo();
-  NOTICE_LOG(VIDEO, "Using GFX backend: %s", Config::Get(Config::MAIN_GFX_BACKEND).c_str());
+  NOTICE_LOG_FMT(VIDEO, "Using GFX backend: {}", Config::Get(Config::MAIN_GFX_BACKEND));
 
   WindowSystemInfo wsi(WindowSystemType::Libretro, nullptr, nullptr, nullptr);
 
@@ -190,7 +191,7 @@ bool retro_load_game(const struct retro_game_info* game)
     normalized_game_paths = ReadM3UFile(normalized_game_paths.front(), folder_path);
     if (normalized_game_paths.empty())
     {
-      ERROR_LOG(BOOT, "Could not boot %s. M3U contains no paths\n", game->path);
+      ERROR_LOG_FMT(BOOT, "Could not boot {}. M3U contains no paths\n", game->path);
       return false;
     }
   }
@@ -200,7 +201,7 @@ bool retro_load_game(const struct retro_game_info* game)
 
   if (!BootManager::BootCore(BootParameters::GenerateFromFile(normalized_game_paths), wsi))
   {
-    ERROR_LOG(BOOT, "Could not boot %s\n", game->path);
+    ERROR_LOG_FMT(BOOT, "Could not boot {}\n", game->path);
     return false;
   }
 

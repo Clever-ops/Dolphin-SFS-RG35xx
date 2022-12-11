@@ -1,6 +1,5 @@
 // Copyright 2008 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 // Core
 
@@ -25,7 +24,10 @@ namespace Core
 bool GetIsThrottlerTempDisabled();
 void SetIsThrottlerTempDisabled(bool disable);
 
-void Callback_FramePresented();
+// Returns the latest emulation speed (1 is full speed) (swings a lot)
+double GetActualEmulationSpeed();
+
+void Callback_FramePresented(double actual_emulation_speed = 1.0);
 void Callback_NewField();
 
 enum class State
@@ -96,6 +98,8 @@ void Shutdown();
 
 void DeclareAsCPUThread();
 void UndeclareAsCPUThread();
+void DeclareAsGPUThread();
+void UndeclareAsGPUThread();
 
 std::string StopMessage(bool main_thread, std::string_view message);
 
@@ -112,12 +116,9 @@ void EmuThread(WindowSystemInfo wsi);
 // [NOT THREADSAFE] For use by Host only
 void SetState(State state);
 State GetState();
-void WaitUntilDoneBooting();
 
 void SaveScreenShot();
 void SaveScreenShot(std::string_view name);
-
-void Callback_WiimoteInterruptChannel(int number, u16 channel_id, const u8* data, u32 size);
 
 // This displays messages in a user-visible way.
 void DisplayMessage(std::string message, int time_in_ms);
@@ -126,9 +127,8 @@ void FrameUpdateOnCPUThread();
 void OnFrameEnd();
 
 void VideoThrottle();
-void RequestRefreshInfo();
 
-void UpdateTitle();
+void UpdateTitle(u64 elapsed_ms);
 
 // Run a function as the CPU thread.
 //
@@ -145,7 +145,11 @@ void RunOnCPUThread(std::function<void()> function, bool wait_for_completion);
 
 // for calling back into UI code without introducing a dependency on it in core
 using StateChangedCallbackFunc = std::function<void(Core::State)>;
-void SetOnStateChangedCallback(StateChangedCallbackFunc callback);
+// Returns a handle
+int AddOnStateChangedCallback(StateChangedCallbackFunc callback);
+// Also invalidates the handle
+bool RemoveOnStateChangedCallback(int* handle);
+void CallOnStateChangedCallbacks(Core::State state);
 
 // Run on the Host thread when the factors change. [NOT THREADSAFE]
 void UpdateWantDeterminism(bool initial = false);
@@ -167,6 +171,6 @@ void HostDispatchJobs();
 
 void DoFrameStep();
 
-void UpdateInputGate(bool require_focus);
+void UpdateInputGate(bool require_focus, bool require_full_focus = false);
 
 }  // namespace Core

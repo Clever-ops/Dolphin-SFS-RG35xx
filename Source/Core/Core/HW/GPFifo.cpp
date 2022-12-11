@@ -1,6 +1,5 @@
 // Copyright 2008 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "Core/HW/GPFifo.h"
 
@@ -14,6 +13,7 @@
 #include "Core/HW/ProcessorInterface.h"
 #include "Core/PowerPC/JitInterface.h"
 #include "Core/PowerPC/PowerPC.h"
+#include "Core/System.h"
 #include "VideoCommon/CommandProcessor.h"
 
 namespace GPFifo
@@ -30,7 +30,7 @@ namespace GPFifo
 // the same function could use both methods. Compile 2 different versions of each such block?
 
 // More room for the fastmodes
-alignas(32) static u8 s_gather_pipe[GATHER_PIPE_SIZE * 16];
+alignas(GATHER_PIPE_SIZE) static u8 s_gather_pipe[GATHER_PIPE_EXTRA_SIZE];
 
 static size_t GetGatherPipeCount()
 {
@@ -57,9 +57,23 @@ void Init()
   memset(s_gather_pipe, 0, sizeof(s_gather_pipe));
 }
 
-bool IsEmpty()
+bool IsBNE()
 {
-  return GetGatherPipeCount() == 0;
+  // TODO: It's not clear exactly when the BNE (buffer not empty) bit is set.
+  // The PPC 750cl manual says in section 2.1.2.12 "Write Pipe Address Register (WPAR)" (page 78):
+  // "A mfspr WPAR is used to read the BNE bit to check for any outstanding data transfers."
+  // In section 9.4.2 "Write Gather Pipe Operation" (page 327) it says:
+  // "Software can check WPAR[BNE] to determine if the buffer is empty or not."
+  // On page 327, it also says "The only way for software to flush out a partially full 32 byte
+  // block is to fill up the block with dummy data,."
+  // On page 328, it says: "Before disabling the write gather pipe, the WPAR[BNE] bit should be
+  // tested to insure that all outstanding transfers from the buffer to the bus have completed."
+  //
+  // GXRedirectWriteGatherPipe and GXRestoreWriteGatherPipe (used for display lists) wait for
+  // the bit to be 0 before continuing, so it can't be a case of any data existing in the FIFO;
+  // it might be a case of over 32 bytes being stored pending transfer to memory? For now, always
+  // return false since that prevents hangs in games that use display lists.
+  return false;
 }
 
 void ResetGatherPipe()
@@ -69,9 +83,12 @@ void ResetGatherPipe()
 
 void UpdateGatherPipe()
 {
+  auto& system = Core::System::GetInstance();
+  auto& memory = system.GetMemory();
+
   size_t pipe_count = GetGatherPipeCount();
   size_t processed;
-  u8* cur_mem = Memory::GetPointer(ProcessorInterface::Fifo_CPUWritePointer);
+  u8* cur_mem = memory.GetPointer(ProcessorInterface::Fifo_CPUWritePointer);
   for (processed = 0; pipe_count >= GATHER_PIPE_SIZE; processed += GATHER_PIPE_SIZE)
   {
     // copy the GatherPipe
@@ -82,7 +99,7 @@ void UpdateGatherPipe()
     if (ProcessorInterface::Fifo_CPUWritePointer == ProcessorInterface::Fifo_CPUEnd)
     {
       ProcessorInterface::Fifo_CPUWritePointer = ProcessorInterface::Fifo_CPUBase;
-      cur_mem = Memory::GetPointer(ProcessorInterface::Fifo_CPUWritePointer);
+      cur_mem = memory.GetPointer(ProcessorInterface::Fifo_CPUWritePointer);
     }
     else
     {
@@ -90,7 +107,7 @@ void UpdateGatherPipe()
       ProcessorInterface::Fifo_CPUWritePointer += GATHER_PIPE_SIZE;
     }
 
-    CommandProcessor::GatherPipeBursted();
+    system.GetCommandProcessor().GatherPipeBursted(system);
   }
 
   // move back the spill bytes
@@ -168,4 +185,4 @@ void FastWrite64(u64 value)
   PowerPC::ppcState.gather_pipe_ptr += sizeof(u64);
 }
 
-}  // end of namespace GPFifo
+}  // namespace GPFifo

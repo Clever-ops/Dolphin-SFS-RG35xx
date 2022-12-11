@@ -1,6 +1,5 @@
 // Copyright 2016 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 // Expands the VULKAN_ENTRY_POINT macro for each function when this file is included.
 // Parameters: Function name, is required
@@ -38,6 +37,7 @@ VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceSurfaceSupportKHR, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceSurfaceCapabilitiesKHR, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceSurfaceFormatsKHR, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceSurfacePresentModesKHR, false)
+VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceMemoryProperties2, false)
 
 #if defined(VK_USE_PLATFORM_WIN32_KHR)
 VULKAN_INSTANCE_ENTRY_POINT(vkCreateWin32SurfaceKHR, false)
@@ -62,6 +62,7 @@ VULKAN_INSTANCE_ENTRY_POINT(vkDestroyDebugReportCallbackEXT, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkDebugReportMessageEXT, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceProperties2, false)
 VULKAN_INSTANCE_ENTRY_POINT(vkGetPhysicalDeviceSurfaceCapabilities2KHR, false)
+VULKAN_INSTANCE_ENTRY_POINT(vkSetDebugUtilsObjectNameEXT, false)
 
 #endif  // VULKAN_INSTANCE_ENTRY_POINT
 
@@ -192,6 +193,10 @@ VULKAN_DEVICE_ENTRY_POINT(vkDestroySwapchainKHR, false)
 VULKAN_DEVICE_ENTRY_POINT(vkGetSwapchainImagesKHR, false)
 VULKAN_DEVICE_ENTRY_POINT(vkAcquireNextImageKHR, false)
 VULKAN_DEVICE_ENTRY_POINT(vkQueuePresentKHR, false)
+VULKAN_DEVICE_ENTRY_POINT(vkGetBufferMemoryRequirements2, false)
+VULKAN_DEVICE_ENTRY_POINT(vkGetImageMemoryRequirements2, false)
+VULKAN_DEVICE_ENTRY_POINT(vkBindBufferMemory2, false)
+VULKAN_DEVICE_ENTRY_POINT(vkBindImageMemory2, false)
 
 #ifdef SUPPORTS_VULKAN_EXCLUSIVE_FULLSCREEN
 VULKAN_DEVICE_ENTRY_POINT(vkAcquireFullScreenExclusiveModeEXT, false)

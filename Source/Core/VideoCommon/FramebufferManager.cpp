@@ -1,9 +1,9 @@
 // Copyright 2010 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "VideoCommon/FramebufferManager.h"
 
+#include <fmt/format.h>
 #include <memory>
 
 #include "Common/ChunkFile.h"
@@ -43,38 +43,38 @@ bool FramebufferManager::Initialize()
 {
   if (!CreateEFBFramebuffer())
   {
-    PanicAlert("Failed to create EFB framebuffer");
+    PanicAlertFmt("Failed to create EFB framebuffer");
     return false;
   }
 
   m_efb_cache_tile_size = static_cast<u32>(std::max(g_ActiveConfig.iEFBAccessTileSize, 0));
   if (!CreateReadbackFramebuffer())
   {
-    PanicAlert("Failed to create EFB readback framebuffer");
+    PanicAlertFmt("Failed to create EFB readback framebuffer");
     return false;
   }
 
   if (!CompileReadbackPipelines())
   {
-    PanicAlert("Failed to compile EFB readback pipelines");
+    PanicAlertFmt("Failed to compile EFB readback pipelines");
     return false;
   }
 
   if (!CompileConversionPipelines())
   {
-    PanicAlert("Failed to compile EFB conversion pipelines");
+    PanicAlertFmt("Failed to compile EFB conversion pipelines");
     return false;
   }
 
   if (!CompileClearPipelines())
   {
-    PanicAlert("Failed to compile EFB clear pipelines");
+    PanicAlertFmt("Failed to compile EFB clear pipelines");
     return false;
   }
 
   if (!CompilePokePipelines())
   {
-    PanicAlert("Failed to compile EFB poke pipelines");
+    PanicAlertFmt("Failed to compile EFB poke pipelines");
     return false;
   }
 
@@ -89,7 +89,7 @@ void FramebufferManager::RecreateEFBFramebuffer()
   DestroyReadbackFramebuffer();
   DestroyEFBFramebuffer();
   if (!CreateEFBFramebuffer() || !CreateReadbackFramebuffer())
-    PanicAlert("Failed to recreate EFB framebuffer");
+    PanicAlertFmt("Failed to recreate EFB framebuffer");
 }
 
 void FramebufferManager::RecompileShaders()
@@ -101,7 +101,7 @@ void FramebufferManager::RecompileShaders()
   if (!CompileReadbackPipelines() || !CompileConversionPipelines() || !CompileClearPipelines() ||
       !CompilePokePipelines())
   {
-    PanicAlert("Failed to recompile EFB pipelines");
+    PanicAlertFmt("Failed to recompile EFB pipelines");
   }
 }
 
@@ -171,9 +171,10 @@ bool FramebufferManager::CreateEFBFramebuffer()
   const TextureConfig efb_depth_texture_config = GetEFBDepthTextureConfig();
 
   // We need a second texture to swap with for changing pixel formats
-  m_efb_color_texture = g_renderer->CreateTexture(efb_color_texture_config);
-  m_efb_depth_texture = g_renderer->CreateTexture(efb_depth_texture_config);
-  m_efb_convert_color_texture = g_renderer->CreateTexture(efb_color_texture_config);
+  m_efb_color_texture = g_renderer->CreateTexture(efb_color_texture_config, "EFB color texture");
+  m_efb_depth_texture = g_renderer->CreateTexture(efb_depth_texture_config, "EFB depth texture");
+  m_efb_convert_color_texture =
+      g_renderer->CreateTexture(efb_color_texture_config, "EFB convert color texture");
   if (!m_efb_color_texture || !m_efb_depth_texture || !m_efb_convert_color_texture)
     return false;
 
@@ -187,11 +188,23 @@ bool FramebufferManager::CreateEFBFramebuffer()
   // Create resolved textures if MSAA is on
   if (g_ActiveConfig.MultisamplingEnabled())
   {
+    u32 flags = 0;
+    if (!g_ActiveConfig.backend_info.bSupportsPartialMultisampleResolve)
+      flags |= AbstractTextureFlag_RenderTarget;
     m_efb_resolve_color_texture = g_renderer->CreateTexture(
         TextureConfig(efb_color_texture_config.width, efb_color_texture_config.height, 1,
-                      efb_color_texture_config.layers, 1, efb_color_texture_config.format, 0));
+                      efb_color_texture_config.layers, 1, efb_color_texture_config.format, flags),
+        "EFB color resolve texture");
     if (!m_efb_resolve_color_texture)
       return false;
+
+    if (!g_ActiveConfig.backend_info.bSupportsPartialMultisampleResolve)
+    {
+      m_efb_color_resolve_framebuffer =
+          g_renderer->CreateFramebuffer(m_efb_resolve_color_texture.get(), nullptr);
+      if (!m_efb_color_resolve_framebuffer)
+        return false;
+    }
   }
 
   // We also need one to convert the D24S8 to R32F if that is being used (Adreno).
@@ -200,7 +213,8 @@ bool FramebufferManager::CreateEFBFramebuffer()
     m_efb_depth_resolve_texture = g_renderer->CreateTexture(
         TextureConfig(efb_depth_texture_config.width, efb_depth_texture_config.height, 1,
                       efb_depth_texture_config.layers, 1, GetEFBDepthCopyFormat(),
-                      AbstractTextureFlag_RenderTarget));
+                      AbstractTextureFlag_RenderTarget),
+        "EFB depth resolve texture");
     if (!m_efb_depth_resolve_texture)
       return false;
 
@@ -245,12 +259,27 @@ AbstractTexture* FramebufferManager::ResolveEFBColorTexture(const MathUtil::Rect
   clamped_region.ClampUL(0, 0, GetEFBWidth(), GetEFBHeight());
 
   // Resolve to our already-created texture.
-  for (u32 layer = 0; layer < GetEFBLayers(); layer++)
+  if (g_ActiveConfig.backend_info.bSupportsPartialMultisampleResolve)
   {
-    m_efb_resolve_color_texture->ResolveFromTexture(m_efb_color_texture.get(), clamped_region,
-                                                    layer, 0);
+    for (u32 layer = 0; layer < GetEFBLayers(); layer++)
+    {
+      m_efb_resolve_color_texture->ResolveFromTexture(m_efb_color_texture.get(), clamped_region,
+                                                      layer, 0);
+    }
   }
-
+  else
+  {
+    m_efb_color_texture->FinishedRendering();
+    g_renderer->BeginUtilityDrawing();
+    g_renderer->SetAndDiscardFramebuffer(m_efb_color_resolve_framebuffer.get());
+    g_renderer->SetPipeline(m_efb_color_resolve_pipeline.get());
+    g_renderer->SetTexture(0, m_efb_color_texture.get());
+    g_renderer->SetSamplerState(0, RenderState::GetPointSamplerState());
+    g_renderer->SetViewportAndScissor(clamped_region);
+    g_renderer->Draw(0, 3);
+    m_efb_resolve_color_texture->FinishedRendering();
+    g_renderer->EndUtilityDrawing();
+  }
   m_efb_resolve_color_texture->FinishedRendering();
   return m_efb_resolve_color_texture.get();
 }
@@ -258,8 +287,8 @@ AbstractTexture* FramebufferManager::ResolveEFBColorTexture(const MathUtil::Rect
 AbstractTexture* FramebufferManager::ResolveEFBDepthTexture(const MathUtil::Rectangle<int>& region,
                                                             bool force_r32f)
 {
-  if (!IsEFBMultisampled() || !force_r32f ||
-      m_efb_depth_texture->GetFormat() == AbstractTextureFormat::R32F)
+  if (!IsEFBMultisampled() &&
+      (!force_r32f || m_efb_depth_texture->GetFormat() == AbstractTextureFormat::D32F))
   {
     return m_efb_depth_texture.get();
   }
@@ -271,7 +300,8 @@ AbstractTexture* FramebufferManager::ResolveEFBDepthTexture(const MathUtil::Rect
   m_efb_depth_texture->FinishedRendering();
   g_renderer->BeginUtilityDrawing();
   g_renderer->SetAndDiscardFramebuffer(m_efb_depth_resolve_framebuffer.get());
-  g_renderer->SetPipeline(m_efb_depth_resolve_pipeline.get());
+  g_renderer->SetPipeline(IsEFBMultisampled() ? m_efb_depth_resolve_pipeline.get() :
+                                                m_efb_depth_cache.copy_pipeline.get());
   g_renderer->SetTexture(0, m_efb_depth_texture.get());
   g_renderer->SetSamplerState(0, RenderState::GetPointSamplerState());
   g_renderer->SetViewportAndScissor(clamped_region);
@@ -311,9 +341,11 @@ bool FramebufferManager::CompileConversionPipelines()
 {
   for (u32 i = 0; i < NUM_EFB_REINTERPRET_TYPES; i++)
   {
+    EFBReinterpretType convtype = static_cast<EFBReinterpretType>(i);
     std::unique_ptr<AbstractShader> pixel_shader = g_renderer->CreateShaderFromSource(
-        ShaderStage::Pixel, FramebufferShaderGen::GenerateFormatConversionShader(
-                                static_cast<EFBReinterpretType>(i), GetEFBSamples()));
+        ShaderStage::Pixel,
+        FramebufferShaderGen::GenerateFormatConversionShader(convtype, GetEFBSamples()),
+        fmt::format("Framebuffer conversion pixel shader {}", convtype));
     if (!pixel_shader)
       return false;
 
@@ -348,26 +380,26 @@ bool FramebufferManager::IsUsingTiledEFBCache() const
 bool FramebufferManager::IsEFBCacheTilePresent(bool depth, u32 x, u32 y, u32* tile_index) const
 {
   const EFBCacheData& data = depth ? m_efb_depth_cache : m_efb_color_cache;
-  if (m_efb_cache_tile_size == 0)
+  if (!IsUsingTiledEFBCache())
   {
     *tile_index = 0;
-    return data.valid;
   }
   else
   {
-    *tile_index =
-        ((y / m_efb_cache_tile_size) * m_efb_cache_tiles_wide) + (x / m_efb_cache_tile_size);
-    return data.valid && data.tiles[*tile_index];
+    const u32 tile_x = x / m_efb_cache_tile_size;
+    const u32 tile_y = y / m_efb_cache_tile_size;
+    *tile_index = (tile_y * m_efb_cache_tile_row_stride) + tile_x;
   }
+  return data.tiles[*tile_index].present;
 }
 
 MathUtil::Rectangle<int> FramebufferManager::GetEFBCacheTileRect(u32 tile_index) const
 {
-  if (m_efb_cache_tile_size == 0)
+  if (!IsUsingTiledEFBCache())
     return MathUtil::Rectangle<int>(0, 0, EFB_WIDTH, EFB_HEIGHT);
 
-  const u32 tile_y = tile_index / m_efb_cache_tiles_wide;
-  const u32 tile_x = tile_index % m_efb_cache_tiles_wide;
+  const u32 tile_y = tile_index / m_efb_cache_tile_row_stride;
+  const u32 tile_x = tile_index % m_efb_cache_tile_row_stride;
   const u32 start_y = tile_y * m_efb_cache_tile_size;
   const u32 start_x = tile_x * m_efb_cache_tile_size;
   return MathUtil::Rectangle<int>(
@@ -385,6 +417,14 @@ u32 FramebufferManager::PeekEFBColor(u32 x, u32 y)
   if (!IsEFBCacheTilePresent(false, x, y, &tile_index))
     PopulateEFBCache(false, tile_index);
 
+  m_efb_color_cache.tiles[tile_index].frame_access_mask |= 1;
+
+  if (m_efb_color_cache.needs_flush)
+  {
+    m_efb_color_cache.readback_texture->Flush();
+    m_efb_color_cache.needs_flush = false;
+  }
+
   u32 value;
   m_efb_color_cache.readback_texture->ReadTexel(x, y, &value);
   return value;
@@ -400,6 +440,14 @@ float FramebufferManager::PeekEFBDepth(u32 x, u32 y)
   if (!IsEFBCacheTilePresent(true, x, y, &tile_index))
     PopulateEFBCache(true, tile_index);
 
+  m_efb_depth_cache.tiles[tile_index].frame_access_mask |= 1;
+
+  if (m_efb_depth_cache.needs_flush)
+  {
+    m_efb_depth_cache.readback_texture->Flush();
+    m_efb_depth_cache.needs_flush = false;
+  }
+
   float value;
   m_efb_depth_cache.readback_texture->ReadTexel(x, y, &value);
   return value;
@@ -414,38 +462,93 @@ void FramebufferManager::SetEFBCacheTileSize(u32 size)
   m_efb_cache_tile_size = size;
   DestroyReadbackFramebuffer();
   if (!CreateReadbackFramebuffer())
-    PanicAlert("Failed to create EFB readback framebuffers");
+    PanicAlertFmt("Failed to create EFB readback framebuffers");
+}
+
+void FramebufferManager::RefreshPeekCache()
+{
+  if (!m_efb_color_cache.needs_refresh && !m_efb_depth_cache.needs_refresh)
+  {
+    // The cache has already been refreshed.
+    return;
+  }
+
+  bool flush_command_buffer = false;
+  for (u32 i = 0; i < m_efb_color_cache.tiles.size(); i++)
+  {
+    if (m_efb_color_cache.tiles[i].frame_access_mask != 0 && !m_efb_color_cache.tiles[i].present)
+    {
+      PopulateEFBCache(false, i, true);
+      flush_command_buffer = true;
+    }
+    if (m_efb_depth_cache.tiles[i].frame_access_mask != 0 && !m_efb_depth_cache.tiles[i].present)
+    {
+      PopulateEFBCache(true, i, true);
+      flush_command_buffer = true;
+    }
+  }
+
+  m_efb_depth_cache.needs_refresh = false;
+  m_efb_color_cache.needs_refresh = false;
+
+  if (flush_command_buffer)
+  {
+    g_renderer->Flush();
+  }
 }
 
 void FramebufferManager::InvalidatePeekCache(bool forced)
 {
   if (forced || m_efb_color_cache.out_of_date)
   {
-    if (m_efb_color_cache.valid)
-      std::fill(m_efb_color_cache.tiles.begin(), m_efb_color_cache.tiles.end(), false);
+    if (m_efb_color_cache.has_active_tiles)
+    {
+      for (u32 i = 0; i < m_efb_color_cache.tiles.size(); i++)
+      {
+        m_efb_color_cache.tiles[i].present = false;
+      }
 
-    m_efb_color_cache.valid = false;
+      m_efb_color_cache.needs_refresh = true;
+    }
+
+    m_efb_color_cache.has_active_tiles = false;
     m_efb_color_cache.out_of_date = false;
   }
   if (forced || m_efb_depth_cache.out_of_date)
   {
-    if (m_efb_depth_cache.valid)
-      std::fill(m_efb_depth_cache.tiles.begin(), m_efb_depth_cache.tiles.end(), false);
+    if (m_efb_depth_cache.has_active_tiles)
+    {
+      for (u32 i = 0; i < m_efb_depth_cache.tiles.size(); i++)
+      {
+        m_efb_depth_cache.tiles[i].present = false;
+      }
 
-    m_efb_depth_cache.valid = false;
+      m_efb_depth_cache.needs_refresh = true;
+    }
+
+    m_efb_depth_cache.has_active_tiles = false;
     m_efb_depth_cache.out_of_date = false;
   }
 }
 
 void FramebufferManager::FlagPeekCacheAsOutOfDate()
 {
-  if (m_efb_color_cache.valid)
+  if (m_efb_color_cache.has_active_tiles)
     m_efb_color_cache.out_of_date = true;
-  if (m_efb_depth_cache.valid)
+  if (m_efb_depth_cache.has_active_tiles)
     m_efb_depth_cache.out_of_date = true;
 
   if (!g_ActiveConfig.bEFBAccessDeferInvalidation)
     InvalidatePeekCache();
+}
+
+void FramebufferManager::EndOfFrame()
+{
+  for (u32 i = 0; i < m_efb_color_cache.tiles.size(); i++)
+  {
+    m_efb_color_cache.tiles[i].frame_access_mask <<= 1;
+    m_efb_depth_cache.tiles[i].frame_access_mask <<= 1;
+  }
 }
 
 bool FramebufferManager::CompileReadbackPipelines()
@@ -472,7 +575,8 @@ bool FramebufferManager::CompileReadbackPipelines()
   if (IsEFBMultisampled())
   {
     auto depth_resolve_shader = g_renderer->CreateShaderFromSource(
-        ShaderStage::Pixel, FramebufferShaderGen::GenerateResolveDepthPixelShader(GetEFBSamples()));
+        ShaderStage::Pixel, FramebufferShaderGen::GenerateResolveDepthPixelShader(GetEFBSamples()),
+        "Depth resolve pixel shader");
     if (!depth_resolve_shader)
       return false;
 
@@ -480,11 +584,28 @@ bool FramebufferManager::CompileReadbackPipelines()
     m_efb_depth_resolve_pipeline = g_renderer->CreatePipeline(config);
     if (!m_efb_depth_resolve_pipeline)
       return false;
+
+    if (!g_ActiveConfig.backend_info.bSupportsPartialMultisampleResolve)
+    {
+      config.framebuffer_state.color_texture_format = GetEFBColorFormat();
+      auto color_resolve_shader = g_renderer->CreateShaderFromSource(
+          ShaderStage::Pixel,
+          FramebufferShaderGen::GenerateResolveColorPixelShader(GetEFBSamples()),
+          "Color resolve pixel shader");
+      if (!color_resolve_shader)
+        return false;
+
+      config.pixel_shader = color_resolve_shader.get();
+      m_efb_color_resolve_pipeline = g_renderer->CreatePipeline(config);
+      if (!m_efb_color_resolve_pipeline)
+        return false;
+    }
   }
 
   // EFB restore pipeline
   auto restore_shader = g_renderer->CreateShaderFromSource(
-      ShaderStage::Pixel, FramebufferShaderGen::GenerateEFBRestorePixelShader());
+      ShaderStage::Pixel, FramebufferShaderGen::GenerateEFBRestorePixelShader(),
+      "EFB restore pixel shader");
   if (!restore_shader)
     return false;
 
@@ -514,7 +635,7 @@ bool FramebufferManager::CreateReadbackFramebuffer()
     const TextureConfig color_config(IsUsingTiledEFBCache() ? m_efb_cache_tile_size : EFB_WIDTH,
                                      IsUsingTiledEFBCache() ? m_efb_cache_tile_size : EFB_HEIGHT, 1,
                                      1, 1, GetEFBColorFormat(), AbstractTextureFlag_RenderTarget);
-    m_efb_color_cache.texture = g_renderer->CreateTexture(color_config);
+    m_efb_color_cache.texture = g_renderer->CreateTexture(color_config, "EFB color cache");
     if (!m_efb_color_cache.texture)
       return false;
 
@@ -536,7 +657,7 @@ bool FramebufferManager::CreateReadbackFramebuffer()
                                      IsUsingTiledEFBCache() ? m_efb_cache_tile_size : EFB_HEIGHT, 1,
                                      1, 1, GetEFBDepthCopyFormat(),
                                      AbstractTextureFlag_RenderTarget);
-    m_efb_depth_cache.texture = g_renderer->CreateTexture(depth_config);
+    m_efb_depth_cache.texture = g_renderer->CreateTexture(depth_config, "EFB depth cache");
     if (!m_efb_depth_cache.texture)
       return false;
 
@@ -556,17 +677,23 @@ bool FramebufferManager::CreateReadbackFramebuffer()
   if (!m_efb_color_cache.readback_texture || !m_efb_depth_cache.readback_texture)
     return false;
 
+  u32 total_tiles = 1;
   if (IsUsingTiledEFBCache())
   {
     const u32 tiles_wide = ((EFB_WIDTH + (m_efb_cache_tile_size - 1)) / m_efb_cache_tile_size);
     const u32 tiles_high = ((EFB_HEIGHT + (m_efb_cache_tile_size - 1)) / m_efb_cache_tile_size);
-    const u32 total_tiles = tiles_wide * tiles_high;
-    m_efb_color_cache.tiles.resize(total_tiles);
-    std::fill(m_efb_color_cache.tiles.begin(), m_efb_color_cache.tiles.end(), false);
-    m_efb_depth_cache.tiles.resize(total_tiles);
-    std::fill(m_efb_depth_cache.tiles.begin(), m_efb_depth_cache.tiles.end(), false);
-    m_efb_cache_tiles_wide = tiles_wide;
+    total_tiles = tiles_wide * tiles_high;
+    m_efb_cache_tile_row_stride = tiles_wide;
   }
+  else
+  {
+    m_efb_cache_tile_row_stride = 1;
+  }
+
+  m_efb_color_cache.tiles.resize(total_tiles);
+  std::fill(m_efb_color_cache.tiles.begin(), m_efb_color_cache.tiles.end(), EFBCacheTile{false, 0});
+  m_efb_depth_cache.tiles.resize(total_tiles);
+  std::fill(m_efb_depth_cache.tiles.begin(), m_efb_depth_cache.tiles.end(), EFBCacheTile{false, 0});
 
   return true;
 }
@@ -577,14 +704,16 @@ void FramebufferManager::DestroyReadbackFramebuffer()
     data.readback_texture.reset();
     data.framebuffer.reset();
     data.texture.reset();
-    data.valid = false;
+    data.needs_refresh = false;
+    data.has_active_tiles = false;
   };
   DestroyCache(m_efb_color_cache);
   DestroyCache(m_efb_depth_cache);
 }
 
-void FramebufferManager::PopulateEFBCache(bool depth, u32 tile_index)
+void FramebufferManager::PopulateEFBCache(bool depth, u32 tile_index, bool async)
 {
+  FlushEFBPokes();
   g_vertex_manager->OnCPUEFBAccess();
 
   // Force the path through the intermediate texture, as we can't do an image copy from a depth
@@ -642,11 +771,18 @@ void FramebufferManager::PopulateEFBCache(bool depth, u32 tile_index)
   }
 
   // Wait until the copy is complete.
-  data.readback_texture->Flush();
-  data.valid = true;
+  if (!async)
+  {
+    data.readback_texture->Flush();
+    data.needs_flush = false;
+  }
+  else
+  {
+    data.needs_flush = true;
+  }
+  data.has_active_tiles = true;
   data.out_of_date = false;
-  if (IsUsingTiledEFBCache())
-    data.tiles[tile_index] = true;
+  data.tiles[tile_index].present = true;
 }
 
 void FramebufferManager::ClearEFB(const MathUtil::Rectangle<int>& rc, bool clear_color,
@@ -684,7 +820,8 @@ void FramebufferManager::ClearEFB(const MathUtil::Rectangle<int>& rc, bool clear
 bool FramebufferManager::CompileClearPipelines()
 {
   auto vertex_shader = g_renderer->CreateShaderFromSource(
-      ShaderStage::Vertex, FramebufferShaderGen::GenerateClearVertexShader());
+      ShaderStage::Vertex, FramebufferShaderGen::GenerateClearVertexShader(),
+      "Clear vertex shader");
   if (!vertex_shader)
     return false;
 
@@ -837,12 +974,12 @@ bool FramebufferManager::CompilePokePipelines()
 {
   PortableVertexDeclaration vtx_decl = {};
   vtx_decl.position.enable = true;
-  vtx_decl.position.type = VAR_FLOAT;
+  vtx_decl.position.type = ComponentFormat::Float;
   vtx_decl.position.components = 4;
   vtx_decl.position.integer = false;
   vtx_decl.position.offset = offsetof(EFBPokeVertex, position);
   vtx_decl.colors[0].enable = true;
-  vtx_decl.colors[0].type = VAR_UNSIGNED_BYTE;
+  vtx_decl.colors[0].type = ComponentFormat::UByte;
   vtx_decl.colors[0].components = 4;
   vtx_decl.colors[0].integer = false;
   vtx_decl.colors[0].offset = offsetof(EFBPokeVertex, color);
@@ -853,7 +990,8 @@ bool FramebufferManager::CompilePokePipelines()
     return false;
 
   auto poke_vertex_shader = g_renderer->CreateShaderFromSource(
-      ShaderStage::Vertex, FramebufferShaderGen::GenerateEFBPokeVertexShader());
+      ShaderStage::Vertex, FramebufferShaderGen::GenerateEFBPokeVertexShader(),
+      "EFB poke vertex shader");
   if (!poke_vertex_shader)
     return false;
 
@@ -899,7 +1037,7 @@ void FramebufferManager::DoState(PointerWrap& p)
   if (!save_efb_state)
     return;
 
-  if (p.GetMode() == PointerWrap::MODE_WRITE || p.GetMode() == PointerWrap::MODE_MEASURE)
+  if (p.IsWriteMode() || p.IsMeasureMode())
     DoSaveState(p);
   else
     DoLoadState(p);
@@ -938,7 +1076,7 @@ void FramebufferManager::DoLoadState(PointerWrap& p)
   if (!color_tex || !depth_tex ||
       color_tex->texture->GetLayers() != m_efb_color_texture->GetLayers())
   {
-    WARN_LOG(VIDEO, "Failed to deserialize EFB contents. Clearing instead.");
+    WARN_LOG_FMT(VIDEO, "Failed to deserialize EFB contents. Clearing instead.");
     g_renderer->SetAndClearFramebuffer(
         m_efb_framebuffer.get(), {{0.0f, 0.0f, 0.0f, 0.0f}},
         g_ActiveConfig.backend_info.bSupportsReversedDepthRange ? 1.0f : 0.0f);

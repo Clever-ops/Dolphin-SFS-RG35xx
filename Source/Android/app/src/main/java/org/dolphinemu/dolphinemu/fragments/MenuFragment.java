@@ -1,31 +1,37 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 package org.dolphinemu.dolphinemu.fragments;
 
+import android.content.pm.PackageManager;
 import android.os.Bundle;
-
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
 import android.util.SparseIntArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
-import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 
 import org.dolphinemu.dolphinemu.NativeLibrary;
 import org.dolphinemu.dolphinemu.R;
 import org.dolphinemu.dolphinemu.activities.EmulationActivity;
+import org.dolphinemu.dolphinemu.databinding.FragmentIngameMenuBinding;
 import org.dolphinemu.dolphinemu.features.settings.model.BooleanSetting;
-import org.dolphinemu.dolphinemu.features.settings.model.Settings;
-import org.dolphinemu.dolphinemu.features.settings.utils.SettingsFile;
+import org.dolphinemu.dolphinemu.utils.InsetsHelper;
 
 public final class MenuFragment extends Fragment implements View.OnClickListener
 {
-  private View mPauseEmulation;
-  private View mUnpauseEmulation;
   private static final String KEY_TITLE = "title";
+  private static final String KEY_WII = "wii";
   private static SparseIntArray buttonsActionsMap = new SparseIntArray();
+
+  private int mCutInset = 0;
 
   static
   {
@@ -42,51 +48,57 @@ public final class MenuFragment extends Fragment implements View.OnClickListener
     buttonsActionsMap
             .append(R.id.menu_emulation_load_root, EmulationActivity.MENU_ACTION_LOAD_ROOT);
     buttonsActionsMap
+            .append(R.id.menu_overlay_controls, EmulationActivity.MENU_ACTION_OVERLAY_CONTROLS);
+    buttonsActionsMap
             .append(R.id.menu_refresh_wiimotes, EmulationActivity.MENU_ACTION_REFRESH_WIIMOTES);
     buttonsActionsMap.append(R.id.menu_change_disc, EmulationActivity.MENU_ACTION_CHANGE_DISC);
     buttonsActionsMap.append(R.id.menu_exit, EmulationActivity.MENU_ACTION_EXIT);
+    buttonsActionsMap.append(R.id.menu_settings, EmulationActivity.MENU_ACTION_SETTINGS);
   }
 
-  public static MenuFragment newInstance(String title)
+  private FragmentIngameMenuBinding mBinding;
+
+  public static MenuFragment newInstance()
   {
     MenuFragment fragment = new MenuFragment();
 
     Bundle arguments = new Bundle();
-    arguments.putSerializable(KEY_TITLE, title);
+    if (NativeLibrary.IsGameMetadataValid())
+    {
+      arguments.putString(KEY_TITLE, NativeLibrary.GetCurrentTitleDescription());
+      arguments.putBoolean(KEY_WII, NativeLibrary.IsEmulatingWii());
+    }
     fragment.setArguments(arguments);
 
     return fragment;
   }
 
-  @Nullable
+  @NonNull
   @Override
-  public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState)
+  public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+          Bundle savedInstanceState)
   {
-    View rootView = inflater.inflate(R.layout.fragment_ingame_menu, container, false);
+    mBinding = FragmentIngameMenuBinding.inflate(inflater, container, false);
+    return mBinding.getRoot();
+  }
 
-    LinearLayout options = (LinearLayout) rootView.findViewById(R.id.layout_options);
+  @Override
+  public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState)
+  {
+    setInsets();
+    updatePauseUnpauseVisibility();
 
-    mPauseEmulation = options.findViewById(R.id.menu_pause_emulation);
-    mUnpauseEmulation = options.findViewById(R.id.menu_unpause_emulation);
-
-    if (EmulationActivity.getHasUserPausedEmulation())
+    if (!requireActivity().getPackageManager().hasSystemFeature(PackageManager.FEATURE_TOUCHSCREEN))
     {
-      showUnpauseEmulationButton();
+      mBinding.menuOverlayControls.setVisibility(View.GONE);
     }
 
-    BooleanSetting enableSaveStates =
-            (BooleanSetting) ((EmulationActivity) getActivity()).getSettings()
-                    .getSection(Settings.SECTION_INI_CORE)
-                    .getSetting(SettingsFile.KEY_ENABLE_SAVE_STATES);
-
-    if (enableSaveStates != null && enableSaveStates.getValue())
+    if (!getArguments().getBoolean(KEY_WII, true))
     {
-      options.findViewById(R.id.menu_quicksave).setVisibility(View.VISIBLE);
-      options.findViewById(R.id.menu_quickload).setVisibility(View.VISIBLE);
-      options.findViewById(R.id.menu_emulation_save_root).setVisibility(View.VISIBLE);
-      options.findViewById(R.id.menu_emulation_load_root).setVisibility(View.VISIBLE);
+      mBinding.menuRefreshWiimotes.setVisibility(View.GONE);
     }
 
+    LinearLayout options = mBinding.layoutOptions;
     for (int childIndex = 0; childIndex < options.getChildCount(); childIndex++)
     {
       Button button = (Button) options.getChildAt(childIndex);
@@ -94,48 +106,101 @@ public final class MenuFragment extends Fragment implements View.OnClickListener
       button.setOnClickListener(this);
     }
 
-    TextView titleText = rootView.findViewById(R.id.text_game_title);
-    String title = getArguments().getString(KEY_TITLE);
+    mBinding.menuExit.setOnClickListener(this);
+
+    String title = getArguments().getString(KEY_TITLE, null);
     if (title != null)
     {
-      titleText.setText(title);
+      mBinding.textGameTitle.setText(title);
     }
-
-    return rootView;
   }
 
-  private void showPauseEmulationButton()
+  private void setInsets()
   {
-    mUnpauseEmulation.setVisibility(View.GONE);
-    mPauseEmulation.setVisibility(View.VISIBLE);
+    ViewCompat.setOnApplyWindowInsetsListener(mBinding.getRoot(), (v, windowInsets) ->
+    {
+      Insets cutInsets = windowInsets.getInsets(WindowInsetsCompat.Type.displayCutout());
+      mCutInset = cutInsets.left;
+
+      int left = 0;
+      int right = 0;
+      if (ViewCompat.getLayoutDirection(v) == ViewCompat.LAYOUT_DIRECTION_LTR)
+      {
+        left = cutInsets.left;
+      }
+      else
+      {
+        right = cutInsets.right;
+      }
+
+      v.post(() -> NativeLibrary.SetObscuredPixelsLeft(v.getWidth()));
+
+      // Don't use padding if the navigation bar isn't in the way
+      if (InsetsHelper.getBottomPaddingRequired(requireActivity()) > 0)
+      {
+        v.setPadding(left, cutInsets.top, right,
+                cutInsets.bottom + InsetsHelper.getNavigationBarHeight(requireContext()));
+      }
+      else
+      {
+        v.setPadding(left, cutInsets.top, right,
+                cutInsets.bottom + getResources().getDimensionPixelSize(R.dimen.spacing_large));
+      }
+      return windowInsets;
+    });
   }
 
-  private void showUnpauseEmulationButton()
+  @Override
+  public void onResume()
   {
-    mPauseEmulation.setVisibility(View.GONE);
-    mUnpauseEmulation.setVisibility(View.VISIBLE);
+    super.onResume();
+
+    boolean savestatesEnabled = BooleanSetting.MAIN_ENABLE_SAVESTATES.getBooleanGlobal();
+    int savestateVisibility = savestatesEnabled ? View.VISIBLE : View.GONE;
+    mBinding.menuQuicksave.setVisibility(savestateVisibility);
+    mBinding.menuQuickload.setVisibility(savestateVisibility);
+    mBinding.menuEmulationSaveRoot.setVisibility(savestateVisibility);
+    mBinding.menuEmulationLoadRoot.setVisibility(savestateVisibility);
   }
 
-  @SuppressWarnings("WrongConstant")
+  @Override
+  public void onDestroyView()
+  {
+    super.onDestroyView();
+
+    NativeLibrary.SetObscuredPixelsLeft(mCutInset);
+    mBinding = null;
+  }
+
+  private void updatePauseUnpauseVisibility()
+  {
+    boolean paused = EmulationActivity.getHasUserPausedEmulation();
+
+    mBinding.menuUnpauseEmulation.setVisibility(paused ? View.VISIBLE : View.GONE);
+    mBinding.menuPauseEmulation.setVisibility(paused ? View.GONE : View.VISIBLE);
+  }
+
   @Override
   public void onClick(View button)
   {
     int action = buttonsActionsMap.get(button.getId());
-    if (action == EmulationActivity.MENU_ACTION_PAUSE_EMULATION)
+    EmulationActivity activity = (EmulationActivity) requireActivity();
+
+    if (action == EmulationActivity.MENU_ACTION_OVERLAY_CONTROLS)
     {
-      EmulationActivity.setHasUserPausedEmulation(true);
-      NativeLibrary.PauseEmulation();
-      showUnpauseEmulationButton();
-    }
-    else if (action == EmulationActivity.MENU_ACTION_UNPAUSE_EMULATION)
-    {
-      EmulationActivity.setHasUserPausedEmulation(false);
-      NativeLibrary.UnPauseEmulation();
-      showPauseEmulationButton();
+      // We could use the button parameter as the anchor here, but this often results in a tiny menu
+      // (because the button often is in the middle of the screen), so let's use mTitleText instead
+      activity.showOverlayControlsMenu(mBinding.textGameTitle);
     }
     else if (action >= 0)
     {
-      ((EmulationActivity) getActivity()).handleMenuAction(action);
+      activity.handleMenuAction(action);
+    }
+
+    if (action == EmulationActivity.MENU_ACTION_PAUSE_EMULATION ||
+            action == EmulationActivity.MENU_ACTION_UNPAUSE_EMULATION)
+    {
+      updatePauseUnpauseVisibility();
     }
   }
 }

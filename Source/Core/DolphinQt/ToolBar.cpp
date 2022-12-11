@@ -1,6 +1,7 @@
 // Copyright 2015 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+#include "DolphinQt/ToolBar.h"
 
 #include <algorithm>
 #include <vector>
@@ -13,7 +14,6 @@
 #include "DolphinQt/Host.h"
 #include "DolphinQt/Resources.h"
 #include "DolphinQt/Settings.h"
-#include "DolphinQt/ToolBar.h"
 
 static QSize ICON_SIZE(32, 32);
 
@@ -32,10 +32,10 @@ ToolBar::ToolBar(QWidget* parent) : QToolBar(parent)
   connect(&Settings::Instance(), &Settings::ThemeChanged, this, &ToolBar::UpdateIcons);
   UpdateIcons();
 
-  connect(&Settings::Instance(), &Settings::EmulationStateChanged,
+  connect(&Settings::Instance(), &Settings::EmulationStateChanged, this,
           [this](Core::State state) { OnEmulationStateChanged(state); });
 
-  connect(Host::GetInstance(), &Host::UpdateDisasmDialog,
+  connect(Host::GetInstance(), &Host::UpdateDisasmDialog, this,
           [this] { OnEmulationStateChanged(Core::GetState()); });
 
   connect(&Settings::Instance(), &Settings::DebugModeToggled, this, &ToolBar::OnDebugModeToggled);
@@ -43,10 +43,12 @@ ToolBar::ToolBar(QWidget* parent) : QToolBar(parent)
   connect(&Settings::Instance(), &Settings::ToolBarVisibilityChanged, this, &ToolBar::setVisible);
   connect(this, &ToolBar::visibilityChanged, &Settings::Instance(), &Settings::SetToolBarVisible);
 
-  connect(&Settings::Instance(), &Settings::WidgetLockChanged,
+  connect(&Settings::Instance(), &Settings::WidgetLockChanged, this,
           [this](bool locked) { setMovable(!locked); });
 
-  connect(&Settings::Instance(), &Settings::GameListRefreshCompleted,
+  connect(&Settings::Instance(), &Settings::GameListRefreshRequested, this,
+          [this] { m_refresh_action->setEnabled(false); });
+  connect(&Settings::Instance(), &Settings::GameListRefreshStarted, this,
           [this] { m_refresh_action->setEnabled(true); });
 
   OnEmulationStateChanged(Core::GetState());
@@ -59,7 +61,6 @@ void ToolBar::OnEmulationStateChanged(Core::State state)
   m_stop_action->setEnabled(running);
   m_fullscreen_action->setEnabled(running);
   m_screenshot_action->setEnabled(running);
-  m_controllers_action->setEnabled(NetPlay::IsNetPlayRunning() ? !running : true);
 
   bool playing = running && state != Core::State::Paused;
   UpdatePausePlayButtonState(playing);
@@ -112,10 +113,8 @@ void ToolBar::MakeActions()
   m_set_pc_action = addAction(tr("Set PC"), this, &ToolBar::SetPCPressed);
 
   m_open_action = addAction(tr("Open"), this, &ToolBar::OpenPressed);
-  m_refresh_action = addAction(tr("Refresh"), [this] {
-    m_refresh_action->setEnabled(false);
-    emit RefreshPressed();
-  });
+  m_refresh_action = addAction(tr("Refresh"), [this] { emit RefreshPressed(); });
+  m_refresh_action->setEnabled(false);
 
   addSeparator();
 
@@ -130,7 +129,6 @@ void ToolBar::MakeActions()
   m_config_action = addAction(tr("Config"), this, &ToolBar::SettingsPressed);
   m_graphics_action = addAction(tr("Graphics"), this, &ToolBar::GraphicsPressed);
   m_controllers_action = addAction(tr("Controllers"), this, &ToolBar::ControllersPressed);
-  m_controllers_action->setEnabled(true);
 
   // Ensure every button has about the same width
   std::vector<QWidget*> items;

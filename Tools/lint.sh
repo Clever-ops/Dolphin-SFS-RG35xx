@@ -4,12 +4,19 @@
 
 set -euo pipefail
 
-if ! [ -x "$(command -v git)" ]; then
+# use Windows' git when working under path mounted from host on wsl2
+# inspired by https://markentier.tech/posts/2020/10/faster-git-under-wsl2/#solution
+GIT=git
+if [ "$(stat --file-system --format=%T `pwd -P`)" == "v9fs" ]; then
+  GIT=git.exe
+fi
+
+if ! [ -x "$(command -v $GIT)" ]; then
   echo >&2 "error: git is not installed"
   exit 1
 fi
 
-REQUIRED_CLANG_FORMAT_MAJOR=9
+REQUIRED_CLANG_FORMAT_MAJOR=12
 REQUIRED_CLANG_FORMAT_MINOR=0
 CLANG_FORMAT=clang-format
 CLANG_FORMAT_MAJOR=clang-format-${REQUIRED_CLANG_FORMAT_MAJOR}
@@ -36,11 +43,18 @@ if [ $# -gt 0 ]; then
 fi
 
 if [ $FORCE -eq 0 ]; then
-  CLANG_FORMAT_VERSION=$($CLANG_FORMAT -version | cut -d' ' -f3)
-  CLANG_FORMAT_MAJOR=$(echo $CLANG_FORMAT_VERSION | cut -d'.' -f1)
-  CLANG_FORMAT_MINOR=$(echo $CLANG_FORMAT_VERSION | cut -d'.' -f2)
+  CLANG_FORMAT_VERSION=$($CLANG_FORMAT --version)
+  clang_format_version_ok=false
+  clang_format_version_re='version ([0-9]+).([0-9]+)'
+  if [[ $CLANG_FORMAT_VERSION =~ $clang_format_version_re ]]; then
+    CLANG_FORMAT_MAJOR="${BASH_REMATCH[1]}"
+    CLANG_FORMAT_MINOR="${BASH_REMATCH[2]}"
+    if [ $CLANG_FORMAT_MAJOR == $REQUIRED_CLANG_FORMAT_MAJOR ] && [ $CLANG_FORMAT_MINOR == $REQUIRED_CLANG_FORMAT_MINOR ]; then
+      clang_format_version_ok=true
+    fi
+  fi
 
-  if [ $CLANG_FORMAT_MAJOR != $REQUIRED_CLANG_FORMAT_MAJOR ] || [ $CLANG_FORMAT_MINOR != $REQUIRED_CLANG_FORMAT_MINOR ]; then
+  if ! [ "$clang_format_version_ok" = true ]; then
     echo >&2 "error: clang-format is the wrong version (${CLANG_FORMAT_VERSION})"
     echo >&2 "Install clang-format version ${REQUIRED_CLANG_FORMAT_MAJOR}.${REQUIRED_CLANG_FORMAT_MINOR}.* or use --force to ignore"
     exit 1
@@ -48,7 +62,7 @@ if [ $FORCE -eq 0 ]; then
 fi
 
 did_java_setup=0
-JAVA_CODESTYLE_FILE="./$(git rev-parse --show-cdup)/Source/Android/code-style-java.xml"
+JAVA_CODESTYLE_FILE="./$($GIT rev-parse --show-cdup)/Source/Android/code-style-java.xml"
 java_temp_dir=""
 
 function java_setup() {
@@ -70,13 +84,13 @@ fail=0
 COMMIT=${1:---cached}
 
 # Get modified files (must be on own line for exit-code handling)
-modified_files=$(git diff --name-only --diff-filter=ACMRTUXB $COMMIT)
+modified_files=$($GIT diff --name-only --diff-filter=ACMRTUXB $COMMIT)
 
 function java_check() {
   "${ANDROID_STUDIO_ROOT}/bin/format.sh" -s "${JAVA_CODESTYLE_FILE}" -R "${java_temp_dir}" >/dev/null
 
   # ignore 'added'/'deleted' files, we copied only files of interest to the tmpdir
-  d=$(git diff --diff-filter=ad . "${java_temp_dir}" || true)
+  d=$($GIT diff --diff-filter=ad . "${java_temp_dir}" || true)
   if ! [ -z "${d}" ]; then
     echo "!!! Java code is not compliant to coding style, here is the fix:"
     echo "${d}"

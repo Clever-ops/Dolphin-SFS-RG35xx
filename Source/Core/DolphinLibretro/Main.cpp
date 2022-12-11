@@ -12,10 +12,12 @@
 #include "Common/Thread.h"
 #include "Common/Version.h"
 #include "Core/BootManager.h"
+#include "Core/Boot/Boot.h"
 #include "Core/Config/MainSettings.h"
 #include "Core/Config/SYSCONFSettings.h"
 #include "Core/ConfigManager.h"
 #include "Core/Core.h"
+#include "Core/System.h"
 #include "Core/HW/CPU.h"
 #include "Core/HW/Memmap.h"
 #include "Core/HW/ProcessorInterface.h"
@@ -26,7 +28,7 @@
 #include "DolphinLibretro/Options.h"
 #include "DolphinLibretro/Video.h"
 #include "VideoBackends/OGL/OGLTexture.h"
-#include "VideoBackends/OGL/Render.h"
+#include "VideoBackends/OGL/OGLRender.h"
 #include "VideoCommon/AsyncRequests.h"
 #include "VideoCommon/Fifo.h"
 #include "VideoCommon/TextureConfig.h"
@@ -56,6 +58,7 @@ static struct retro_perf_callback perf_cb;
 namespace Libretro
 {
 retro_environment_t environ_cb;
+std::unique_ptr<BootParameters> retro_boot_params;
 static bool widescreen;
 
 namespace Audio
@@ -64,8 +67,8 @@ static retro_audio_sample_batch_t batch_cb;
 
 static unsigned int GetSampleRate()
 {
-  if (g_sound_stream)
-    return g_sound_stream->GetMixer()->GetSampleRate();
+  if (Core::System::GetInstance().GetSoundStream())
+    return Core::System::GetInstance().GetSoundStream()->GetMixer()->GetSampleRate();
   else if (SConfig::GetInstance().bWii)
     return Options::audioMixerRate;
   else if (Options::audioMixerRate == 32000u)
@@ -138,7 +141,7 @@ void retro_get_system_info(retro_system_info* info)
 {
   info->need_fullpath = true;
   info->valid_extensions = "elf|dol|gcm|iso|tgc|wbfs|ciso|gcz|wad|wia|rvz|m3u";
-  info->library_version = Common::scm_desc_str.c_str();
+  info->library_version = Common::GetScmDescStr().c_str();
   info->library_name = "dolphin-emu";
   info->block_extract = true;
 }
@@ -170,24 +173,24 @@ void retro_run(void)
 {
   Libretro::Options::CheckVariables();
 #if defined(_DEBUG)
-  Common::Log::LogManager::GetInstance()->SetLogLevel(Common::Log::LDEBUG);
+  Common::Log::LogManager::GetInstance()->SetLogLevel(Common::Log::LogLevel::LDEBUG);
 #else
   Common::Log::LogManager::GetInstance()->SetLogLevel(Libretro::Options::logLevel);
 #endif
-  SConfig::GetInstance().m_OCFactor = Libretro::Options::cpuClockRate;
-  SConfig::GetInstance().m_OCEnable = Libretro::Options::cpuClockRate != 1.0;
+  Config::SetBase(Config::MAIN_OVERCLOCK, Libretro::Options::cpuClockRate);
+  Config::SetBase(Config::MAIN_OVERCLOCK_ENABLE, Libretro::Options::cpuClockRate != 1.0);
   g_Config.bWidescreenHack = Libretro::Options::WidescreenHack;
 
   Libretro::Input::Update();
 
   if (Core::GetState() == Core::State::Starting)
   {
+    Core::System& system = Core::System::GetInstance();
     WindowSystemInfo wsi(WindowSystemType::Libretro, nullptr, nullptr, nullptr);
     Core::EmuThread(wsi);
-    AudioCommon::SetSoundStreamRunning(false);
-    g_sound_stream.reset();
-    g_sound_stream = std::make_unique<Libretro::Audio::Stream>();
-    AudioCommon::SetSoundStreamRunning(true);
+    AudioCommon::SetSoundStreamRunning(system, false);
+    system.SetSoundStream(std::make_unique<Libretro::Audio::Stream>());
+    AudioCommon::SetSoundStreamRunning(system, true);
 
     if (Config::Get(Config::MAIN_GFX_BACKEND) == "Software Renderer")
     {
@@ -241,8 +244,7 @@ void retro_run(void)
 
   if (Libretro::Options::WiimoteContinuousScanning.Updated())
   {
-    SConfig::GetInstance().m_WiimoteContinuousScanning =
-        Libretro::Options::WiimoteContinuousScanning;
+    Config::SetBase(Config::MAIN_WIIMOTE_CONTINUOUS_SCANNING, Libretro::Options::WiimoteContinuousScanning);
     WiimoteReal::Initialize(Wiimote::InitializeMode::DO_NOT_WAIT_FOR_WIIMOTES);
   }
 
@@ -267,7 +269,7 @@ size_t retro_serialize_size(void)
   size_t size = 0;
 
   Core::RunAsCPUThread([&] {
-    PointerWrap p((u8**)&size, PointerWrap::MODE_MEASURE);
+    PointerWrap p((u8**)&size, sizeof(size), PointerWrap::Mode::Measure);
     State::DoState(p);
   });
 
@@ -277,7 +279,7 @@ size_t retro_serialize_size(void)
 bool retro_serialize(void* data, size_t size)
 {
   Core::RunAsCPUThread([&] {
-    PointerWrap p((u8**)&data, PointerWrap::MODE_WRITE);
+    PointerWrap p((u8**)&data, size, PointerWrap::Mode::Write);
     State::DoState(p);
   });
 
@@ -286,7 +288,7 @@ bool retro_serialize(void* data, size_t size)
 bool retro_unserialize(const void* data, size_t size)
 {
   Core::RunAsCPUThread([&] {
-    PointerWrap p((u8**)&data, PointerWrap::MODE_READ);
+    PointerWrap p((u8**)&data, size, PointerWrap::Mode::Read);
     State::DoState(p);
   });
 
@@ -309,19 +311,11 @@ unsigned retro_api_version()
 
 size_t retro_get_memory_size(unsigned id)
 {
-  if (id == RETRO_MEMORY_SYSTEM_RAM)
-  {
-    return Memory::m_TotalMemorySize;
-  }
   return 0;
 }
 
 void* retro_get_memory_data(unsigned id)
 {
-  if (id == RETRO_MEMORY_SYSTEM_RAM)
-  {
-    return Memory::m_pContiguousRAM;
-  }
   return NULL;
 }
 

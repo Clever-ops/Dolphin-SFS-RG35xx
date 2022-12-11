@@ -1,6 +1,5 @@
 // Copyright 2008 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
 
@@ -8,7 +7,7 @@
 #include <string>
 
 #include "Common/CommonTypes.h"
-#include "Common/File.h"
+#include "Common/IOFile.h"
 #include "DiscIO/Blob.h"
 
 #ifdef _WIN32
@@ -28,11 +27,12 @@ public:
 
   u64 GetRawSize() const override { return m_size; }
   u64 GetDataSize() const override { return m_size; }
-  bool IsDataSizeAccurate() const override { return true; }
+  DataSizeType GetDataSizeType() const override { return DataSizeType::Accurate; }
 
   u64 GetBlockSize() const override { return ECC_BLOCK_SIZE; }
   bool HasFastRandomAccessInBlock() const override { return false; }
   std::string GetCompressionMethod() const override { return {}; }
+  std::optional<int> GetCompressionLevel() const override { return std::nullopt; }
 
 private:
   DriveReader(const std::string& drive);

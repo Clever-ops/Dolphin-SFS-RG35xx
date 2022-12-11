@@ -1,11 +1,12 @@
 // Copyright 2008 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
 
 #include "Common/CommonTypes.h"
+
 class PointerWrap;
+
 namespace MMIO
 {
 class Mapping;
@@ -46,14 +47,11 @@ enum
 };
 
 // ReadMode specifies the returned alpha channel for EFB peeks
-union UPEAlphaReadReg
+enum class AlphaReadMode : u16
 {
-  u16 Hex;
-  struct
-  {
-    u16 ReadMode : 2;
-    u16 : 14;
-  };
+  Read00 = 0,    // Always read 0x00
+  ReadFF = 1,    // Always read 0xFF
+  ReadNone = 2,  // Always read the real alpha value
 };
 
 void Init();
@@ -62,8 +60,8 @@ void DoState(PointerWrap& p);
 void RegisterMMIO(MMIO::Mapping* mmio, u32 base);
 
 // gfx backend support
-void SetToken(const u16 token, const bool interrupt);
-void SetFinish();
-UPEAlphaReadReg GetAlphaReadMode();
+void SetToken(const u16 token, const bool interrupt, int cycle_delay);
+void SetFinish(int cycle_delay);
+AlphaReadMode GetAlphaReadMode();
 
-}  // end of namespace PixelEngine
+}  // namespace PixelEngine

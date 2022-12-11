@@ -1,93 +1,89 @@
+// SPDX-License-Identifier: GPL-2.0-or-later
+
 package org.dolphinemu.dolphinemu.features.settings.model.view;
 
+import android.content.Context;
+
 import org.dolphinemu.dolphinemu.DolphinApplication;
-import org.dolphinemu.dolphinemu.features.settings.model.Setting;
-import org.dolphinemu.dolphinemu.features.settings.model.StringSetting;
+import org.dolphinemu.dolphinemu.features.settings.model.AbstractSetting;
+import org.dolphinemu.dolphinemu.features.settings.model.AbstractStringSetting;
+import org.dolphinemu.dolphinemu.features.settings.model.Settings;
 import org.dolphinemu.dolphinemu.features.settings.ui.MenuTag;
 
 public class StringSingleChoiceSetting extends SettingsItem
 {
-  private String mDefaultValue;
+  private AbstractStringSetting mSetting;
 
-  private String[] mChoicesId;
-  private String[] mValuesId;
+  private String[] mChoices;
+  private String[] mValues;
   private MenuTag mMenuTag;
 
-  public StringSingleChoiceSetting(String key, String section, int titleId, int descriptionId,
-          String[] choicesId, String[] valuesId, String defaultValue, Setting setting,
-          MenuTag menuTag)
+  public StringSingleChoiceSetting(Context context, AbstractStringSetting setting, int titleId,
+          int descriptionId, String[] choices, String[] values, MenuTag menuTag)
   {
-    super(key, section, setting, titleId, descriptionId);
-    mChoicesId = choicesId;
-    mValuesId = valuesId;
-    mDefaultValue = defaultValue;
+    super(context, titleId, descriptionId);
+    mSetting = setting;
+    mChoices = choices;
+    mValues = values;
     mMenuTag = menuTag;
   }
 
-  public StringSingleChoiceSetting(String key, String section, int titleId, int descriptionId,
-          String[] choicesId, String[] valuesId, String defaultValue, Setting setting)
+  public StringSingleChoiceSetting(Context context, AbstractStringSetting setting, int titleId,
+          int descriptionId, String[] choices, String[] values)
   {
-    this(key, section, titleId, descriptionId, choicesId, valuesId, defaultValue, setting, null);
+    this(context, setting, titleId, descriptionId, choices, values, null);
   }
 
-  public StringSingleChoiceSetting(String key, String section, int titleId, int descriptionId,
-          int choicesId, int valuesId, String defaultValue, Setting setting, MenuTag menuTag)
+  public StringSingleChoiceSetting(Context context, AbstractStringSetting setting, int titleId,
+          int descriptionId, int choicesId, int valuesId, MenuTag menuTag)
   {
-    super(key, section, setting, titleId, descriptionId);
-    mChoicesId = DolphinApplication.getAppContext().getResources().getStringArray(choicesId);
-    mValuesId = DolphinApplication.getAppContext().getResources().getStringArray(valuesId);
-    mDefaultValue = defaultValue;
+    super(context, titleId, descriptionId);
+    mSetting = setting;
+    mChoices = DolphinApplication.getAppContext().getResources().getStringArray(choicesId);
+    mValues = DolphinApplication.getAppContext().getResources().getStringArray(valuesId);
     mMenuTag = menuTag;
   }
 
-  public StringSingleChoiceSetting(String key, String section, int titleId, int descriptionId,
-          int choicesId, int valuesId, String defaultValue, Setting setting)
+  public StringSingleChoiceSetting(Context context, AbstractStringSetting setting, int titleId,
+          int descriptionId, int choicesId, int valuesId)
   {
-    this(key, section, titleId, descriptionId, choicesId, valuesId, defaultValue, setting, null);
+    this(context, setting, titleId, descriptionId, choicesId, valuesId, null);
   }
 
-  public String[] getChoicesId()
+  public String[] getChoices()
   {
-    return mChoicesId;
+    return mChoices;
   }
 
-  public String[] getValuesId()
+  public String[] getValues()
   {
-    return mValuesId;
+    return mValues;
   }
 
   public String getValueAt(int index)
   {
-    if (mValuesId == null)
+    if (mValues == null)
       return null;
 
-    if (index >= 0 && index < mValuesId.length)
+    if (index >= 0 && index < mValues.length)
     {
-      return mValuesId[index];
+      return mValues[index];
     }
 
     return "";
   }
 
-  public String getSelectedValue()
+  public String getSelectedValue(Settings settings)
   {
-    if (getSetting() == null || !(getSetting() instanceof StringSetting))
-    {
-      return mDefaultValue;
-    }
-    else
-    {
-      StringSetting setting = (StringSetting) getSetting();
-      return setting.getValue();
-    }
+    return mSetting.getString(settings);
   }
 
-  public int getSelectValueIndex()
+  public int getSelectedValueIndex(Settings settings)
   {
-    String selectedValue = getSelectedValue();
-    for (int i = 0; i < mValuesId.length; i++)
+    String selectedValue = getSelectedValue(settings);
+    for (int i = 0; i < mValues.length; i++)
     {
-      if (mValuesId[i].equals(selectedValue))
+      if (mValues[i].equals(selectedValue))
       {
         return i;
       }
@@ -101,33 +97,21 @@ public class StringSingleChoiceSetting extends SettingsItem
     return mMenuTag;
   }
 
-  /**
-   * Write a value to the backing int. If that int was previously null,
-   * initializes a new one and returns it, so it can be added to the Hashmap.
-   *
-   * @param selection New value of the int.
-   * @return null if overwritten successfully otherwise; a newly created IntSetting.
-   */
-  public StringSetting setSelectedValue(String selection)
+  public void setSelectedValue(Settings settings, String selection)
   {
-    if (getSetting() == null || !(getSetting() instanceof StringSetting))
-    {
-      StringSetting setting = new StringSetting(getKey(), getSection(), selection);
-      setSetting(setting);
-      return setting;
-    }
-    else
-    {
-      StringSetting setting = (StringSetting) getSetting();
-      setting.setValue(selection);
-      return null;
-    }
+    mSetting.setString(settings, selection);
   }
 
   @Override
   public int getType()
   {
     return TYPE_STRING_SINGLE_CHOICE;
+  }
+
+  @Override
+  public AbstractSetting getSetting()
+  {
+    return mSetting;
   }
 }
 

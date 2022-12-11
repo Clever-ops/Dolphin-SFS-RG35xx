@@ -1,6 +1,5 @@
 // Copyright 2017 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
 
@@ -21,6 +20,8 @@ class NativeVertexFormat;
 //       - Per-stage UBO (VS/GS/PS, VS constants accessible from PS)
 //       - 8 combined image samplers (accessible from PS)
 //       - 1 SSBO, accessible from PS if bounding box is enabled
+//   - GX Uber
+//       - Same as GX, plus one VS SSBO for vertices if dynamic vertex loading is enabled
 //   - Utility
 //       - Single UBO, accessible from all stages [set=0, binding=1]
 //       - 8 combined image samplers (accessible from PS) [set=1, binding=0-7]
@@ -33,6 +34,7 @@ class NativeVertexFormat;
 enum class AbstractPipelineUsage
 {
   GX,
+  GXUber,
   Utility
 };
 

@@ -1,6 +1,5 @@
 // Copyright 2018 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
 
@@ -9,6 +8,7 @@
 #include <QTableWidget>
 
 #include "Common/CommonTypes.h"
+#include "Common/Debug/CodeTrace.h"
 
 class QKeyEvent;
 class QMouseEvent;
@@ -25,7 +25,8 @@ public:
   enum class SetAddressUpdate
   {
     WithUpdate,
-    WithoutUpdate
+    WithoutUpdate,
+    WithDetailedUpdate
   };
 
   explicit CodeViewWidget();
@@ -49,6 +50,7 @@ signals:
   void ShowMemory(u32 address);
   void SymbolsChanged();
   void BreakpointsChanged();
+  void UpdateCodeWidget();
 
 private:
   enum class ReplaceWith
@@ -67,9 +69,12 @@ private:
 
   void OnContextMenu();
 
+  void AutoStep(CodeTrace::AutoStop option = CodeTrace::AutoStop::Always);
   void OnFollowBranch();
   void OnCopyAddress();
+  void OnCopyTargetAddress();
   void OnShowInMemory();
+  void OnShowTargetInMemory();
   void OnCopyFunction();
   void OnCopyCode();
   void OnCopyHex();

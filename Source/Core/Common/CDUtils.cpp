@@ -1,8 +1,9 @@
 // Copyright 2009 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 // Most of the code in this file was shamelessly ripped from libcdio With minor adjustments
+
+#include "Common/CDUtils.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -10,11 +11,6 @@
 #include <vector>
 
 #include <fmt/format.h>
-
-#include "Common/CDUtils.h"
-#include "Common/Common.h"
-#include "Common/CommonTypes.h"
-#include "Common/StringUtil.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -36,6 +32,10 @@
 #ifdef __linux__
 #include <linux/cdrom.h>
 #endif
+
+#include "Common/Common.h"
+#include "Common/CommonTypes.h"
+#include "Common/StringUtil.h"
 
 namespace Common
 {
@@ -195,7 +195,7 @@ std::vector<std::string> GetCDDevices()
   {
     for (unsigned int j = checklist[i].num_min; j <= checklist[i].num_max; ++j)
     {
-      std::string drive = fmt::format(checklist[i].format, j);
+      std::string drive = fmt::format(fmt::runtime(checklist[i].format), j);
       if (IsCDROM(drive))
       {
         drives.push_back(std::move(drive));

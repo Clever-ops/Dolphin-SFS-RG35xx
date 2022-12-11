@@ -1,6 +1,5 @@
 // Copyright 2008 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "VideoCommon/VertexShaderManager.h"
 
@@ -22,8 +21,10 @@
 #include "VideoCommon/BPMemory.h"
 #include "VideoCommon/CPMemory.h"
 #include "VideoCommon/FreeLookCamera.h"
+#include "VideoCommon/GraphicsModSystem/Runtime/GraphicsModActionData.h"
 #include "VideoCommon/RenderBase.h"
 #include "VideoCommon/Statistics.h"
+#include "VideoCommon/VertexLoaderManager.h"
 #include "VideoCommon/VertexManagerBase.h"
 #include "VideoCommon/VideoCommon.h"
 #include "VideoCommon/VideoConfig.h"
@@ -38,6 +39,7 @@ static bool bProjectionChanged;
 static bool bViewportChanged;
 static bool bTexMtxInfoChanged;
 static bool bLightingConfigChanged;
+static bool bProjectionGraphicsModChange;
 static BitSet32 nMaterialsChanged;
 static std::array<int, 2> nTransformMatricesChanged;      // min,max
 static std::array<int, 2> nNormalMatricesChanged;         // min,max
@@ -48,55 +50,6 @@ static Common::Matrix44 s_viewportCorrection;
 
 VertexShaderConstants VertexShaderManager::constants;
 bool VertexShaderManager::dirty;
-
-// Viewport correction:
-// In D3D, the viewport rectangle must fit within the render target.
-// Say you want a viewport at (ix, iy) with size (iw, ih),
-// but your viewport must be clamped at (ax, ay) with size (aw, ah).
-// Just multiply the projection matrix with the following to get the same
-// effect:
-// [   (iw/aw)         0     0    ((iw - 2*(ax-ix)) / aw - 1)   ]
-// [         0   (ih/ah)     0   ((-ih + 2*(ay-iy)) / ah + 1)   ]
-// [         0         0     1                              0   ]
-// [         0         0     0                              1   ]
-static void ViewportCorrectionMatrix(Common::Matrix44& result)
-{
-  int scissorXOff = bpmem.scissorOffset.x * 2;
-  int scissorYOff = bpmem.scissorOffset.y * 2;
-
-  // TODO: ceil, floor or just cast to int?
-  // TODO: Directly use the floats instead of rounding them?
-  float intendedX = xfmem.viewport.xOrig - xfmem.viewport.wd - scissorXOff;
-  float intendedY = xfmem.viewport.yOrig + xfmem.viewport.ht - scissorYOff;
-  float intendedWd = 2.0f * xfmem.viewport.wd;
-  float intendedHt = -2.0f * xfmem.viewport.ht;
-
-  if (intendedWd < 0.f)
-  {
-    intendedX += intendedWd;
-    intendedWd = -intendedWd;
-  }
-  if (intendedHt < 0.f)
-  {
-    intendedY += intendedHt;
-    intendedHt = -intendedHt;
-  }
-
-  // fit to EFB size
-  float X = (intendedX >= 0.f) ? intendedX : 0.f;
-  float Y = (intendedY >= 0.f) ? intendedY : 0.f;
-  float Wd = (X + intendedWd <= EFB_WIDTH) ? intendedWd : (EFB_WIDTH - X);
-  float Ht = (Y + intendedHt <= EFB_HEIGHT) ? intendedHt : (EFB_HEIGHT - Y);
-
-  result = Common::Matrix44::Identity();
-  if (Wd == 0 || Ht == 0)
-    return;
-
-  result.data[4 * 0 + 0] = intendedWd / Wd;
-  result.data[4 * 0 + 3] = (intendedWd - 2.f * (X - intendedX)) / Wd - 1.f;
-  result.data[4 * 1 + 1] = intendedHt / Ht;
-  result.data[4 * 1 + 3] = (-intendedHt + 2.f * (Y - intendedY)) / Ht + 1.f;
-}
 
 void VertexShaderManager::Init()
 {
@@ -112,7 +65,7 @@ void VertexShaderManager::Init()
   bViewportChanged = false;
   bTexMtxInfoChanged = false;
   bLightingConfigChanged = false;
-  g_freelook_camera.SetControlType(Config::Get(Config::GFX_FREE_LOOK_CONTROL_TYPE));
+  bProjectionGraphicsModChange = false;
 
   std::memset(static_cast<void*>(&xfmem), 0, sizeof(xfmem));
   constants = {};
@@ -135,8 +88,20 @@ void VertexShaderManager::Dirty()
 
 // Syncs the shader constant buffers with xfmem
 // TODO: A cleaner way to control the matrices without making a mess in the parameters field
-void VertexShaderManager::SetConstants()
+void VertexShaderManager::SetConstants(const std::vector<std::string>& textures)
 {
+  if (constants.missing_color_hex != g_ActiveConfig.iMissingColorValue)
+  {
+    const float a = (g_ActiveConfig.iMissingColorValue) & 0xFF;
+    const float b = (g_ActiveConfig.iMissingColorValue >> 8) & 0xFF;
+    const float g = (g_ActiveConfig.iMissingColorValue >> 16) & 0xFF;
+    const float r = (g_ActiveConfig.iMissingColorValue >> 24) & 0xFF;
+    constants.missing_color_hex = g_ActiveConfig.iMissingColorValue;
+    constants.missing_color_value = {r / 255, g / 255, b / 255, a / 255};
+
+    dirty = true;
+  }
+
   if (nTransformMatricesChanged[0] >= 0)
   {
     int startn = nTransformMatricesChanged[0] / 4;
@@ -208,14 +173,22 @@ void VertexShaderManager::SetConstants()
       dstlight.pos[1] = light.dpos[1];
       dstlight.pos[2] = light.dpos[2];
 
+      // TODO: Hardware testing is needed to confirm that this normalization is correct
+      auto sanitize = [](float f) {
+        if (std::isnan(f))
+          return 0.0f;
+        else if (std::isinf(f))
+          return f > 0.0f ? 1.0f : -1.0f;
+        else
+          return f;
+      };
       double norm = double(light.ddir[0]) * double(light.ddir[0]) +
                     double(light.ddir[1]) * double(light.ddir[1]) +
                     double(light.ddir[2]) * double(light.ddir[2]);
       norm = 1.0 / sqrt(norm);
-      float norm_float = static_cast<float>(norm);
-      dstlight.dir[0] = light.ddir[0] * norm_float;
-      dstlight.dir[1] = light.ddir[1] * norm_float;
-      dstlight.dir[2] = light.ddir[2] * norm_float;
+      dstlight.dir[0] = sanitize(static_cast<float>(light.ddir[0] * norm));
+      dstlight.dir[1] = sanitize(static_cast<float>(light.ddir[1] * norm));
+      dstlight.dir[2] = sanitize(static_cast<float>(light.ddir[2] * norm));
     }
     dirty = true;
 
@@ -292,7 +265,7 @@ void VertexShaderManager::SetConstants()
     // NOTE: If we ever emulate antialiasing, the sample locations set by
     // BP registers 0x01-0x04 need to be considered here.
     const float pixel_center_correction = 7.0f / 12.0f - 0.5f;
-    const bool bUseVertexRounding = g_ActiveConfig.bVertexRounding && g_ActiveConfig.iEFBScale != 1;
+    const bool bUseVertexRounding = g_ActiveConfig.UseVertexRounding();
     const float viewport_width = bUseVertexRounding ?
                                      (2.f * xfmem.viewport.wd) :
                                      g_renderer->EFBToScaledXf(2.f * xfmem.viewport.wd);
@@ -336,36 +309,56 @@ void VertexShaderManager::SetConstants()
     }
 
     dirty = true;
-    BPFunctions::SetViewport();
+    BPFunctions::SetScissorAndViewport();
+    g_stats.AddScissorRect();
+  }
 
-    // Update projection if the viewport isn't 1:1 useable
-    if (!g_ActiveConfig.backend_info.bSupportsOversizedViewports)
+  std::vector<GraphicsModAction*> projection_actions;
+  if (g_ActiveConfig.bGraphicMods)
+  {
+    for (const auto action :
+         g_renderer->GetGraphicsModManager().GetProjectionActions(xfmem.projection.type))
     {
-      ViewportCorrectionMatrix(s_viewportCorrection);
-      bProjectionChanged = true;
+      projection_actions.push_back(action);
+    }
+
+    for (const auto& texture : textures)
+    {
+      for (const auto action : g_renderer->GetGraphicsModManager().GetProjectionTextureActions(
+               xfmem.projection.type, texture))
+      {
+        projection_actions.push_back(action);
+      }
     }
   }
 
-  if (bProjectionChanged || g_freelook_camera.IsDirty())
+  if (bProjectionChanged || g_freelook_camera.GetController()->IsDirty() ||
+      !projection_actions.empty() || bProjectionGraphicsModChange)
   {
     bProjectionChanged = false;
+    bProjectionGraphicsModChange = !projection_actions.empty();
 
     const auto& rawProjection = xfmem.projection.rawProjection;
 
     switch (xfmem.projection.type)
     {
-    case GX_PERSPECTIVE:
+    case ProjectionType::Perspective:
     {
-      const Common::Vec2 fov =
-          g_ActiveConfig.bFreeLook ? g_freelook_camera.GetFieldOfView() : Common::Vec2{1, 1};
-      g_fProjectionMatrix[0] = rawProjection[0] * g_ActiveConfig.fAspectRatioHackW * fov.x;
+      const Common::Vec2 fov_multiplier = g_freelook_camera.IsActive() ?
+                                              g_freelook_camera.GetFieldOfViewMultiplier() :
+                                              Common::Vec2{1, 1};
+      g_fProjectionMatrix[0] =
+          rawProjection[0] * g_ActiveConfig.fAspectRatioHackW * fov_multiplier.x;
       g_fProjectionMatrix[1] = 0.0f;
-      g_fProjectionMatrix[2] = rawProjection[1] * g_ActiveConfig.fAspectRatioHackW * fov.x;
+      g_fProjectionMatrix[2] =
+          rawProjection[1] * g_ActiveConfig.fAspectRatioHackW * fov_multiplier.x;
       g_fProjectionMatrix[3] = 0.0f;
 
       g_fProjectionMatrix[4] = 0.0f;
-      g_fProjectionMatrix[5] = rawProjection[2] * g_ActiveConfig.fAspectRatioHackH * fov.y;
-      g_fProjectionMatrix[6] = rawProjection[3] * g_ActiveConfig.fAspectRatioHackH * fov.y;
+      g_fProjectionMatrix[5] =
+          rawProjection[2] * g_ActiveConfig.fAspectRatioHackH * fov_multiplier.y;
+      g_fProjectionMatrix[6] =
+          rawProjection[3] * g_ActiveConfig.fAspectRatioHackH * fov_multiplier.y;
       g_fProjectionMatrix[7] = 0.0f;
 
       g_fProjectionMatrix[8] = 0.0f;
@@ -383,7 +376,7 @@ void VertexShaderManager::SetConstants()
     }
     break;
 
-    case GX_ORTHOGRAPHIC:
+    case ProjectionType::Orthographic:
     {
       g_fProjectionMatrix[0] = rawProjection[0];
       g_fProjectionMatrix[1] = 0.0f;
@@ -412,20 +405,26 @@ void VertexShaderManager::SetConstants()
     break;
 
     default:
-      ERROR_LOG(VIDEO, "Unknown projection type: %d", xfmem.projection.type);
+      ERROR_LOG_FMT(VIDEO, "Unknown projection type: {}", xfmem.projection.type);
     }
 
-    PRIM_LOG("Projection: %f %f %f %f %f %f", rawProjection[0], rawProjection[1], rawProjection[2],
+    PRIM_LOG("Projection: {} {} {} {} {} {}", rawProjection[0], rawProjection[1], rawProjection[2],
              rawProjection[3], rawProjection[4], rawProjection[5]);
 
     auto corrected_matrix = s_viewportCorrection * Common::Matrix44::FromArray(g_fProjectionMatrix);
 
-    if (g_ActiveConfig.bFreeLook && xfmem.projection.type == GX_PERSPECTIVE)
+    if (g_freelook_camera.IsActive() && xfmem.projection.type == ProjectionType::Perspective)
       corrected_matrix *= g_freelook_camera.GetView();
+
+    GraphicsModActionData::Projection projection{&corrected_matrix};
+    for (auto action : projection_actions)
+    {
+      action->OnProjection(&projection);
+    }
 
     memcpy(constants.projection.data(), corrected_matrix.data.data(), 4 * sizeof(float4));
 
-    g_freelook_camera.SetClean();
+    g_freelook_camera.GetController()->SetClean();
 
     dirty = true;
   }
@@ -452,7 +451,6 @@ void VertexShaderManager::SetConstants()
       constants.xfmem_pack1[i][3] = xfmem.alpha[i].hex;
     }
     constants.xfmem_numColorChans = xfmem.numChan.numColorChans;
-
     dirty = true;
   }
 }
@@ -610,13 +608,42 @@ void VertexShaderManager::SetMaterialColorChanged(int index)
   nMaterialsChanged[index] = true;
 }
 
-void VertexShaderManager::SetVertexFormat(u32 components)
+static void UpdateValue(bool* dirty, u32* old_value, u32 new_value)
 {
-  if (components != constants.components)
-  {
-    constants.components = components;
-    dirty = true;
-  }
+  if (*old_value == new_value)
+    return;
+  *old_value = new_value;
+  *dirty = true;
+}
+
+static void UpdateOffset(bool* dirty, bool include_components, u32* old_value,
+                         const AttributeFormat& attribute)
+{
+  if (!attribute.enable)
+    return;
+  u32 new_value = attribute.offset / 4;  // GPU uses uint offsets
+  if (include_components)
+    new_value |= attribute.components << 16;
+  UpdateValue(dirty, old_value, new_value);
+}
+
+template <size_t N>
+static void UpdateOffsets(bool* dirty, bool include_components, std::array<u32, N>* old_value,
+                          const std::array<AttributeFormat, N>& attribute)
+{
+  for (size_t i = 0; i < N; i++)
+    UpdateOffset(dirty, include_components, &(*old_value)[i], attribute[i]);
+}
+
+void VertexShaderManager::SetVertexFormat(u32 components, const PortableVertexDeclaration& format)
+{
+  UpdateValue(&dirty, &constants.components, components);
+  UpdateValue(&dirty, &constants.vertex_stride, format.stride / 4);
+  UpdateOffset(&dirty, true, &constants.vertex_offset_position, format.position);
+  UpdateOffset(&dirty, false, &constants.vertex_offset_posmtx, format.posmtx);
+  UpdateOffsets(&dirty, true, &constants.vertex_offset_texcoords, format.texcoords);
+  UpdateOffsets(&dirty, false, &constants.vertex_offset_colors, format.colors);
+  UpdateOffsets(&dirty, false, &constants.vertex_offset_normals, format.normals);
 }
 
 void VertexShaderManager::SetTexMatrixInfoChanged(int index)
@@ -675,7 +702,7 @@ void VertexShaderManager::DoState(PointerWrap& p)
 
   p.Do(constants);
 
-  if (p.GetMode() == PointerWrap::MODE_READ)
+  if (p.IsReadMode())
   {
     Dirty();
   }

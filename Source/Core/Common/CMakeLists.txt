@@ -2,7 +2,6 @@ add_library(common
   Analytics.cpp
   Analytics.h
   Assert.h
-  Atomic.h
   BitField.h
   BitSet.h
   BitUtils.h
@@ -32,10 +31,12 @@ add_library(common
   Crypto/bn.h
   Crypto/ec.cpp
   Crypto/ec.h
+  Crypto/SHA1.cpp
+  Crypto/SHA1.h
+  Debug/CodeTrace.cpp
+  Debug/CodeTrace.h
   Debug/MemoryPatches.cpp
   Debug/MemoryPatches.h
-  Debug/OSThread.cpp
-  Debug/OSThread.h
   Debug/Threads.h
   Debug/Watches.cpp
   Debug/Watches.h
@@ -44,9 +45,11 @@ add_library(common
   DynamicLibrary.h
   ENetUtil.cpp
   ENetUtil.h
+  EnumFormatter.h
+  EnumMap.h
   Event.h
-  File.cpp
-  File.h
+  FatFsUtil.cpp
+  FatFsUtil.h
   FileSearch.cpp
   FileSearch.h
   FileUtil.cpp
@@ -55,6 +58,7 @@ add_library(common
   Flag.h
   FloatUtils.cpp
   FloatUtils.h
+  FormatUtil.h
   FPURoundMode.h
   GekkoDisassembler.cpp
   GekkoDisassembler.h
@@ -67,6 +71,8 @@ add_library(common
   IniFile.cpp
   IniFile.h
   Inline.h
+  IOFile.cpp
+  IOFile.h
   JitRegister.cpp
   JitRegister.h
   Lazy.h
@@ -79,9 +85,6 @@ add_library(common
   MathUtil.h
   Matrix.cpp
   Matrix.h
-  MD5.cpp
-  MD5.h
-  MemArena.cpp
   MemArena.h
   MemoryUtil.cpp
   MemoryUtil.h
@@ -107,10 +110,12 @@ add_library(common
   SDCardUtil.cpp
   SDCardUtil.h
   Semaphore.h
-  SFMLHelper.cpp
-  SFMLHelper.h
   SettingsHandler.cpp
   SettingsHandler.h
+  SFMLHelper.cpp
+  SFMLHelper.h
+  SocketContext.cpp
+  SocketContext.h
   SPSCQueue.h
   StringUtil.cpp
   StringUtil.h
@@ -123,6 +128,7 @@ add_library(common
   TraversalClient.cpp
   TraversalClient.h
   TraversalProto.h
+  TypeUtils.h
   UPnP.cpp
   UPnP.h
   VariantUtil.h
@@ -132,18 +138,34 @@ add_library(common
   WorkQueueThread.h
 )
 
+if(MSVC AND _M_ARM_64)
+  # Workaround msvc arm64 optimizer bug
+  # TODO remove after updating to VS 17.4
+  set_source_files_properties(
+    Crypto/SHA1.cpp
+    PROPERTIES COMPILE_FLAGS "/d2ssa-peeps-post-color-")
+endif()
+
+if(NOT MSVC AND _M_ARM_64)
+  set_source_files_properties(
+    Crypto/AES.cpp
+    Crypto/SHA1.cpp
+    PROPERTIES COMPILE_FLAGS "-march=armv8-a+crypto")
+endif()
+
 target_link_libraries(common
 PUBLIC
   ${CMAKE_THREAD_LIBS_INIT}
   enet
   fmt::fmt
   ${MBEDTLS_LIBRARIES}
-  minizip
+  minizip-ng
 
 PRIVATE
   ${CURL_LIBRARIES}
+  FatFs
   ${ICONV_LIBRARIES}
-  png
+  spng
   ${VTUNE_LIBRARIES}
 )
 
@@ -162,8 +184,15 @@ elseif(WIN32)
     winmm.lib
   )
   if (_M_X86_64)
-	  target_link_libraries(common PRIVATE opengl32.lib)
+    target_link_libraries(common PRIVATE opengl32.lib)
   endif()
+elseif (ANDROID)
+  target_link_libraries(common
+  PRIVATE
+    androidcommon
+  )
+elseif(HAIKU)
+  target_link_libraries(common PRIVATE be GL)
 endif()
 
 if(ANDROID)
@@ -171,6 +200,7 @@ if(ANDROID)
     AndroidAnalytics.cpp
     AndroidAnalytics.h
     Logging/ConsoleListenerDroid.cpp
+    MemArenaAndroid.cpp
   )
 elseif(WIN32)
   if(MSVC)
@@ -181,10 +211,12 @@ elseif(WIN32)
   endif()
   target_sources(common PRIVATE
     Logging/ConsoleListenerWin.cpp
+    MemArenaWin.cpp
   )
 else()
   target_sources(common PRIVATE
     Logging/ConsoleListenerNix.cpp
+    MemArenaUnix.cpp
   )
 endif()
 
@@ -194,7 +226,7 @@ if(_M_ARM_64)
     Arm64Emitter.h
     ArmCommon.h
     ArmCPUDetect.cpp
-    GenericFPURoundMode.cpp
+    ArmFPURoundMode.cpp
   )
 else()
   if(_M_X86) #X86
@@ -260,6 +292,11 @@ elseif(APPLE)
     GL/GLInterface/AGL.h
     GL/GLInterface/AGL.mm
   )
+elseif(HAIKU)
+  target_sources(common PRIVATE
+    GL/GLInterface/BGL.h
+    GL/GLInterface/BGL.cpp
+  )
 elseif(ENABLE_X11 AND X11_FOUND)
   target_sources(common PRIVATE
     GL/GLX11Window.cpp
@@ -275,6 +312,10 @@ endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   target_link_libraries(common PUBLIC dl rt)
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  target_sources(common PRIVATE HRWrap.h HRWrap.cpp)
 endif()
 
 if(USE_UPNP)
@@ -293,6 +334,17 @@ if(UNIX AND NOT LIBRETRO)
     target_link_libraries(traversal_server PRIVATE ${SYSTEMD_LIBRARIES})
   endif()
 elseif(WIN32)
+  find_package(PowerShell REQUIRED)
+  execute_process(
+    COMMAND ${POWERSHELL_EXE} -Command "[System.Diagnostics.FileVersionInfo]::GetVersionInfo('$ENV{VCToolsRedistDir}vc_redist.x64.exe').ProductVersion"
+    OUTPUT_VARIABLE VC_TOOLS_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+  configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/build_info.txt.in"
+    "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/build_info.txt"
+    )
+
   if(MSVC)
     target_link_libraries(common PRIVATE "-INCLUDE:enableCompatPatches")
     target_link_libraries(common PRIVATE "-NODEFAULTLIB:libcmt")
@@ -300,4 +352,9 @@ elseif(WIN32)
   if(MINGW)
     target_link_libraries(common PRIVATE comctl32 comdlg32 winmm shlwapi)
   endif()
+endif()
+
+if(MSVC)
+  # Add precompiled header
+  target_link_libraries(common PRIVATE use_pch)
 endif()

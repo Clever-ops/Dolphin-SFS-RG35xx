@@ -1,10 +1,10 @@
 // Copyright 2015 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
+
+#include "VideoCommon/AsyncRequests.h"
 
 #include <mutex>
 
-#include "VideoCommon/AsyncRequests.h"
 #include "VideoCommon/Fifo.h"
 #include "VideoCommon/RenderBase.h"
 #include "VideoCommon/Statistics.h"
@@ -156,6 +156,10 @@ void AsyncRequests::HandleEvent(const AsyncRequests::Event& e)
 
   case Event::BBOX_READ:
     *e.bbox.data = g_renderer->BBoxRead(e.bbox.index);
+    break;
+
+  case Event::FIFO_RESET:
+    Fifo::ResetVideoBuffer();
     break;
 
   case Event::PERF_QUERY:

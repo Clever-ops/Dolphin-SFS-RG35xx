@@ -1,6 +1,5 @@
 // Copyright 2008 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #include "Core/HLE/HLE_OS.h"
 
@@ -37,8 +36,8 @@ void HLE_OSPanic()
   StringPopBackIf(&error, '\n');
   StringPopBackIf(&msg, '\n');
 
-  PanicAlert("OSPanic: %s: %s", error.c_str(), msg.c_str());
-  ERROR_LOG(OSREPORT, "%08x->%08x| OSPanic: %s: %s", LR, PC, error.c_str(), msg.c_str());
+  PanicAlertFmt("OSPanic: {}: {}", error, msg);
+  ERROR_LOG_FMT(OSREPORT_HLE, "{:08x}->{:08x}| OSPanic: {}: {}", LR, PC, error, msg);
 
   NPC = LR;
 }
@@ -80,9 +79,7 @@ void HLE_GeneralDebugPrint(ParameterType parameter_type)
 
   StringPopBackIf(&report_message, '\n');
 
-  NPC = LR;
-
-  NOTICE_LOG(OSREPORT, "%08x->%08x| %s", LR, PC, SHIFTJISToUTF8(report_message).c_str());
+  NOTICE_LOG_FMT(OSREPORT_HLE, "{:08x}->{:08x}| {}", LR, PC, SHIFTJISToUTF8(report_message));
 }
 
 // Generalized function for printing formatted string using parameter list.
@@ -103,37 +100,33 @@ void HLE_write_console()
   std::string report_message = GetStringVA(4);
   if (PowerPC::HostIsRAMAddress(GPR(5)))
   {
-    u32 size = PowerPC::Read_U32(GPR(5));
+    const u32 size = PowerPC::Read_U32(GPR(5));
     if (size > report_message.size())
-      WARN_LOG(OSREPORT, "__write_console uses an invalid size of 0x%08x", size);
+      WARN_LOG_FMT(OSREPORT_HLE, "__write_console uses an invalid size of {:#010x}", size);
     else if (size == 0)
-      WARN_LOG(OSREPORT, "__write_console uses a size of zero");
+      WARN_LOG_FMT(OSREPORT_HLE, "__write_console uses a size of zero");
     else
       report_message = report_message.substr(0, size);
   }
   else
   {
-    ERROR_LOG(OSREPORT, "__write_console uses an unreachable size pointer");
+    ERROR_LOG_FMT(OSREPORT_HLE, "__write_console uses an unreachable size pointer");
   }
 
   StringPopBackIf(&report_message, '\n');
 
-  NPC = LR;
-
-  NOTICE_LOG(OSREPORT, "%08x->%08x| %s", LR, PC, SHIFTJISToUTF8(report_message).c_str());
+  NOTICE_LOG_FMT(OSREPORT_HLE, "{:08x}->{:08x}| {}", LR, PC, SHIFTJISToUTF8(report_message));
 }
 
 // Log (v)dprintf message if fd is 1 (stdout) or 2 (stderr)
 void HLE_LogDPrint(ParameterType parameter_type)
 {
-  NPC = LR;
-
   if (GPR(3) != 1 && GPR(3) != 2)
     return;
 
   std::string report_message = GetStringVA(4, parameter_type);
   StringPopBackIf(&report_message, '\n');
-  NOTICE_LOG(OSREPORT, "%08x->%08x| %s", LR, PC, SHIFTJISToUTF8(report_message).c_str());
+  NOTICE_LOG_FMT(OSREPORT_HLE, "{:08x}->{:08x}| {}", LR, PC, SHIFTJISToUTF8(report_message));
 }
 
 // Log dprintf message
@@ -153,8 +146,6 @@ void HLE_LogVDPrint()
 // Log (v)fprintf message if FILE is stdout or stderr
 void HLE_LogFPrint(ParameterType parameter_type)
 {
-  NPC = LR;
-
   // The structure FILE is implementation defined.
   // Both libogc and Dolphin SDK seem to store the fd at the same address.
   int fd = -1;
@@ -173,7 +164,7 @@ void HLE_LogFPrint(ParameterType parameter_type)
 
   std::string report_message = GetStringVA(4, parameter_type);
   StringPopBackIf(&report_message, '\n');
-  NOTICE_LOG(OSREPORT, "%08x->%08x| %s", LR, PC, SHIFTJISToUTF8(report_message).c_str());
+  NOTICE_LOG_FMT(OSREPORT_HLE, "{:08x}->{:08x}| {}", LR, PC, SHIFTJISToUTF8(report_message));
 }
 
 // Log fprintf message
@@ -246,7 +237,7 @@ std::string GetStringVA(u32 str_reg, ParameterType parameter_type)
 
       case 'n':
         // %n doesn't output anything, so the result variable is untouched
-        PowerPC::HostWrite_U32(static_cast<u32>(result.size()), ap->GetArgT<u32>());
+        // the actual PPC function will take care of the memory write
         break;
 
       default:
@@ -266,4 +257,4 @@ std::string GetStringVA(u32 str_reg, ParameterType parameter_type)
   return result;
 }
 
-}  // end of namespace HLE_OS
+}  // namespace HLE_OS

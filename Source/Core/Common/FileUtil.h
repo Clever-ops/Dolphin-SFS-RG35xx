@@ -1,6 +1,5 @@
 // Copyright 2008 Dolphin Emulator Project
-// Licensed under GPLv2+
-// Refer to the license.txt file included.
+// SPDX-License-Identifier: GPL-2.0-or-later
 
 #pragma once
 
@@ -16,6 +15,11 @@
 
 #ifdef _WIN32
 #include "Common/StringUtil.h"
+#endif
+
+#ifdef ANDROID
+#include "Common/StringUtil.h"
+#include "jni/AndroidCommon/AndroidCommon.h"
 #endif
 
 // User directory indices for GetUserPath
@@ -37,6 +41,7 @@ enum
   D_STATESAVES_IDX,
   D_SCREENSHOTS_IDX,
   D_HIRESTEXTURES_IDX,
+  D_RIIVOLUTION_IDX,
   D_DUMP_IDX,
   D_DUMPFRAMES_IDX,
   D_DUMPOBJECTS_IDX,
@@ -54,7 +59,13 @@ enum
   D_WFSROOT_IDX,
   D_BACKUP_IDX,
   D_RESOURCEPACK_IDX,
-  F_DOLPHINCONFIG_IDX,
+  D_DYNAMICINPUT_IDX,
+  D_GRAPHICSMOD_IDX,
+  D_GBAUSER_IDX,
+  D_GBASAVES_IDX,
+  D_WIISDCARDSYNCFOLDER_IDX,
+  FIRST_FILE_USER_PATH_IDX,
+  F_DOLPHINCONFIG_IDX = FIRST_FILE_USER_PATH_IDX,
   F_GCPADCONFIG_IDX,
   F_WIIPADCONFIG_IDX,
   F_GCKEYBOARDCONFIG_IDX,
@@ -69,18 +80,20 @@ enum
   F_GCSRAM_IDX,
   F_MEMORYWATCHERLOCATIONS_IDX,
   F_MEMORYWATCHERSOCKET_IDX,
-  F_WIISDCARD_IDX,
+  F_WIISDCARDIMAGE_IDX,
   F_DUALSHOCKUDPCLIENTCONFIG_IDX,
+  F_FREELOOKCONFIG_IDX,
+  F_GBABIOS_IDX,
   NUM_PATH_INDICES
 };
 
 namespace File
 {
-// FileSystem tree node/
+// FileSystem tree node
 struct FSTEntry
 {
-  bool isDirectory;
-  u64 size;                  // File length, or for directories, recursive count of children
+  bool isDirectory = false;
+  u64 size = 0;              // File length, or for directories, recursive count of children
   std::string physicalName;  // Name on disk
   std::string virtualName;   // Name in FST names table
   std::vector<FSTEntry> children;
@@ -107,7 +120,15 @@ public:
   u64 GetSize() const;
 
 private:
+#ifdef ANDROID
+  void AndroidContentInit(const std::string& path);
+#endif
+
+#ifdef _WIN32
+  struct __stat64 m_stat;
+#else
   struct stat m_stat;
+#endif
   bool m_exists;
 };
 
@@ -135,12 +156,20 @@ bool CreateDir(const std::string& filename);
 // Creates the full path of fullPath returns true on success
 bool CreateFullPath(const std::string& fullPath);
 
+enum class IfAbsentBehavior
+{
+  ConsoleWarning,
+  NoConsoleWarning
+};
+
 // Deletes a given filename, return true on success
 // Doesn't supports deleting a directory
-bool Delete(const std::string& filename);
+bool Delete(const std::string& filename,
+            IfAbsentBehavior behavior = IfAbsentBehavior::ConsoleWarning);
 
 // Deletes a directory filename, returns true on success
-bool DeleteDir(const std::string& filename);
+bool DeleteDir(const std::string& filename,
+               IfAbsentBehavior behavior = IfAbsentBehavior::ConsoleWarning);
 
 // renames file srcFilename to destFilename, returns true on success
 bool Rename(const std::string& srcFilename, const std::string& destFilename);
@@ -155,7 +184,7 @@ bool Copy(const std::string& srcFilename, const std::string& destFilename);
 bool CreateEmptyFile(const std::string& filename);
 
 // Recursive or non-recursive list of files and directories under directory.
-FSTEntry ScanDirectoryTree(const std::string& directory, bool recursive);
+FSTEntry ScanDirectoryTree(std::string directory, bool recursive);
 
 // deletes the given directory and anything under it. Returns true on success.
 bool DeleteDirRecursively(const std::string& directory);
@@ -164,7 +193,7 @@ bool DeleteDirRecursively(const std::string& directory);
 std::string GetCurrentDir();
 
 // Create directory and copy contents (optionally overwrites existing files)
-void CopyDir(const std::string& source_path, const std::string& dest_path,
+bool CopyDir(const std::string& source_path, const std::string& dest_path,
              bool destructive = false);
 
 // Set the current directory to given directory
@@ -182,13 +211,13 @@ const std::string& GetUserPath(unsigned int dir_index);
 
 // Sets a user directory path
 // Rebuilds internal directory structure to compensate for the new directory
-void SetUserPath(unsigned int dir_index, const std::string& path);
+void SetUserPath(unsigned int dir_index, std::string path);
 
 // probably doesn't belong here
 std::string GetThemeDir(const std::string& theme_name);
 
 // Returns the path to where the sys file are
-std::string GetSysDirectory();
+const std::string& GetSysDirectory();
 
 void SetSysDirectory(const std::string& path);
 
@@ -202,14 +231,20 @@ std::string GetExeDirectory();
 bool WriteStringToFile(const std::string& filename, std::string_view str);
 bool ReadFileToString(const std::string& filename, std::string& str);
 
-// To deal with Windows being dumb at unicode:
+// To deal with Windows not fully supporting UTF-8 and Android not fully supporting paths.
 template <typename T>
 void OpenFStream(T& fstream, const std::string& filename, std::ios_base::openmode openmode)
 {
 #ifdef _MSC_VER
   fstream.open(UTF8ToTStr(filename).c_str(), openmode);
 #else
-  fstream.open(filename.c_str(), openmode);
+#ifdef ANDROID
+  // Unfortunately it seems like the non-standard __open is the only way to use a file descriptor
+  if (IsPathAndroidContent(filename))
+    fstream.__open(OpenAndroidContent(filename, OpenModeToAndroid(openmode)), openmode);
+  else
+#endif
+    fstream.open(filename.c_str(), openmode);
 #endif
 }
 
