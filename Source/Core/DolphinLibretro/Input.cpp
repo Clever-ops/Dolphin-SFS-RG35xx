@@ -607,9 +607,9 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
     ControllerEmu::ControlGroup* gcDPad = gcPad->GetGroup(PadGroup::DPad);
     ControllerEmu::ControlGroup* gcTriggers = gcPad->GetGroup(PadGroup::Triggers);
     ControllerEmu::ControlGroup* gcRumble = gcPad->GetGroup(PadGroup::Rumble);
+    ControllerEmu::ControlGroup* gcOptions = gcPad->GetGroup(PadGroup::Options);
 #if 0
     ControllerEmu::ControlGroup* gcMic = gcPad->GetGroup(PadGroup::Mic);
-    ControllerEmu::ControlGroup* gcOptions = gcPad->GetGroup(PadGroup::Options);
 #endif
     gcButtons->SetControlExpression(0, "A");                          // A
     gcButtons->SetControlExpression(1, "B");                          // B
@@ -639,6 +639,8 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
                                      "`" + devAnalog + ":Trigger1+`|R3");  // R-trigger Soft Press
     if (Libretro::Options::enableRumble)
       gcRumble->SetControlExpression(0, "Rumble");
+    static_cast<ControllerEmu::NumericSetting<bool>*>(gcOptions->numeric_settings[0].get())
+      ->SetValue(true); // Always Connected
 
     gcPad->UpdateReferences(g_controller_interface);
     Pad::GetConfig()->SaveConfig();
