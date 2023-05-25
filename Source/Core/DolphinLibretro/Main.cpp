@@ -295,11 +295,7 @@ bool retro_unserialize(const void* data, size_t size)
 
 unsigned retro_get_region(void)
 {
-  if (DiscIO::IsNTSC(SConfig::GetInstance().m_region) ||
-      (SConfig::GetInstance().bWii && Config::Get(Config::SYSCONF_PAL60)))
-    return RETRO_REGION_NTSC;
-
-  return RETRO_REGION_PAL;
+  return RETRO_REGION_NTSC;
 }
 
 unsigned retro_api_version()
