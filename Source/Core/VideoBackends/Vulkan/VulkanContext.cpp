@@ -531,7 +531,7 @@ std::unique_ptr<VulkanContext> VulkanContext::Create(VkInstance instance, VkPhys
 
   // Attempt to create the device.
   if (!context->CreateDevice(enable_validation_layer) ||
-      !context->CreateAllocator(vk_api_version)))
+      !context->CreateAllocator(vk_api_version))
     return nullptr;
 
   return context;
@@ -945,6 +945,7 @@ void VulkanContext::InitDriverDetails()
     // Supported by the videocore IV found in the RPI4 and upwards.
     vendor = DriverDetails::VENDOR_MESA;
     driver = DriverDetails::DRIVER_V3D;
+  }
   else if (device_name.find("Apple") != std::string::npos)
   {
     vendor = DriverDetails::VENDOR_APPLE;

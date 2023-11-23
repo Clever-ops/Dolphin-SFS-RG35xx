@@ -146,14 +146,6 @@ void LoadPatchSection(const std::string& section, std::vector<Patch>* patches,
       for (Patch& patch : *patches)
         patch.default_enabled = patch.enabled;
     }
-
-    ReadEnabledAndDisabled(*ini, section, &patches);
-
-    if (ini == &globalIni)
-    {
-      for (Patch& patch : patches)
-        patch.default_enabled = patch.enabled;
-    }
   }
 }
 

@@ -270,15 +270,7 @@ bool Init(std::unique_ptr<BootParameters> boot, const WindowSystemInfo& wsi)
 
   // Start the emu thread
   s_is_booting.Set();
-  boot_params = std::move(boot);
-
-  if (!SConfig::GetInstance().bCPUThread)
-    SConfig::GetInstance().bEMUThread = true;
-
-  if (SConfig::GetInstance().bEMUThread)
-  {
-    s_emu_thread = std::thread(EmuThread, prepared_wsi);
-  }
+  s_emu_thread = std::thread(EmuThread, std::move(boot), prepared_wsi);
   return true;
 }
 
@@ -387,10 +379,8 @@ static void CpuThread(const std::optional<std::string>& savestate_path, bool del
   else
     Common::SetCurrentThreadName("CPU-GPU thread");
 
-#ifdef USE_ANALYTICS
   // This needs to be delayed until after the video backend is ready.
   DolphinAnalytics::Instance().ReportGameStart();
-#endif
 
   // Clear performance data collected from previous threads.
   g_perf_metrics.Reset();
@@ -499,7 +489,7 @@ static void FifoPlayerThread(const std::optional<std::string>& savestate_path,
 // Initialize and create emulation thread
 // Call browser: Init():s_emu_thread().
 // See the BootManager.cpp file description for a complete call schedule.
-void EmuThread(WindowSystemInfo wsi)
+static void EmuThread(std::unique_ptr<BootParameters> boot, WindowSystemInfo wsi)
 {
   Core::System& system = Core::System::GetInstance();
   const SConfig& core_parameter = SConfig::GetInstance();
@@ -640,7 +630,7 @@ void EmuThread(WindowSystemInfo wsi)
 
   // Determine the CPU thread function
   void (*cpuThreadFunc)(const std::optional<std::string>& savestate_path, bool delete_savestate);
-  if (std::holds_alternative<BootParameters::DFF>(boot_params->parameters))
+  if (std::holds_alternative<BootParameters::DFF>(boot->parameters))
     cpuThreadFunc = FifoPlayerThread;
   else
     cpuThreadFunc = CpuThread;
@@ -694,18 +684,6 @@ void EmuThread(WindowSystemInfo wsi)
 
     // Spawn the CPU thread. The CPU thread will signal the event that boot is complete.
     s_cpu_thread = std::thread(cpuThreadFunc, savestate_path, delete_savestate);
-
-    if (!SConfig::GetInstance().bEMUThread)
-    {
-      s_emu_thread_scope_guards.push_back(std::move(flag_guard));
-      s_emu_thread_scope_guards.push_back(std::move(movie_guard));
-      s_emu_thread_scope_guards.push_back(std::move(hw_guard));
-      s_emu_thread_scope_guards.push_back(std::move(video_guard));
-      s_emu_thread_scope_guards.push_back(std::move(controller_guard));
-      s_emu_thread_scope_guards.push_back(std::move(audio_guard));
-      s_emu_thread_scope_guards.push_back(std::move(wiifs_guard));
-      return;
-    }
 
     // become the GPU thread
     system.GetFifo().RunGpuLoop(system);
@@ -994,23 +972,8 @@ void Shutdown()
   // shut down.
   // For more info read "DirectX Graphics Infrastructure (DXGI): Best Practices"
   // on MSDN.
-  if (SConfig::GetInstance().bEMUThread)
-  {
-    if (s_emu_thread.joinable())
-      s_emu_thread.join();
-  }
-  else
-  {
-    if (SConfig::GetInstance().bCPUThread)
-      s_cpu_thread.join();
-    INFO_LOG(CONSOLE, "%s", StopMessage(true, "CPU thread stopped.").c_str());
-#ifdef USE_GDBSTUB
-    INFO_LOG(CONSOLE, "%s", StopMessage(true, "Stopping GDB ...").c_str());
-    gdb_deinit();
-    INFO_LOG(CONSOLE, "%s", StopMessage(true, "GDB stopped.").c_str());
-#endif
-    s_emu_thread_scope_guards.clear();
-  }
+  if (s_emu_thread.joinable())
+    s_emu_thread.join();
 
   // Make sure there's nothing left over in case we're about to exit.
   HostDispatchJobs();

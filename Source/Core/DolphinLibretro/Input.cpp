@@ -436,7 +436,7 @@ void Init()
       {"GameCube Controller", RETRO_DEVICE_JOYPAD},
   };
 
-  if (SConfig::GetInstance().bWii && !SConfig::GetInstance().m_bt_passthrough_enabled)
+  if (SConfig::GetInstance().bWii)
   {
     init_wiimotes = true;
     Wiimote::Initialize(Wiimote::InitializeMode::DO_NOT_WAIT_FOR_WIIMOTES);
@@ -597,7 +597,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 
     GCPad* gcPad = (GCPad*)Pad::GetConfig()->GetController(port > 3 ? port - 4 : port);
     // load an empty inifile section, clears everything
-    IniFile::Section sec;
+    Common::IniFile::Section sec;
     gcPad->LoadConfig(&sec);
     gcPad->SetDefaultDevice(devJoypad);
 
@@ -645,7 +645,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
     gcPad->UpdateReferences(g_controller_interface);
     Pad::GetConfig()->SaveConfig();
   }
-  else if (!SConfig::GetInstance().m_bt_passthrough_enabled)
+  else
   {
     if (!Libretro::Options::altGCPorts) // Disconnect GC controller to avoid conflict with Wii device
     {

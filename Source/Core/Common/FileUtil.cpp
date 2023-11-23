@@ -790,6 +790,7 @@ const std::string& GetSysDirectory()
   return sys_directory;
 }
 
+#ifdef ANDROID
 void SetSysDirectory(const std::string& path)
 {
   INFO_LOG_FMT(COMMON, "Setting Sys directory to {}", path);

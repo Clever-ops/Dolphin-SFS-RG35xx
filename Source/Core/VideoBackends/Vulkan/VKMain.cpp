@@ -102,7 +102,7 @@ bool VideoBackend::Initialize(const WindowSystemInfo& wsi)
   {
     if (!LoadVulkanLibrary())
     {
-      PanicAlert("Failed to load Vulkan library.");
+      PanicAlertFmt("Failed to load Vulkan library.");
       return false;
     }
 
@@ -110,19 +110,20 @@ bool VideoBackend::Initialize(const WindowSystemInfo& wsi)
     bool enable_validation_layer = g_Config.bEnableValidationLayer;
     if (enable_validation_layer && !VulkanContext::CheckValidationLayerAvailablility())
     {
-      WARN_LOG(VIDEO, "Validation layer requested but not available, disabling.");
+      WARN_LOG_FMT(VIDEO, "Validation layer requested but not available, disabling.");
       enable_validation_layer = false;
     }
 
     // Create Vulkan instance, needed before we can create a surface, or enumerate devices.
     // We use this instance to fill in backend info, then re-use it for the actual device.
     bool enable_surface = wsi.type != WindowSystemType::Headless;
-    bool enable_debug_reports = ShouldEnableDebugReports(enable_validation_layer);
+    bool enable_debug_reports = ShouldEnableDebugUtils(enable_validation_layer);
+    u32 vkApiVersion;
     VkInstance instance = VulkanContext::CreateVulkanInstance(wsi.type, enable_debug_reports,
-                                                              enable_validation_layer);
+                                                              enable_validation_layer, &vkApiVersion);
     if (instance == VK_NULL_HANDLE)
     {
-      PanicAlert("Failed to create Vulkan instance.");
+      PanicAlertFmt("Failed to create Vulkan instance.");
       UnloadVulkanLibrary();
       return false;
     }
@@ -130,7 +131,7 @@ bool VideoBackend::Initialize(const WindowSystemInfo& wsi)
     // Load instance function pointers.
     if (!LoadVulkanInstanceFunctions(instance))
     {
-      PanicAlert("Failed to load Vulkan instance functions.");
+      PanicAlertFmt("Failed to load Vulkan instance functions.");
       vkDestroyInstance(instance, nullptr);
       UnloadVulkanLibrary();
       return false;
@@ -141,7 +142,7 @@ bool VideoBackend::Initialize(const WindowSystemInfo& wsi)
     VulkanContext::GPUList gpu_list = VulkanContext::EnumerateGPUs(instance);
     if (gpu_list.empty())
     {
-      PanicAlert("No Vulkan physical devices available.");
+      PanicAlertFmt("No Vulkan physical devices available.");
       vkDestroyInstance(instance, nullptr);
       UnloadVulkanLibrary();
       return false;
@@ -158,7 +159,7 @@ bool VideoBackend::Initialize(const WindowSystemInfo& wsi)
       surface = SwapChain::CreateVulkanSurface(instance, wsi);
       if (surface == VK_NULL_HANDLE)
       {
-        PanicAlert("Failed to create Vulkan surface.");
+        PanicAlertFmt("Failed to create Vulkan surface.");
         vkDestroyInstance(instance, nullptr);
         UnloadVulkanLibrary();
         return false;
@@ -170,17 +171,17 @@ bool VideoBackend::Initialize(const WindowSystemInfo& wsi)
     size_t selected_adapter_index = static_cast<size_t>(g_Config.iAdapter);
     if (selected_adapter_index >= gpu_list.size())
     {
-      WARN_LOG(VIDEO, "Vulkan adapter index out of range, selecting first adapter.");
+      WARN_LOG_FMT(VIDEO, "Vulkan adapter index out of range, selecting first adapter.");
       selected_adapter_index = 0;
     }
 
     // Now we can create the Vulkan device. VulkanContext takes ownership of the instance and
     // surface.
     g_vulkan_context = VulkanContext::Create(instance, gpu_list[selected_adapter_index], surface,
-                                             enable_debug_reports, enable_validation_layer);
+                                             enable_debug_reports, enable_validation_layer, vkApiVersion);
     if (!g_vulkan_context)
     {
-      PanicAlert("Failed to create Vulkan device");
+      PanicAlertFmt("Failed to create Vulkan device");
       UnloadVulkanLibrary();
       return false;
     }

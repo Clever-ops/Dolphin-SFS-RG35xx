@@ -230,8 +230,8 @@ std::string GetThemeDir(const std::string& theme_name);
 // Returns the path to where the sys file are
 const std::string& GetSysDirectory();
 
-void SetSysDirectory(const std::string& path);
 #ifdef ANDROID
+void SetSysDirectory(const std::string& path);
 void SetGpuDriverDirectories(const std::string& path, const std::string& lib_path);
 const std::string GetGpuDriverDirectory(unsigned int dir_index);
 #endif
@@ -250,7 +250,7 @@ bool ReadFileToString(const std::string& filename, std::string& str);
 template <typename T>
 void OpenFStream(T& fstream, const std::string& filename, std::ios_base::openmode openmode)
 {
-#ifdef _MSC_VER
+#ifdef _WIN32
   fstream.open(UTF8ToTStr(filename).c_str(), openmode);
 #else
 #ifdef ANDROID

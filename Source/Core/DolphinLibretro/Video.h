@@ -2,7 +2,7 @@
 #pragma once
 
 #include <libretro.h>
-#include "VideoBackends/Null/Render.h"
+#include "VideoBackends/Null/NullGfx.h"
 #include "VideoBackends/Software/SWOGLWindow.h"
 #include "VideoBackends/Software/SWRenderer.h"
 #include "VideoBackends/Software/SWTexture.h"
@@ -70,7 +70,7 @@ private:
   MathUtil::Rectangle<int> m_rc;
 };
 
-class NullRenderer : public Null::Renderer
+class NullRenderer : public Null::NullRenderer
 {
 public:
   void PresentBackbuffer() override

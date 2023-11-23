@@ -90,7 +90,7 @@ public:
   // Restores FBO binding after it's been changed.
   void RestoreFramebufferBinding();
 
-  void SetSystemFrameBuffer(GLuint fbo);
+  //void SetSystemFrameBuffer(GLuint fbo);
   SurfaceInfo GetSurfaceInfo() const override;
 
 private:
