@@ -32,6 +32,7 @@
 #include "VideoCommon/TextureConfig.h"
 #include "VideoCommon/VideoCommon.h"
 #include "VideoCommon/VideoConfig.h"
+#include "VideoCommon/Widescreen.h"
 
 #ifdef PERF_TEST
 static struct retro_perf_callback perf_cb;
@@ -151,8 +152,8 @@ void retro_get_system_av_info(retro_system_av_info* info)
   info->geometry.max_width   = info->geometry.base_width;
   info->geometry.max_height  = info->geometry.base_height;
 
-  if (g_renderer)
-    Libretro::widescreen = g_renderer->IsWideScreen() || g_Config.bWidescreenHack;
+  if (g_widescreen)
+    Libretro::widescreen = g_widescreen->IsGameWidescreen() || g_Config.bWidescreenHack;
   else if (SConfig::GetInstance().bWii)
     Libretro::widescreen = Config::Get(Config::SYSCONF_WIDESCREEN);
 
@@ -225,7 +226,7 @@ void retro_run(void)
     Libretro::environ_cb(cmd, &info);
   }
 
-  if (Libretro::widescreen != (g_renderer->IsWideScreen() || g_Config.bWidescreenHack))
+  if (Libretro::widescreen != (g_widescreen->IsGameWidescreen() || g_Config.bWidescreenHack))
   {
     retro_system_av_info info;
     retro_get_system_av_info(&info);
@@ -241,8 +242,7 @@ void retro_run(void)
 
   if (Libretro::Options::WiimoteContinuousScanning.Updated())
   {
-    SConfig::GetInstance().m_WiimoteContinuousScanning =
-        Libretro::Options::WiimoteContinuousScanning;
+    Config::SetCurrent(Config::MAIN_WIIMOTE_CONTINUOUS_SCANNING, Libretro::Options::WiimoteContinuousScanning);
     WiimoteReal::Initialize(Wiimote::InitializeMode::DO_NOT_WAIT_FOR_WIIMOTES);
   }
 
@@ -267,7 +267,7 @@ size_t retro_serialize_size(void)
   size_t size = 0;
 
   Core::RunAsCPUThread([&] {
-    PointerWrap p((u8**)&size, PointerWrap::MODE_MEASURE);
+    PointerWrap p((u8**)&size, PointerWrap::Mode::Measure);
     State::DoState(p);
   });
 
@@ -277,7 +277,7 @@ size_t retro_serialize_size(void)
 bool retro_serialize(void* data, size_t size)
 {
   Core::RunAsCPUThread([&] {
-    PointerWrap p((u8**)&data, PointerWrap::MODE_WRITE);
+    PointerWrap p((u8**)&data, PointerWrap::Mode::Write;
     State::DoState(p);
   });
 
@@ -286,7 +286,7 @@ bool retro_serialize(void* data, size_t size)
 bool retro_unserialize(const void* data, size_t size)
 {
   Core::RunAsCPUThread([&] {
-    PointerWrap p((u8**)&data, PointerWrap::MODE_READ);
+    PointerWrap p((u8**)&data, PointerWrap::Mode::Read);
     State::DoState(p);
   });
 
@@ -311,7 +311,7 @@ size_t retro_get_memory_size(unsigned id)
 {
   if (id == RETRO_MEMORY_SYSTEM_RAM)
   {
-    return Memory::m_TotalMemorySize;
+    return Core::System::GetInstance().GetMemory().GetRamSize();
   }
   return 0;
 }
@@ -320,7 +320,7 @@ void* retro_get_memory_data(unsigned id)
 {
   if (id == RETRO_MEMORY_SYSTEM_RAM)
   {
-    return Memory::m_pContiguousRAM;
+    return Core::System::GetInstance().GetMemory().GetPointer(0);
   }
   return NULL;
 }

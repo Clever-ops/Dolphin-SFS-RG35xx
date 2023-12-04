@@ -96,7 +96,7 @@ static Common::DynamicLibrary d3d11_library;
 
 static void ContextReset(void)
 {
-  DEBUG_LOG(VIDEO, "Context reset!\n");
+  DEBUG_LOG(Common::Log::LogType::VIDEO, "Context reset!\n");
 
 #ifndef __APPLE__
   if (hw_render.context_type == RETRO_HW_CONTEXT_VULKAN)
@@ -105,12 +105,12 @@ static void ContextReset(void)
     if (!Libretro::environ_cb(RETRO_ENVIRONMENT_GET_HW_RENDER_INTERFACE, (void**)&vulkan) ||
         !vulkan)
     {
-      ERROR_LOG(VIDEO, "Failed to get HW rendering interface!\n");
+      ERROR_LOG(Common::Log::LogType::VIDEO, "Failed to get HW rendering interface!\n");
       return;
     }
     if (vulkan->interface_version != RETRO_HW_RENDER_INTERFACE_VULKAN_VERSION)
     {
-      ERROR_LOG(VIDEO, "HW render interface mismatch, expected %u, got %u!\n",
+      ERROR_LOG(Common::Log::LogType::VIDEO, "HW render interface mismatch, expected %u, got %u!\n",
                 RETRO_HW_RENDER_INTERFACE_VULKAN_VERSION, vulkan->interface_version);
       return;
     }
@@ -125,12 +125,12 @@ static void ContextReset(void)
     retro_hw_render_interface_d3d11* d3d;
     if (!Libretro::environ_cb(RETRO_ENVIRONMENT_GET_HW_RENDER_INTERFACE, (void**)&d3d) || !d3d)
     {
-      ERROR_LOG(VIDEO, "Failed to get HW rendering interface!\n");
+      ERROR_LOG(Common::Log::LogType::VIDEO, "Failed to get HW rendering interface!\n");
       return;
     }
     if (d3d->interface_version != RETRO_HW_RENDER_INTERFACE_D3D11_VERSION)
     {
-      ERROR_LOG(VIDEO, "HW render interface mismatch, expected %u, got %u!\n",
+      ERROR_LOG(Common::Log::LogType::VIDEO, "HW render interface mismatch, expected %u, got %u!\n",
                 RETRO_HW_RENDER_INTERFACE_D3D11_VERSION, d3d->interface_version);
       return;
     }
@@ -148,7 +148,7 @@ static void ContextReset(void)
 
     if (FAILED(DX11::D3D::device.As(&DX11::D3D::device1)))
     {
-      WARN_LOG(VIDEO, "Missing Direct3D 11.1 support. Logical operations will not be supported.");
+      WARN_LOG(Common::Log::LogType::VIDEO, "Missing Direct3D 11.1 support. Logical operations will not be supported.");
       g_Config.backend_info.bSupportsLogicOp = false;
     }
     DX11::D3D::stateman = std::make_unique<DX11::D3D::StateManager>();
@@ -182,7 +182,7 @@ static void ContextReset(void)
 
 static void ContextDestroy(void)
 {
-  DEBUG_LOG(VIDEO, "Context destroy!\n");
+  DEBUG_LOG(Common::Log::LogType::VIDEO, "Context destroy!\n");
 
   if (Config::Get(Config::MAIN_GFX_BACKEND) == "OGL")
   {
@@ -254,7 +254,7 @@ static bool CreateDevice(retro_vulkan_context* context, VkInstance instance, VkP
 
   if (!Vulkan::LoadVulkanInstanceFunctions(instance))
   {
-    ERROR_LOG(VIDEO, "Failed to load Vulkan instance functions.");
+    ERROR_LOG(Common::Log::LogType::VIDEO, "Failed to load Vulkan instance functions.");
     Vulkan::UnloadVulkanLibrary();
     return false;
   }
@@ -262,7 +262,7 @@ static bool CreateDevice(retro_vulkan_context* context, VkInstance instance, VkP
   Vulkan::VulkanContext::GPUList gpu_list = Vulkan::VulkanContext::EnumerateGPUs(instance);
   if (gpu_list.empty())
   {
-    ERROR_LOG(VIDEO, "No Vulkan physical devices available.");
+    ERROR_LOG(Common::Log::LogType::VIDEO, "No Vulkan physical devices available.");
     Vulkan::UnloadVulkanLibrary();
     return false;
   }
@@ -276,7 +276,7 @@ static bool CreateDevice(retro_vulkan_context* context, VkInstance instance, VkP
   Vulkan::g_vulkan_context = Vulkan::VulkanContext::Create(instance, gpu, surface, false, false);
   if (!Vulkan::g_vulkan_context)
   {
-    ERROR_LOG(VIDEO, "Failed to create Vulkan device");
+    ERROR_LOG(Common::Log::LogType::VIDEO, "Failed to create Vulkan device");
     Vulkan::UnloadVulkanLibrary();
     return false;
   }

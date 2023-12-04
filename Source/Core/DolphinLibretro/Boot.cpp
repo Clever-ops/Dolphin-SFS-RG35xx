@@ -78,8 +78,8 @@ bool retro_load_game(const struct retro_game_info* game)
   Discord::SetDiscordPresenceEnabled(false);
   Common::SetEnableAlert(false);
 
-  INFO_LOG(COMMON, "User Directory set to '%s'", user_dir.c_str());
-  INFO_LOG(COMMON, "System Directory set to '%s'", sys_dir.c_str());
+  INFO_LOG_FMT(Common::Log::LogType::COMMON, "User Directory set to '%s'", user_dir.c_str());
+  INFO_LOG_FMT(Common::Log::LogType::COMMON, "System Directory set to '%s'", sys_dir.c_str());
 
   /* disable throttling emulation to match GetTargetRefreshRate() */
   Core::SetIsThrottlerTempDisabled(true);
@@ -174,7 +174,7 @@ bool retro_load_game(const struct retro_game_info* game)
 
   Libretro::Video::Init();
   VideoBackendBase::PopulateBackendInfo();
-  NOTICE_LOG(VIDEO, "Using GFX backend: %s", Config::Get(Config::MAIN_GFX_BACKEND).c_str());
+  NOTICE_LOG_FMT(Common::Log::LogType::VIDEO, "Using GFX backend: %s", Config::Get(Config::MAIN_GFX_BACKEND).c_str());
 
   WindowSystemInfo wsi(WindowSystemType::Libretro, nullptr, nullptr, nullptr);
 
@@ -190,7 +190,7 @@ bool retro_load_game(const struct retro_game_info* game)
     normalized_game_paths = ReadM3UFile(normalized_game_paths.front(), folder_path);
     if (normalized_game_paths.empty())
     {
-      ERROR_LOG(BOOT, "Could not boot %s. M3U contains no paths\n", game->path);
+      ERROR_LOG_FMT(Common::Log::LogType::BOOT, "Could not boot %s. M3U contains no paths\n", game->path);
       return false;
     }
   }
@@ -200,7 +200,7 @@ bool retro_load_game(const struct retro_game_info* game)
 
   if (!BootManager::BootCore(BootParameters::GenerateFromFile(normalized_game_paths), wsi))
   {
-    ERROR_LOG(BOOT, "Could not boot %s\n", game->path);
+    ERROR_LOG_FMT(Common::Log::LogType::BOOT, "Could not boot %s\n", game->path);
     return false;
   }
 
@@ -269,7 +269,9 @@ static bool retro_set_eject_state(bool ejected)
   {
     if (disk_index >= 0 && disk_index < (int)disk_paths.size())
     {
-      Core::RunAsCPUThread([] { DVDInterface::ChangeDisc(NormalizePath(disk_paths[disk_index])); });
+      Core::RunAsCPUThread([] {
+        Core::System::GetInstance().GetDVDInterface().ChangeDisc(NormalizePath(disk_paths[disk_index]));
+      });
     }
   }
 
@@ -290,7 +292,7 @@ static bool retro_set_image_index(unsigned index)
 {
   if (eject_state)
     disk_index = index;
-  
+
   return eject_state;
 }
 
