@@ -19,6 +19,8 @@ include_directories(${CMAKE_SOURCE_DIR}/Externals/Libretro/Include)
 include_directories(${CMAKE_SOURCE_DIR}/Externals/Vulkan/Include)
 include_directories(${CMAKE_SOURCE_DIR}/Externals/VulkanMemoryAllocator/include)
 
+target_include_directories(common PRIVATE ${CMAKE_SOURCE_DIR}/Externals/Libretro/Include)
+
 set(LIBRARY_OUTPUT_PATH "${CMAKE_BINARY_DIR}")
 
 set_target_properties(dolphin_libretro PROPERTIES PREFIX "")

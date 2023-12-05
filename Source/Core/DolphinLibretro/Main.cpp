@@ -22,11 +22,12 @@
 #include "Core/HW/VideoInterface.h"
 #include "Core/HW/WiimoteReal/WiimoteReal.h"
 #include "Core/State.h"
+#include "Core/System.h"
 #include "DolphinLibretro/Input.h"
 #include "DolphinLibretro/Options.h"
 #include "DolphinLibretro/Video.h"
 #include "VideoBackends/OGL/OGLTexture.h"
-//#include "VideoBackends/OGL/Render.h"
+#include "VideoBackends/OGL/OGLGfx.h"
 #include "VideoCommon/AsyncRequests.h"
 #include "VideoCommon/Fifo.h"
 #include "VideoCommon/TextureConfig.h"
@@ -65,8 +66,9 @@ static retro_audio_sample_batch_t batch_cb;
 
 static unsigned int GetSampleRate()
 {
-  if (g_sound_stream)
-    return g_sound_stream->GetMixer()->GetSampleRate();
+  SoundStream* sound_stream = Core::System::GetInstance().GetSoundStream();
+  if (sound_stream)
+    return sound_stream->GetMixer()->GetSampleRate();
   else if (SConfig::GetInstance().bWii)
     return Options::audioMixerRate;
   else if (Options::audioMixerRate == 32000u)
@@ -80,6 +82,7 @@ class Stream final : public SoundStream
 public:
   Stream() : SoundStream(GetSampleRate()) {}
   bool SetRunning(bool running) override { return running; }
+  // Must be called from AudioCommon::SendAIBuffer
   void Update() override
   {
     unsigned int available = m_mixer->AvailableSamples();
@@ -139,7 +142,7 @@ void retro_get_system_info(retro_system_info* info)
 {
   info->need_fullpath = true;
   info->valid_extensions = "elf|dol|gcm|iso|tgc|wbfs|ciso|gcz|wad|wia|rvz|m3u";
-  info->library_version = Common::scm_desc_str.c_str();
+  info->library_version = Common::GetScmDescStr().c_str();
   info->library_name = "dolphin-emu";
   info->block_extract = true;
 }
@@ -164,7 +167,7 @@ void retro_get_system_av_info(retro_system_av_info* info)
 
 void retro_reset(void)
 {
-  ProcessorInterface::ResetButton_Tap();
+  Core::System::GetInstance().GetProcessorInterface().ResetButton_Tap();
 }
 
 void retro_run(void)
@@ -175,32 +178,30 @@ void retro_run(void)
 #else
   Common::Log::LogManager::GetInstance()->SetLogLevel(Libretro::Options::logLevel);
 #endif
-  SConfig::GetInstance().m_OCFactor = Libretro::Options::cpuClockRate;
-  SConfig::GetInstance().m_OCEnable = Libretro::Options::cpuClockRate != 1.0;
+  Config::SetCurrent(Config::MAIN_OVERCLOCK, Libretro::Options::cpuClockRate);
+  Config::SetCurrent(Config::MAIN_OVERCLOCK_ENABLE, Libretro::Options::cpuClockRate != 1.0);
   g_Config.bWidescreenHack = Libretro::Options::WidescreenHack;
 
   Libretro::Input::Update();
 
   if (Core::GetState() == Core::State::Starting)
   {
-    WindowSystemInfo wsi(WindowSystemType::Libretro, nullptr, nullptr, nullptr);
-    Core::EmuThread(wsi);
-    AudioCommon::SetSoundStreamRunning(false);
-    g_sound_stream.reset();
-    g_sound_stream = std::make_unique<Libretro::Audio::Stream>();
-    AudioCommon::SetSoundStreamRunning(true);
+    //WindowSystemInfo wsi(WindowSystemType::Libretro, nullptr, nullptr, nullptr);
+    //Core::EmuThread(wsi);
+    auto& system = Core::System::GetInstance();
+    AudioCommon::SetSoundStreamRunning(system, false);
+    system.SetSoundStream(std::make_unique<Libretro::Audio::Stream>());
+    AudioCommon::SetSoundStreamRunning(system, true);
 
     if (Config::Get(Config::MAIN_GFX_BACKEND) == "Software Renderer")
     {
-      g_renderer->Shutdown();
-      g_renderer.reset();
-      g_renderer = std::make_unique<Libretro::Video::SWRenderer>();
+      g_gfx.reset();
+      g_gfx = std::make_unique<Libretro::Video::SWGfx>();
     }
     else if (Config::Get(Config::MAIN_GFX_BACKEND) == "Null")
     {
-      g_renderer->Shutdown();
-      g_renderer.reset();
-      g_renderer = std::make_unique<Libretro::Video::NullRenderer>();
+      g_gfx.reset();
+      g_gfx = std::make_unique<Libretro::Video::NullGfx>();
     }
 
     while (!Core::IsRunningAndStarted())
@@ -209,7 +210,7 @@ void retro_run(void)
 
   if (Config::Get(Config::MAIN_GFX_BACKEND) == "OGL")
   {
-    static_cast<OGL::Renderer*>(g_renderer.get())
+    static_cast<OGL::OGLGfx*>(g_gfx.get())
         ->SetSystemFrameBuffer((GLuint)Libretro::Video::hw_render.get_current_framebuffer());
   }
 
@@ -252,8 +253,9 @@ void retro_run(void)
   AsyncRequests::GetInstance()->SetEnable(true);
   AsyncRequests::GetInstance()->SetPassthrough(false);
   Core::DoFrameStep();
-  Fifo::RunGpuLoop();
-  if (!Fifo::UseDeterministicGPUThread())
+  Core::System& system = Core::System::GetInstance();
+  system.GetFifo().RunGpuLoop(system);
+  if (!system.GetFifo().UseDeterministicGPUThread())
   {
     AsyncRequests::GetInstance()->SetEnable(false);
     AsyncRequests::GetInstance()->SetPassthrough(true);
@@ -267,7 +269,7 @@ size_t retro_serialize_size(void)
   size_t size = 0;
 
   Core::RunAsCPUThread([&] {
-    PointerWrap p((u8**)&size, PointerWrap::Mode::Measure);
+    PointerWrap p((u8**)&size, sizeof(size_t), PointerWrap::Mode::Measure);
     State::DoState(p);
   });
 
@@ -277,7 +279,7 @@ size_t retro_serialize_size(void)
 bool retro_serialize(void* data, size_t size)
 {
   Core::RunAsCPUThread([&] {
-    PointerWrap p((u8**)&data, PointerWrap::Mode::Write;
+    PointerWrap p((u8**)&data, size, PointerWrap::Mode::Write);
     State::DoState(p);
   });
 
@@ -286,7 +288,7 @@ bool retro_serialize(void* data, size_t size)
 bool retro_unserialize(const void* data, size_t size)
 {
   Core::RunAsCPUThread([&] {
-    PointerWrap p((u8**)&data, PointerWrap::Mode::Read);
+    PointerWrap p((u8**)&data, size, PointerWrap::Mode::Read);
     State::DoState(p);
   });
 

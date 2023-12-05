@@ -70,6 +70,10 @@ static std::string s_android_driver_directory;
 static std::string s_android_lib_directory;
 #endif
 
+#if defined(__LIBRETRO__) && !defined(ANDROID)
+static std::string s_libretro_sys_directory;
+#endif
+
 #ifdef __APPLE__
 static Common::DynamicLibrary s_security_framework;
 
@@ -776,6 +780,8 @@ static std::string CreateSysDirectoryPath()
 #elif defined ANDROID
   const std::string sys_directory = s_android_sys_directory + DIR_SEP;
   ASSERT_MSG(COMMON, !s_android_sys_directory.empty(), "Sys directory has not been set");
+#elif defined __LIBRETRO__
+  const std::string sys_directory = s_libretro_sys_directory + DIR_SEP;
 #else
   const std::string sys_directory = SYSDATA_DIR DIR_SEP;
 #endif
@@ -789,6 +795,14 @@ const std::string& GetSysDirectory()
   static const std::string sys_directory = CreateSysDirectoryPath();
   return sys_directory;
 }
+
+#if defined(__LIBRETRO__) && !defined(ANDROID)
+void SetSysDirectory(const std::string& path)
+{
+  INFO_LOG_FMT(COMMON, "Setting Sys directory to {}", path);
+  s_libretro_sys_directory = path;
+}
+#endif
 
 #ifdef ANDROID
 void SetSysDirectory(const std::string& path)

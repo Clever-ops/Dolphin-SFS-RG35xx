@@ -22,4 +22,6 @@ public:
   virtual void SetVolume(int) {}
   // Returns true if successful.
   virtual bool SetRunning(bool running) { return false; }
+  // Needed for libretro
+  virtual void Update() {}
 };

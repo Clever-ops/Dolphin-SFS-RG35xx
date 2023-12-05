@@ -230,6 +230,10 @@ std::string GetThemeDir(const std::string& theme_name);
 // Returns the path to where the sys file are
 const std::string& GetSysDirectory();
 
+#if defined(__LIBRETRO__) && !defined(ANDROID)
+void SetSysDirectory(const std::string& path);
+#endif
+
 #ifdef ANDROID
 void SetSysDirectory(const std::string& path);
 void SetGpuDriverDirectories(const std::string& path, const std::string& lib_path);

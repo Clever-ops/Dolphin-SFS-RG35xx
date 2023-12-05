@@ -26,6 +26,9 @@
 #include "Common/GL/GLInterface/EGLAndroid.h"
 #endif
 #endif
+#if defined(__LIBRETRO__)
+#include "DolphinLibretro/Video.h"
+#endif
 
 const std::array<std::pair<int, int>, 9> GLContext::s_desktop_opengl_versions = {
     {{4, 6}, {4, 5}, {4, 4}, {4, 3}, {4, 2}, {4, 1}, {4, 0}, {3, 3}, {3, 2}}};
@@ -117,7 +120,10 @@ std::unique_ptr<GLContext> GLContext::Create(const WindowSystemInfo& wsi, bool s
   if (wsi.type == WindowSystemType::Headless || wsi.type == WindowSystemType::FBDev)
     context = std::make_unique<GLContextEGL>();
 #endif
-
+#if defined(__LIBRETRO__)
+  if (wsi.type == WindowSystemType::Libretro)
+    context = std::make_unique<Libretro::Video::RGLContext>();
+#endif
   if (!context)
     return nullptr;
 
