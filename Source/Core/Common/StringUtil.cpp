@@ -604,7 +604,6 @@ std::string UTF16BEToUTF8(const char16_t* str, size_t max_size)
 
 #endif
 
-#ifdef ANDROID
 std::string UTF16ToUTF8(std::u16string_view input)
 {
   std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> converter;
@@ -616,7 +615,6 @@ std::u16string UTF8ToUTF16(std::string_view input)
   std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t> converter;
   return converter.from_bytes(input.data(), input.data() + input.size());
 }
-#endif
 
 // This is a replacement for path::u8path, which is deprecated starting with C++20.
 std::filesystem::path StringToPath(std::string_view path)
