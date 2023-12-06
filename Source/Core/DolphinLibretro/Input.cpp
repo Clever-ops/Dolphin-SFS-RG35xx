@@ -421,9 +421,6 @@ void Init()
 {
   environ_cb(RETRO_ENVIRONMENT_GET_RUMBLE_INTERFACE, &rumble);
 
-  WindowSystemInfo wsi(WindowSystemType::Libretro, nullptr, nullptr, nullptr);
-  g_controller_interface.Initialize(wsi);
-
   g_controller_interface.AddDevice(std::make_shared<Device>(RETRO_DEVICE_KEYBOARD, 0));
 
   Pad::Initialize();

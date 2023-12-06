@@ -198,13 +198,15 @@ bool retro_load_game(const struct retro_game_info* game)
   for (auto& normalized_game_path : normalized_game_paths)
     Libretro::disk_paths.push_back(Libretro::DenormalizePath(normalized_game_path));
 
-  Libretro::Input::Init();
+  g_controller_interface.Initialize(wsi);
 
   if (!BootManager::BootCore(BootParameters::GenerateFromFile(normalized_game_paths), wsi))
   {
     ERROR_LOG_FMT(BOOT, "Could not boot {}", game->path);
     return false;
   }
+
+  Libretro::Input::Init();
 
   return true;
 }
