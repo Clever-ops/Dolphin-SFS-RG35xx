@@ -30,6 +30,10 @@ include:
   - project: 'libretro-infrastructure/ci-templates'
     file: '/linux-cmake.yml'
     
+  # MacOS
+  - project: 'libretro-infrastructure/ci-templates'
+    file: 'osx-cmake-x86.yml'
+
 # Stages for building
 stages:
   - build-prepare
@@ -52,4 +56,10 @@ libretro-build-windows-x64:
 libretro-build-linux-x64:
   extends:
     - .libretro-linux-cmake-x86_64
+    - .core-linux-defs
+
+# macOS Intel
+libretro-build-osx-x64:
+  extends:
+    - .libretro-osx-cmake-x86
     - .core-linux-defs
