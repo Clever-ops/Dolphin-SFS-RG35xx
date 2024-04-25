@@ -130,7 +130,7 @@ Option<ShaderCompilationMode> shaderCompilationMode(
      {"a-sync UberShaders", ShaderCompilationMode::AsynchronousUberShaders}});
 Option<bool> waitForShaders("dolphin_wait_for_shaders", "Wait for Shaders before Starting", false);
 Option<bool> progressiveScan("dolphin_progressive_scan", "Progressive Scan", true);
-Option<bool> pal60("dolphin_pal60", "PAL60", true);
+Option<bool> pal60("dolphin_pal60", "PAL60 (Wii)", true);
 Option<int> antiAliasing("dolphin_anti_aliasing", "Anti-Aliasing",
     {"None", "2x MSAA", "4x MSAA", "8x MSAA", "2x SSAA", "4x SSAA", "8x SSAA"});
 Option<int> maxAnisotropy("dolphin_max_anisotropy", "Max Anisotropy", {"1x", "2x", "4x", "8x", "16x"});
