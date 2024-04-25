@@ -56,6 +56,30 @@ bool retro_load_game(const struct retro_game_info* game)
   Libretro::environ_cb(RETRO_ENVIRONMENT_GET_CORE_ASSETS_DIRECTORY, &core_assets_dir);
   Libretro::InitDiskControlInterface();
 
+  std::vector<std::string> normalized_game_paths;
+  normalized_game_paths.push_back(Libretro::NormalizePath(game->path));
+  std::string folder_path;
+  std::string filename;
+  std::string extension;
+  SplitPath(normalized_game_paths.front(), &folder_path, &filename, &extension);
+  std::transform(filename.begin(), filename.end(), filename.begin(), ::tolower);
+  std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+
+  // Check if the extension is '.7z' or '.zip' or if the file was loaded from an archive,
+  // for the latter we check if the filename contains '.7z#' or '.zip#'
+  if (extension == ".7z" || extension == ".zip" ||
+      filename.find(".7z#") != std::string::npos ||
+      filename.find(".zip#") != std::string::npos)
+  {
+    struct retro_message msg = {
+      ".7z and .zip files not supported, please extract content and retry",
+      180
+    };
+    Libretro::environ_cb(RETRO_ENVIRONMENT_SET_MESSAGE, &msg);
+
+    return false;
+  }
+
   if (save_dir && *save_dir)
     user_dir = std::string(save_dir) + DIR_SEP "User";
   else if (system_dir && *system_dir)
@@ -177,13 +201,6 @@ bool retro_load_game(const struct retro_game_info* game)
   NOTICE_LOG(VIDEO, "Using GFX backend: %s", Config::Get(Config::MAIN_GFX_BACKEND).c_str());
 
   WindowSystemInfo wsi(WindowSystemType::Libretro, nullptr, nullptr, nullptr);
-
-  std::vector<std::string> normalized_game_paths;
-  normalized_game_paths.push_back(Libretro::NormalizePath(game->path));
-  std::string folder_path;
-  std::string extension;
-  SplitPath(normalized_game_paths.front(), &folder_path, nullptr, &extension);
-  std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
 
   if (extension == ".m3u" || extension == ".m3u8")
   {
